@@ -4,9 +4,9 @@ The istSOS JavaScript Core Library is mainly a REST API wrapper.
 It will expose in JavaScript language the communication with the istSOS WA REST interface.
 
 ## Classes, properties, methods
-```javascript
-###istsos.IstSOS class
-```
+
+###istsos.IstSOS *class*
+
 #####*properties:*
 ```javascript
 * servers {Array<Server|Object>}
