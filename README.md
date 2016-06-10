@@ -26,8 +26,8 @@ new istsos.IstSOS()
     {istsos.Database} new_defaultDb
 )
 * removeServer({String} name)
-* getServer({String} name) - returns {istsos.Server|Object}
-* getServerList() - returns {Array<istsos.Server|Object>}
+* getServer({String} name)  // @returns {istsos.Server|Object}
+* getServerList()  // @returns {Array<istsos.Server|Object>}
 ```
 
 ---
@@ -35,6 +35,7 @@ new istsos.IstSOS()
 ###istsos.Server *class*
 ```javascript
 @constructor
+@params
 new istsos.Server(
                 {String} serverName, 
                 {String} url, 
@@ -53,6 +54,7 @@ new istsos.Server(
                                                   with defualt config) */
 * opt_loginConfig {JSON|Object} opt_loginConfig /* optional (if empty,
                                                    empty object is created */
+* services {Array<istsos.Service|Object>}
 ```
 #####*methods:*
 ```javascript
@@ -64,9 +66,12 @@ new istsos.Server(
 * getStatus()
 * getAboutInfo()
 * getConfig()
-* getServicesList()
+* getConfigProperty()
+* getServicesProperty()
 * getServices()
+* getDefaultDbProperty()
 * getDefaultDb()
+* getUrl()
 ```
 
 ---
