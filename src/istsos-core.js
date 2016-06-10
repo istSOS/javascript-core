@@ -91,21 +91,30 @@ istsos.fire = function (eventType, event) {
     );
 };
 
-/** istsos.IstSOS class
- * Class containing the list of all created servers, with methods for adding
- * the server, updating the server, removing the server, getting the server
- * and getting the list of all created servers */
+/** istsos.IstSOS class */
 
-// properties
+/**
+ * @constructor
+ */
 istsos.IstSOS = function () {
     this.servers = [];
 };
 
 // methods
 istsos.IstSOS.prototype = {
+    /**
+     * @param {istsos.Server|Object} server
+     */
     addServer: function (server) {
         this.servers.push(server);
     },
+    /**
+     * @param {string} old_name
+     * @param {string} new_name
+     * @param {string} new_url
+     * @param {istsos.Configuration|Object} new_config
+     * @param {istsos.Database|Object} new_defaultDb
+     */
     updateServer: function (old_name, new_name, new_url, new_config, new_defaultDb) {
         var oldServer = this.getServer(old_name);
         oldServer['serverName'] = new_name || oldServer['serverName'];
@@ -113,6 +122,9 @@ istsos.IstSOS.prototype = {
         oldServer['config'] = new_config || oldServer['config'];
         oldServer['defaultDb'] = new_defaultDb || oldServer['defaultDb'];
     },
+    /**
+     * @param {string} name
+     */
     removeServer: function (name) {
         var i;
         for (i = 0; i < this.servers.length; i++) {
@@ -121,6 +133,9 @@ istsos.IstSOS.prototype = {
             }
         }
     },
+    /**
+     * @param {string} name
+     */
     getServer: function (name) {
         for (i = 0; i < this.servers.length; i++) {
             if (this.servers[i]['serverName'] === name) {
