@@ -17,16 +17,16 @@ new istsos.IstSOS()
 ```
 #####*methods:*
 ```javascript
-* addServer({Server|Object} server)
+* addServer(server {Server|Object})
 * updateServer(
-    {String} old_name, 
-    {String} new_name,
-    {String} new_url,
-    {istsos.Configuration} new_config,
-    {istsos.Database} new_defaultDb
+    old_name {String}, 
+    new_name {String},
+    new_url {String},
+    new_config {istsos.Configuration|Object},
+    new_defaultDb {istsos.Database|Object} 
 )
-* removeServer({String} name)
-* getServer({String} name)  // @returns {istsos.Server|Object}
+* removeServer(name {String})
+* getServer(name {String})  // @returns {istsos.Server|Object}
 * getServerList()  // @returns {Array<istsos.Server|Object>}
 ```
 
@@ -37,11 +37,11 @@ new istsos.IstSOS()
 @constructor
 @params
 new istsos.Server(
-                {String} serverName, 
-                {String} url, 
-                {istsos.Database|Object} defaultDb, 
-                {istsos.Config} opt_config, 
-                {JSON|Object} opt_loginConfig
+                serverName {String}, 
+                url {String}, 
+                defaultDb {istsos.Database|Object}, 
+                opt_config {istsos.Config}, 
+                opt_loginConfig {JSON|Object}
 )
 ```
 #####*properties:*
@@ -49,11 +49,11 @@ new istsos.Server(
 * serverName {String}
 * url {String}
 * defaultDb {istsos.Database|Object}
-* opt_config {istsos.Config|Object} opt_config} /* optional (if empty, 
-                                                  instance of istsos.Configuration is created 
-                                                  with defualt config) */
-* opt_loginConfig {JSON|Object} opt_loginConfig /* optional (if empty,
-                                                   empty object is created */
+* opt_config {istsos.Config|Object} /* optional (if empty, 
+                                                instance of istsos.Configuration is created 
+                                                 with defualt config) */
+* opt_loginConfig {JSON|Object} /* optional (if empty,
+                                             empty object is created */
 * services {Array<istsos.Service|Object>}
 ```
 #####*methods:*
