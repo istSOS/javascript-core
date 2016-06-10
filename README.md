@@ -25,3 +25,27 @@ It will expose in JavaScript language the communication with the istSOS WA REST 
 * getServer({String} name) - returns {istsos.Server|Object}
 * getServerList() - returns {Array<istsos.Server|Object>}
 ```
+
+---
+
+###istsos.Server *class*
+
+#####*properties:*
+
+#####*methods:*
+
+---
+
+###istsos.Database *class*
+
+#####*properties:*
+
+#####*methods:*
+
+---
+
+###istsos.Configuration *class*
+
+#####*properties:*
+
+#####*methods:*
