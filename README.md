@@ -58,7 +58,7 @@ new istsos.Server(
 ```javascript
 * executeRequest()
 * addService()
-* createService()
+* registerService()
 * deleteService()
 * getService()
 * getStatus()
