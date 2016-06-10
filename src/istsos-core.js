@@ -327,7 +327,6 @@ istsos.Configuration = function (serviceName, serverUrl) {
     this.sname = serviceName || 'default';
     this.serverUrl = serverUrl;
 };
-
 //methods - SOLVE PUT REQUESTS
 istsos.Configuration.prototype = {
     /**
@@ -350,49 +349,149 @@ istsos.Configuration.prototype = {
         var url = this.serverUrl + 'wa/istsos/services/' + this.sname + '/configsections/provider';
         this.executeRequest(url, istsos.events.EventType.PROVIDER, 'GET');
     },
-    updateProvider: function () {
+    /**
+     * @param {string} providerName
+     * @param {string} providerSite
+     * @param {string} contactName
+     * @param {string} contactVoice
+     * @param {string} contactFax
+     * @param {string} contactEmail
+     * @param {string} contactDeliveryPoint
+     * @param {string}  contactPostalCode
+     * @param {string} contactCity
+     * @param {string} contactAdminArea
+     * @param {string} contactCountry
+     */
+    updateProvider: function (providerName, providerSite, contactName, contactPosition, contactVoice, contactFax,
+                              contactEmail, contactDeliveryPoint, contactPostalCode,
+                              contactCity, contactAdminArea, contactCountry ) {
+        var data = {
+            "providername": providerName,
+            "providersite": providerSite,
+            "contactname": contactName,
+            "contactposition": contactPosition,
+            "contactvoice": contactVoice,
+            "contactfax": contactFax,
+            "contactemail": contactEmail,
+            "contactdeliverypoint": contactDeliveryPoint,
+            "contactpostalcode": contactPostalCode,
+            "contactcity": contactCity,
+            "contactadminarea": contactAdminArea,
+            "contactcountry": contactCountry
+        };
         var url = this.serverUrl + 'wa/istsos/services/' + this.sname + '/configsections/provider';
-        this.executeRequest(url, istsos.events.EventType.UPDATE_PROVIDER, 'PUT');
+        this.executeRequest(url, istsos.events.EventType.UPDATE_PROVIDER, 'PUT', data);
     },
     getIdentification: function () {
         var url = this.serverUrl + 'wa/istsos/services/' + this.sname + '/configsections/identification';
         this.executeRequest(url, istsos.events.EventType.IDENTIFICATION, 'GET');
     },
-    updateIdentification: function () {
+    /**
+     * @param {string} title
+     * @param {string} abstract
+     * @param {string} urnVersion
+     * @param {string} authority
+     * @param {string} fees
+     * @param {string} keywords
+     * @param {string} accessConstrains
+     */
+    updateIdentification: function (title, abstract, urnVersion, authority, fees, keywords, accessConstrains) {
+        var data = {
+            "title": title,
+            "abstract": abstract,
+            "urnversion": urnVersion,
+            "authority": authority,
+            "fees": fees,
+            "keywords": keywords,
+            "accesscontrains": accessConstrains
+        };
         var url = this.serverUrl + 'wa/istsos/services/' + this.sname + '/configsections/identification';
-        this.executeRequest(url, istsos.events.EventType.UPDATE_IDENTIFICATION, 'PUT');
+        this.executeRequest(url, istsos.events.EventType.UPDATE_IDENTIFICATION, 'PUT', data);
     },
     getMqtt: function () {
         var url = this.serverUrl + 'wa/istsos/services/' + this.sname + '/configsections/mqtt';
         this.executeRequest(url, istsos.events.EventType.MQTT, 'GET');
     },
-    updateMqtt: function () {
+    /**
+     * @param {string} brokerPassword
+     * @param {string} brokerUser
+     * @param {string} brokerTopic
+     * @param {string} brokerUrl
+     * @param {string} brokerPort
+     */
+    updateMqtt: function (brokerPassword, brokerUser, brokerTopic, brokerUrl, brokerPort) {
+        var data = {
+            "broker_password": brokerPassword,
+            "broker_user": brokerUser,
+            "broker_topic": brokerTopic,
+            "broker_url": brokerUrl,
+            "broker_port": brokerPort
+        };
         var url = this.serverUrl + 'wa/istsos/services/' + this.sname + '/configsections/mqtt';
-        this.executeRequest(url, istsos.events.EventType.UPDATE_MQTT, 'PUT');
+        this.executeRequest(url, istsos.events.EventType.UPDATE_MQTT, 'PUT', data);
     },
     getCrs: function () {
         var url = this.serverUrl + 'wa/istsos/services/' + this.sname + '/configsections/geo';
         this.executeRequest(url, istsos.events.EventType.CRS, 'GET');
     },
-    updateCrs: function () {
+    /**
+     * @param {string} z_axis_name
+     * @param {string} x_axis_name
+     * @param {string} y_axis_name
+     * @param {string} allowedEpsg
+     * @param {string} istsosEpsg
+     */
+    updateCrs: function (z_axis_name, x_axis_name, y_axis_name, allowedEpsg, istsosEpsg) {
+        var data = {
+            "zaxisname": z_axis_name,
+            "xaxisname": x_axis_name,
+            "yaxisname": y_axis_name,
+            "allowedepsg": allowedEpsg,
+            "istsosepsg": istsosEpsg
+        };
         var url = this.serverUrl + 'wa/istsos/services/' + this.sname + '/configsections/geo';
-        this.executeRequest(url, istsos.events.EventType.UPDATE_CRS, 'PUT');
+        this.executeRequest(url, istsos.events.EventType.UPDATE_CRS, 'PUT', data);
     },
     getObservationConf: function () {
         var url = this.serverUrl + 'wa/istsos/services/' + this.sname + '/configsections/getobservation';
         this.executeRequest(url, istsos.events.EventType.OBSERVATION_CONF, 'GET');
     },
-    updateObservationConf: function () {
+    /**
+     * @param {string} correctQi
+     * @param {string} statQi
+     * @param {string} defaultQi
+     * @param {string} aggregateNoDataQi
+     * @param {string} maxGoPeriod
+     * @param {string} transactionalLog
+     * @param {string} aggregateNoData
+     */
+    updateObservationConf: function (correctQi, statQi, defaultQi, aggregateNoDataQi,
+                                     maxGoPeriod, transactionalLog, aggregateNoData) {
+        var data = {
+            "correct_qi": correctQi,
+            "stat_qi": statQi,
+            "defaultqi": defaultQi,
+            "aggregatenodataqi": aggregateNoDataQi,
+            "maxgoperiod": maxGoPeriod,
+            "transactional_log": transactionalLog,
+            "aggregatenodata": aggregateNoData
+        };
         var url = this.serverUrl + 'wa/istsos/services/' + this.sname + '/configsections/getobservation';
-        this.executeRequest(url, istsos.events.EventType.UPDATE_OBSERVATION_CONF, 'PUT');
+        this.executeRequest(url, istsos.events.EventType.UPDATE_OBSERVATION_CONF, 'PUT', data);
     },
     getProxy: function () {
         var url = this.serverUrl + 'wa/istsos/services/' + this.sname + '/configsections/serviceurl';
         this.executeRequest(url, istsos.events.EventType.PROXY, 'GET');
     },
-    updateProxy: function () {
+    /**
+     * @param {string} newUrl
+     */
+    updateProxy: function (newUrl) {
+        var data = {
+            "url": newUrl
+        };
         var url = this.serverUrl + 'wa/istsos/services/' + this.sname + '/configsections/serviceurl';
-        this.executeRequest(url, istsos.events.EventType.UPDATE_PROXY, 'PUT');
+        this.executeRequest(url, istsos.events.EventType.UPDATE_PROXY, 'PUT', data);
     },
     getEpsgCodes: function () {
         var url = this.serverUrl + 'wa/istsos/services/' + this.sname + '/epsgs';
