@@ -56,13 +56,25 @@ istsos.on(istsos.events.EventType.EPSG_CODES, function (ev) {
     log(ev.getData(), 'EPSG CODES')
 });
 
+istsos.on(istsos.events.EventType.OFFERING_NAMES, function (ev) {
+    log(ev.getData(), 'OFFERING NAMES')
+});
+
+istsos.on(istsos.events.EventType.OFFERING_LIST, function (ev) {
+    log(ev.getData(), 'OFFERING LIST')
+});
+
 var ist = new istsos.IstSOS();
 var default_db = new istsos.Database('istsos','localhost','postgres', 'postgres', '5432');
 var server = new istsos.Server('test','http://istsos.org/istsos/', default_db);
 ist.addServer(server);
+
+var service = new istsos.Service('demo', server);
+console.log(server.getServicesProperty());
+
 /** GET REQUEST TESTS */
 
-server.getService('demo');
+server.getService(service);
 server.getStatus();
 server.getAboutInfo();
 server.getConfig(); 
@@ -76,3 +88,6 @@ server.config.getMqtt();
 server.config.getCrs();
 server.config.getEpsgCodes();
 
+service.getSystemTypes();
+service.getOfferingNames()
+service.getOfferings()
