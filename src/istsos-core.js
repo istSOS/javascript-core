@@ -596,8 +596,11 @@ istsos.Service.prototype = {
         var url = this.server.getUrl() + 'wa/istsos/services/' + this.serviceObject['service'] + '/systemtypes';
         this.executeRequest(url, istsos.events.EventType.SYSTEM_TYPES, 'GET');
     },
-    getDatabase: function() {
+    getDatabaseProperty: function() {
         return this.database;
+    },
+    getDatabase: function () {
+        this.database.getDb(this.getServiceObject()['service'], this.server);
     }
 };
 
