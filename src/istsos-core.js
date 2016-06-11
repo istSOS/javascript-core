@@ -303,8 +303,10 @@ istsos.Database.prototype = {
      * @param {string} user
      * @param {string} password
      * @param {int} port
+     * @param {istsos.Server|Object} server
+     * @param {istsos.Service|Object} opt_service
      */
-    setDb: function (dbname, host, user, password, port, server, service) {
+    setDb: function (dbname, host, user, password, port, server, opt_service) {
         var newDbConf = {
             "user": user,
             "password": password,
@@ -537,7 +539,7 @@ istsos.Service = function (serviceName, server, opt_db, opt_config, opt_epsg) {
         }
     }
     this.database = opt_db || server.getDefaultDbProperty();
-    this.config = opt_config || new istsos.Configuration(this.serviceObject["service"], server); // configsections
+    this.config = opt_config || new istsos.Configuration(serviceName, server); // configsections
     this.server = server;
     this.offerings = [];
     this.procedures = [];
@@ -606,34 +608,33 @@ istsos.Service.prototype = {
 
 /** istsos.Date class */
 /**
- * @param {int} year
- * @param {int} month
- * @param {int} day
- * @param {int} hours
- * @param {int} minutes
- * @param {int} seconds
- * @param {int} gmt
+ * @param {string} descr
  * @constructor
  */
-istsos.Date = function (year, month, day, hours, minutes, seconds, gmt) {
-    this.year = year.toString();
-    this.month = month.toString();
-    this.day = day.toString();
-    this.hours = hours.toString();
-    this.minutes = minutes.toString();
-    this.seconds = seconds.toString();
-    this.gmt = (gmt > 9) ? gmt.toString() : '0' + gmt.toString();
+istsos.Date = function (opt_descr) {
+    this.description = opt_descr || 'Class for converting date&time to proper istSOS format';
 };
 
 istsos.Date.prototype = {
     /**
+     * @param {int} year
+     * @param {int} month
+     * @param {int} day
+     * @param {int} hours
+     * @param {int} minutes
+     * @param {int} seconds
+     * @param {int} gmt
      * @returns {string}
      */
-    getDateString: function () {
-        var date = this.year + '-' + this.month + '-' + this.day + 'T' +
-                    this.hours + ':' + this.minutes + ':' + this.seconds + '+' +
-                    this.gmt + ':' + '00';
+    getDateString: function (year, month, day, hours, minutes, seconds, gmt) {
+        var gmtFormat = (gmt > 9) ? gmt.toString() : '0' +gmt.toString();
+        var date = year + '-' + month + '-' + day + 'T' +
+                    hours + ':' + minutes + ':' + seconds + '+' +
+                    gmtFormat + ':' + '00';
         return date;
+    },
+    getDescription: function () {
+        return this.description;
     }
 };
 /** istsos.Offering class */
