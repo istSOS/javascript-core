@@ -58,36 +58,170 @@ new istsos.Server(
 ```
 #####*methods:*
 ```javascript
-* executeRequest()
-* addService()
-* registerService()
-* deleteService()
-* getService()
+* executeRequest(
+    url {String}
+    eventType {istsos.events.EventType}
+    method {String}
+    opt_data {JSON|Object} /* optional (for POST/PUT/DELETE
+                                requests required) */                            
+)
+* addService(service {istsos.Service|Object})
+* registerService(service {istsos.Service|Object})
+* deleteService(service {istsos.Service|Object})
+* getService(service {istsos.Service|Object})
 * getStatus()
 * getAboutInfo()
 * getConfig()
-* getConfigProperty()
-* getServicesProperty()
+* getConfigProperty() // @returns {Array<istsos.Configuration|Object>}
+* getServicesProperty() // @returns {Array<istsos.Service|Object>}
 * getServices()
-* getDefaultDbProperty()
+* getDefaultDbProperty()// @returns {Array<istsos.Database|Object>}
 * getDefaultDb()
-* getUrl()
+* getUrl()// @returns {Array<istsos.Service|Object>}
 ```
 
 ---
 
 ###istsos.Database *class*
-
+```javascript
+@constructor
+@params
+new istsos.Database(
+            dbname {String}
+            host {String}
+            user {String}
+            password {String}
+            port {int}
+)
+```
 #####*properties:*
-
+```javascript
+dbConf {JSON|Object}
+```
 #####*methods:*
+```javascript
+* executeRequest(
+    url {String}
+    eventType {istsos.events.EventType}
+    method {String}
+    opt_data {JSON|Object} /* optional (for POST/PUT/DELETE
+                                requests required) */                            
+)
+* getDb(
+    serviceName {String}
+    server {istsos.Server|Object}
+)
+* setDb(
+    dbname {String}
+    host {String}
+    user {String}
+    passwrod {String}
+    port {int}
+    server {istsos.Server|Object}
+    opt_service {istsos.Service|Object} /* optional (if not provided
+                                           'default' value will be set */ 
+* validateDb({istsos.Server|Object})
+* getDbObject() // @returns {JSON|Object}
+```
 
 ---
 
 ###istsos.Configuration *class*
+```javascript
+@constructor
+@params
+new istsos.Configuration(
+            serviceName {String}
+            server {istsos.Server|Object}
+```
+#####*properties:*
+```javascript
+* sname {String}
+* serverUrl {String}
+```
+#####*methods:*
+```javascript
+* executeRequest(
+    url {String}
+    eventType {istsos.events.EventType}
+    method {String}
+    opt_data {JSON|Object} /* optional (for POST/PUT/DELETE
+                                requests required) */                            
+)
+* getConf()
+* getProvider()
+* updateProvider()
+* getIdentification()
+* updateIdentification()
+* getMqtt()
+* updateMqtt()
+* getCrs()
+* updateCrs()
+* getObservationConf()
+* updateObservationConf()
+* getProxy()
+* updateProxy()
+* getEpsgCodes()
+```
+
+---
+
+###istsos.Date *class*
+```javascript
+@constructor
+@params
+new istsos.Date(opt_descr {String})
+```
+#####*properties:*
+```javascript
+* description {String} /* optional (if not provided,
+                        default text will be set) */
+```
+#####*methods:*
+```javascript
+* getDescription() // @returns {String}
+* getDateString(   // @returns {String}
+    year {int}
+    month {int}
+    day {int}
+    hours {int}
+    minutes {int}
+    seconds {int}
+    gmt {int} 
+) 
+```
+
+---
+
+###istsos.Service *class*
 
 #####*properties:*
 
 #####*methods:*
 
 ---
+
+###istsos.Offering *class*
+
+#####*properties:*
+
+#####*methods:*
+
+---
+
+###istsos.Procedure *class*
+
+#####*properties:*
+
+#####*methods:*
+
+---
+
+###istsos.UnitOfMeasure *class*
+
+#####*properties:*
+
+#####*methods:*
+
+---
+
