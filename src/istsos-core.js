@@ -39,7 +39,9 @@ istsos.events.EventType = {
     DELETE_OFFERING: 'DELETE offeringReceived',
     UPDATE_OFFERING: 'PUT offeringReceived',
     MEMBERLIST: 'memberlistReceived',
-    NONMEMBERLIST: 'nonmemberlistReceived'
+    NONMEMBERLIST: 'nonmemberlistReceived',
+    OBSERVED_PROPERTIES: 'observedPropertyReceived',
+    NEW_OBSERVED_PROPERTY: 'POST observedPropertyReceived'
 };
 
 //EVENT RESPONSE
@@ -580,11 +582,31 @@ istsos.Service.prototype = {
     registerProcedure: '',
     getProcedure: '',
     getProcedures: '',
-
-    addObservedProperty: '',
-    registerObservedProperty: '',
-    getObservedProperties: '',
-    getObservedProperty: '',
+    getProceduresProperty: '',
+    getVirtualProceduresProperty: '',
+    /**
+     * @param {istsos.ObservedProperty|Object} property
+     */
+    addObservedProperty: function (property) {
+        this.observedProperties.push(property)
+    },
+    /**
+     * @param {istsos.ObservedProperty|Object} property
+     */
+    registerObservedProperty: function (property) {
+        var url = this.server.getUrl() + 'wa/istsos/services/' + this.getServiceObject()['service'] +
+            '/observedproperties';
+        this.executeRequest(url, istsos.events.EventType.NEW_OBSERVED_PROPERTY, 'POST', property.getObservedPropertyObject())
+    },
+    getObservedProperties: function () {
+        var url = this.server.getUrl() + 'wa/istsos/services/observedproperties';
+        this.executeRequest(url, istsos.events.EventType.OBSERVED_PROPERTIES, 'GET');
+    },
+    getObservedProperty: function () {
+        var url = this.server.getUrl() + 'wa/istsos/services/observedproperties/' +
+                                property.getObservedPropertyObject()['definition'];
+        this.executeRequest(url, istsos.events.EventType.OBSERVED_PROPERTIES, 'GET');
+    },
 
     addUom: '',
     registerUom: '',
@@ -667,14 +689,17 @@ istsos.Offering.prototype = {
         }, method, opt_data);
     },
     /**
+     * @param procedure
+     */
+    addProcedure: function (procedure) {
+        this.memberProcedures.push(procedure);
+    },
+    /**
      * @param {string} newName
      * @param {string} newDescription
      * @param {boolean} newActive
      * @param {istsos.Date|Object} newExpirationDate
      */
-    addProcedure: function (procedure) {
-        this.memberProcedures.push(procedure);
-    },
     updateOffering: function (newName, newDescription, newActive, newExpirationDate ) {
         this.offeringObject['name'] = newName || this.offeringObject['name'];
         this.offeringObject['description'] = newDescription || this.offeringObject['description'];
@@ -738,17 +763,140 @@ istsos.VirtualProcedure.prototype = {
 };
 
 
-/** istsos.ObservedProperty class */
 
-istsos.ObservedProperty = function () {
-    
+/** istsos.ObservedProperty class */
+/**
+ * @param {istsos.Service|Object} service
+ * @param {string} propertyName
+ * @param {string} definitionUrn
+ * @param {string} propertyDescr
+ * @param {string} opt_constraintType (allowed_values:"between", "lessThan", "greaterThan", "valueList")
+ * @param {Array|int} opt_value (Array or integer, depending on constraint type)
+ * @constructor
+ */
+
+istsos.ObservedProperty = function (service, propertyName, definitionUrn, propertyDescr, opt_constraintType, opt_value) {
+    this.observedPropertyObject = {
+        'name': propertyName,
+        'definition': definitionUrn,
+        'description': propertyDescr,
+        'constraint': {
+            'role': 'urn:x-ogc:def:classifiers:x-istsos:1.0:qualityIndexCheck:level0'
+        }
+    };
+    if(this.validateConstraintInput(opt_constraintType, opt_value) === true) {
+        this.observedPropertyObject['constraint'][opt_constraintType] = opt_value;
+    } else {
+        this.observedPropertyObject['constraint'] = null;
+        console.log('Input constraintType and constraintValue are incorrect or intentionally null/undefined!!! ' +
+            'Object created with null/undefined constraint OR not properly created!!!');
+        alert('Input constraintType and constraintValue are incorrect or intentionally null/undefined!!! ' +
+            'Object created with null/undefined constraint OR not properly created!!!');
+    }
+    this.service = service;
+    this.proceduresIncluded = [];
+    this.updateProceduresIncluded();
+    service.addObservedProperty(this);
 };
 
 istsos.ObservedProperty.prototype = {
-    updateObservedProperty: '',
-    deleteObservedProperty: ''
+    updateProceduresIncluded: function () {
+        var procedures = service.getProceduresProperty();
+        var v_procedures = service.getVirtualProceduresProperty();
+        var all = procedures.concat(v_procedures);
+        all.forEach(function (procedure) {
+            procedure.getProperties().forEach(function (obsv_prop) {
+                if(this.getObservedPropertyObject()['definition'] === obsv_prop.getObservedPropertyObject()['definition']) {
+                    this.getProceduresIncluded().push(procedure);
+                }
+            })
+        });
+    },
+    /**
+     * @returns {Array}
+     */
+    getProceduresIncluded: function () {
+        return this.proceduresIncluded;
+    },
+    /**
+     * @returns {JSON|Object}
+     */
+    getObservedPropertyObject: function () {
+        return this.observedPropertyObject;
+    },
+    /**
+     * @param {string} newPropertyName
+     * @param {string} newDefinitionUrn
+     * @param {string} newPropertyDescr
+     * @param {string} opt_constraintType
+     * @param {Array|int} opt_value
+     */
+    updateObservedProperty: function (newPropertyName, newDefinitionUrn, newPropertyDescr, opt_constraintType, opt_value) {
+        this.observedPropertyObject['name'] = newPropertyName || this.observedPropertyObject['name'];
+        this.observedPropertyObject['definition'] = newDefinitionUrn || this.observedPropertyObject['definition'];
+        this.observedPropertyObject['description'] = newPropertyName || this.observedPropertyObject['description'];
+        if(this.validateConstraintInput(opt_constraintType, opt_value) === true) {
+            this.observedPropertyObject['constraint'][opt_constraintType] = opt_value;
+        } else {
+            this.observedPropertyObject['constraint'] = null;
+            console.log('Input constraintType and constraintValue are incorrect or intentionally null/undefined!!! ' +
+                'Object created with null/undefined constraint OR not properly created!!!');
+            alert('Input constraintType and constraintValue are incorrect or intentionally null/undefined!!! ' +
+                'Object created with null/undefined constraint OR not properly created!!!');
+        }
+        var url = this.server.getUrl() + 'wa/istsos/services/observedproperties/' +
+            property.getObservedPropertyObject()['definition'];
+        this.executeRequest(url, istsos.events.EventType.OBSERVED_PROPERTIES, 'PUT', this.getObservedPropertyObject());
+    },
+    deleteObservedProperty: function () {
+        var url = this.server.getUrl() + 'wa/istsos/services/observedproperties/' +
+            property.getObservedPropertyObject()['definition'];
+        this.executeRequest(url, istsos.events.EventType.OBSERVED_PROPERTIES, 'DELETE');
+    },
+    /**
+     * @param {string} constraintType
+     * @param {Array|int} constraintValue
+     * @returns {boolean}
+     */
+    validateConstraintInput: function (constraintType, constraintValue) {
+        switch (opt_constraintType) {
+            case 'between':
+                opt_constraintType = 'interval';
+                if(opt_value.constructor !== Array) {
+                    alert('Type of "between" constraint must be Array');
+                    return false;
+                } else {
+                    return true;
+                }
+            case 'lessThan':
+                opt_constraintType = 'max';
+                if(opt_value !== parseInt(opt_value, 10)) {
+                    alert('Type of "lessThan" constraint must be Integer');
+                    return false;
+                } else {
+                    return true;
+                }
+            case 'greaterThan':
+                opt_constraintType = 'min';
+                if(opt_value !== parseInt(opt_value, 10)) {
+                    alert('Type of "greaterThan" constraint must be Integer');
+                    return false;
+                } else {
+                    return true;
+                }
+            case 'valueList':
+                if(opt_value.constructor !== Array) {
+                    alert('Type of "between" constraint must be Array');
+                    return false;
+                } else {
+                    return true;
+                }
+            default:
+                alert('Constraint type must be "between", "lessThan", "greaterThan" or "valueList"');
+                return false;
+        }
+    }
 };
-
 
 /** istsos.DataQuality class */
 
