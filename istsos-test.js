@@ -41,7 +41,8 @@ istsos.on(istsos.events.EventType.MQTT, function (ev) {
 });
 
 istsos.on(istsos.events.EventType.CRS, function (ev) {
-    log(ev.getData(), 'COORDINATE SYSTEMS')
+    log(ev.getData(), 'COORDINATE SYSTEMS');
+    console.log(ev.getData());
 });
 
 istsos.on(istsos.events.EventType.DATABASE, function (ev) {
@@ -70,7 +71,6 @@ var server = new istsos.Server('test','http://istsos.org/istsos/', default_db);
 ist.addServer(server);
 
 var service = new istsos.Service('demo', server);
-console.log(server.getServicesProperty());
 
 /** GET REQUEST TESTS */
 
@@ -89,5 +89,5 @@ server.config.getCrs();
 server.config.getEpsgCodes();
 
 service.getSystemTypes();
-service.getOfferingNames()
-service.getOfferings()
+service.getOfferingNames();
+service.getOfferings();
