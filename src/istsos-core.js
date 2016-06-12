@@ -49,7 +49,12 @@ istsos.events.EventType = {
     DATAQUALITY: '=dataQualityReceived',
     NEW_DATAQUALITY: 'POST dataQualityReceived',
     UPDATE_DATAQUALITY: 'PUT dataQualityReceived',
-    DELETE_DATAQUALITY: 'DELETE dataQualityReceived'
+    DELETE_DATAQUALITY: 'DELETE dataQualityReceived',
+    UOM: 'unitOfMeasureReceived',
+    UOMS: 'unitsOfMeasureReceived',
+    NEW_UOM: 'POST unitOfMeasureReceived',
+    UPDATE_UOM: 'PUT unitOfMeasureReceived',
+    DELETE_UOM: 'DELETE unitOfMeasureReceived'
 };
 
 //EVENT RESPONSE
@@ -555,7 +560,7 @@ istsos.Service = function (serviceName, server, opt_db, opt_config, opt_epsg) {
     this.procedures = [];
     this.virtualProcedures = [];
     this.observedProperties = [];
-    this.uom = [];
+    this.uoms = [];
     this.dataQualities = [];
     server.addService(this);
 };
@@ -570,8 +575,26 @@ istsos.Service.prototype = {
     getServiceObject: function () {
         return this.serviceObject;
     },
+    getOfferingsProperty: function () {
+        return this.offerings;
+    },
+    getProceduresProperty: function () {
+        return this.procedures;
+    },
+    getVirtualProceduresProperty: function () {
+        return this.virtualProcedures;
+    },
+    getObservedPropertiesProperty: function () {
+        return this.observedProperties;
+    },
+    getUomsProperty: function () {
+        return this.uoms;
+    },
+    getDataQualitiesProperty: function () {
+        return this.dataQualities;
+    },
     addOffering: function(offering) {
-        this.offerings.push(offering);
+        this.getOfferingsProperty().push(offering);
     },
     registerOffering: function (offering) {
         var url = this.server.getUrl() + 'wa/istsos/services/' + this.getServiceObject()['service'] + '/offerings';
@@ -590,13 +613,11 @@ istsos.Service.prototype = {
     registerProcedure: '',
     getProcedure: '',
     getProcedures: '',
-    getProceduresProperty: '',
-    getVirtualProceduresProperty: '',
     /**
      * @param {istsos.ObservedProperty|Object} property
      */
     addObservedProperty: function (property) {
-        this.observedProperties.push(property)
+        this.getObservedProperties().push(property)
     },
     /**
      * @param {istsos.ObservedProperty|Object} property
@@ -615,15 +636,30 @@ istsos.Service.prototype = {
                                 property.getObservedPropertyObject()['definition'];
         this.executeRequest(url, istsos.events.EventType.OBSERVED_PROPERTY, 'GET');
     },
-
-    addUom: '',
-    registerUom: '',
-    getUoms: '',
+    /**
+     * @param {istsos.UnitOfMeasure|Object} uom
+     */
+    addUom: function (uom) {
+        this.getUomsProperty().push(uom);
+    },
+    registerUom: function (uom) {
+        var url = this.server.getUrl() + 'wa/istsos/services/' + this.getServiceObject()['service'] + '/uoms';
+        this.executeRequest(url, istsos.events.EventType.NEW_UOM, 'POST', uom.getUomObject());
+    },
+    getUoms: function () {
+        var url = this.server.getUrl() + 'wa/istsos/services/' + this.getServiceObject()['service'] + '/uoms';
+        this.executeRequest(url, istsos.events.EventType.UOMS, 'GET');
+    },
+    getUom: function (uom) {
+        var url = this.server.getUrl() + 'wa/istsos/services/' + this.getServiceObject()['service'] + '/uoms/' +
+                uom.getUomObject()['code'];
+        this.executeRequest(url, istsos.events.EventType.UOM, 'GET');
+    },
     /**
      * @param {istsos.DataQuality|Object} dataQuality
      */
     addDataQuality: function (dataQuality) {
-        this.dataQualities.push(dataQuality);
+        this.getDataQualitiesProperty().push(dataQuality);
     },
     registerDataQuality: function (dataQuality) {
         var url = this.server.getUrl() + 'wa/istsos/services' + this.getServiceObject()['service'] +
@@ -642,7 +678,7 @@ istsos.Service.prototype = {
         this.executeRequest(url, istsos.events.EventType.DATAQUALITY, 'GET');
     },
     getSystemTypes: function () {
-        var url = this.server.getUrl() + 'wa/istsos/services/' + this.getServiceObject['service'] + '/systemtypes';
+        var url = this.server.getUrl() + 'wa/istsos/services/' + this.getServiceObject()['service'] + '/systemtypes';
         this.executeRequest(url, istsos.events.EventType.SYSTEM_TYPES, 'GET');
     },
     getDatabaseProperty: function() {
@@ -831,11 +867,11 @@ istsos.ObservedProperty.prototype = {
         }, method, opt_data);
     },
     updateProceduresIncluded: function () {
-        var procedures = service.getProceduresProperty();
-        var v_procedures = service.getVirtualProceduresProperty();
+        var procedures = this.service.getProceduresProperty();
+        var v_procedures = this.service.getVirtualProceduresProperty();
         var all = procedures.concat(v_procedures);
         all.forEach(function (procedure) {
-            procedure.getProperties().forEach(function (obsv_prop) {
+            procedure.getOutputs()['definition'].forEach(function (obsv_prop) {
                 if(this.getObservedPropertyObject()['definition'] === obsv_prop.getObservedPropertyObject()['definition']) {
                     this.getProceduresIncluded().push(procedure);
                 }
@@ -879,6 +915,23 @@ istsos.ObservedProperty.prototype = {
         this.executeRequest(url, istsos.events.EventType.UPDATE_OBSERVED_PROPERTY, 'PUT', this.getObservedPropertyObject());
     },
     deleteObservedProperty: function () {
+        var procedures = this.service.getProceduresProperty();
+        var v_procedures = this.service.getVirtualProceduresProperty();
+        var properties_service = this.service.getObservedPropertiesProperty();
+        var all = procedures.concat(v_procedures);
+        var properties_procedure = all.getOutputs();
+        for(var i = 0; i < properties_procedure.length; i++) {
+            if(this === properties_procedure[i]['definition']) {
+                alert('CONNECTED TO PROCEDURE');
+                break;
+            } else {
+                for(var i = 0; i < properties_service.length; i++) {
+                    if(this === properties_service[i]) {
+                        properties_service.splice(i, 1);
+                    }
+                }
+            }
+        }
         var url = this.server.getUrl() + 'wa/istsos/services/observedproperties/' +
             property.getObservedPropertyObject()['definition'];
         this.executeRequest(url, istsos.events.EventType.DELETE_OBSERVED_PROPERTY, 'DELETE');
@@ -972,6 +1025,12 @@ istsos.DataQuality.prototype = {
         this.executeRequest(url, istsos.events.EventType.UPDATE_DATAQUALITY, 'PUT', this.getDataQualityObject());
      },
     deleteDataQuality: function () {
+        var dataQualities = this.service.getDataQualitiesProperty();
+        for(var i = 0; i < dataQualities.length; i++) {
+            if(this === dataQualities[i]) {
+                dataQualities.splice(i,1);
+            }
+        }
         var url = this.service.server.getUrl() + 'wa/istsos/services' + this.service.getServiceObject()['service'] +
             '/dataqualities/' + this.getDataQualityObject()['code'];
         this.executeRequest(url, istsos.events.EventType.DELETE_DATAQUALITY, 'DELETE', this.getDataQualityObject());
@@ -980,14 +1039,81 @@ istsos.DataQuality.prototype = {
 
 
 /** istsos.UnitOfMeasure  class */
-
-istsos.UnitOfMeasure  = function () {
-
+/**
+ * @param service
+ * @param code
+ * @param description
+ * @constructor
+ */
+istsos.UnitOfMeasure  = function (service, code, description) {
+    this.uomObject = {
+        'code': code,
+        'description': description
+    };
+    this.proceduresIncluded = [];
+    this.service = service;
+    service.addUom(this);
+    this.updateProceduresIncluded();
 };
 
 istsos.UnitOfMeasure .prototype = {
-    updateUom: '',
-    deleteUom: ''
+    executeRequest: function (url, eventType, method, opt_data, opt_callback) {
+        goog.net.XhrIo.send(url, function (e) {
+            istsos.fire(eventType, e.target);
+        }, method, opt_data);
+    },
+    updateProceduresIncluded: function () {
+        var procedures = this.service.getProceduresProperty();
+        var v_procedures = this.service.getVirtualProceduresProperty();
+        var all = procedures.concat(v_procedures);
+        all.forEach(function (procedure) {
+            procedure.getOutputs().forEach(function (uom) {
+                if(this.getUomObject()['code'] === uom.getUomObject()['code']) {
+                    this.getProceduresIncluded().push(procedure);
+                }
+            })
+        });
+    },
+    /**
+     * @returns {JSON|Object}
+     */
+    getUomObject: function () {
+        return this.uomObject;
+    },
+    /**
+     * @param {string} newCode
+     * @param {string} newDescr
+     */
+    updateUom: function (newCode, newDescr) {
+        this.uomObject['code'] = newCode || this.uomObject['code'];
+        this.uomObject['description'] = newDescr || this.uomObject['description'];
+        var url = this.service.server.getUrl() + 'wa/istsos/services/' + this.service.getServiceObject()['service'] +
+                '/uoms/' + this.getUomObject()['code'];
+        this.executeRequest(url, istsos.events.EventType.UPDATE_UOM, 'PUT', this.getUomObject());
+    },
+    deleteUom: function () {
+        var uoms_service = this.service.getUomsProperty();
+        var procedures = this.service.getProceduresProperty();
+        var v_procedures = this.service.getVirtualProceduresProperty();
+        var all = procedures.concat(v_procedures);
+        var uoms_procedures = all.getOutputs();
+
+        for(var i = 0; i < uoms_procedures.length; i++) {
+            if(this === uoms_procedures[i]['uom']) {
+                alert('CONNECTED TO PROCEDURE');
+                break;
+            } else {
+                for(var i = 0; i < uoms_service.length; i++) {
+                    if(this === uoms_service[i]) {
+                        uoms_service.splice(i, 1);
+                    }
+                }
+            }
+        }
+        var url = this.service.server.getUrl() + 'wa/istsos/services/' + this.service.getServiceObject()['service'] +
+            '/uoms/' + this.getUomObject()['code'];
+        this.executeRequest(url, istsos.events.EventType.DELETE_UOM, 'DELETE', this.getUomObject());
+    }
 };
 
 
