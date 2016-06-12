@@ -42,7 +42,6 @@ istsos.on(istsos.events.EventType.MQTT, function (ev) {
 
 istsos.on(istsos.events.EventType.CRS, function (ev) {
     log(ev.getData(), 'COORDINATE SYSTEMS');
-    console.log(ev.getData());
 });
 
 istsos.on(istsos.events.EventType.DATABASE, function (ev) {
