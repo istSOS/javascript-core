@@ -66,17 +66,17 @@ new istsos.Server(
                                 requests required) */                            
 )
 * addService(service {istsos.Service|Object})
-* registerService(service {istsos.Service|Object})
-* deleteService(service {istsos.Service|Object})
-* getService(service {istsos.Service|Object})
-* getStatus()
-* getAboutInfo()
-* getConfig()
+* registerService(service {istsos.Service|Object}) //AJAX request|POST
+* deleteService(service {istsos.Service|Object}) //AJAX request|DELETE
+* getService(service {istsos.Service|Object}) //AJAX request|GET
+* getStatus() //AJAX request|GET
+* getAboutInfo() //AJAX request|GET
+* getConfig() //AJAX request|GET
 * getConfigProperty() // @returns {Array<istsos.Configuration|Object>}
 * getServicesProperty() // @returns {Array<istsos.Service|Object>}
-* getServices()
+* getServices() AJAX request|GET
 * getDefaultDbProperty()// @returns {Array<istsos.Database|Object>}
-* getDefaultDb()
+* getDefaultDb() AJAX request|GET
 * getUrl()// @returns {Array<istsos.Service|Object>}
 ```
 
@@ -107,11 +107,11 @@ dbConf {JSON|Object}
     opt_data {JSON|Object} /* optional (for POST/PUT/DELETE
                                 requests required) */                            
 )
-* getDb(
+* getDb( //AJAX request|GET
     serviceName {String}
     server {istsos.Server|Object}
 )
-* setDb(
+* setDb( //AJAX request|PUT
     dbname {String}
     host {String}
     user {String}
@@ -120,7 +120,7 @@ dbConf {JSON|Object}
     server {istsos.Server|Object}
     opt_service {istsos.Service|Object} /* optional (if not provided
                                            'default' value will be set */ 
-* validateDb({istsos.Server|Object})
+* validateDb({istsos.Server|Object}) //AJAX request|POST
 * getDbObject() // @returns {JSON|Object}
 ```
 
@@ -148,19 +148,62 @@ new istsos.Configuration(
     opt_data {JSON|Object} /* optional (for POST/PUT/DELETE
                                 requests required) */                            
 )
-* getConf()
-* getProvider()
-* updateProvider()
-* getIdentification()
-* updateIdentification()
-* getMqtt()
-* updateMqtt()
-* getCrs()
-* updateCrs()
-* getObservationConf()
-* updateObservationConf()
-* getProxy()
-* updateProxy()
+* getConf() //AJAX request|GET
+* getProvider() //AJAX request|GET
+* updateProvider( //AJAX request|PUT
+    providerName {String}
+    providerSite {String}
+    contactName {String}
+    contactPosition {String}
+    contactVoice {String}
+    contactFax {String}
+    contactEmail {String}
+    contactDeliveryPoint {String}
+    contactPostalCode {String}
+    contactCity {String}
+    contactAdminArea {String}
+    contactCountry {String}
+)
+* getIdentification() //AJAX request|GET
+* updateIdentification( //AJAX request|PUT
+    title {String}
+    abstract {String}
+    urnVersion {String}
+    authority {String}
+    fees {String}
+    keywords {String}
+    accessConstrains {String}   
+)
+* getMqtt() //AJAX request|GET
+* updateMqtt( //AJAX request|PUT
+    brokerPassword {String}
+    brokerUser {String}
+    brokerTopic {String}
+    brokerUrl {String}
+    brokerPort {String}
+)
+* getCrs() //AJAX request|GET
+* updateCrs( //AJAX request|PUT
+    z_axis_name {String}
+    x_axis_name {String}
+    y_axis_name {String}
+    allowedEpsg {String}
+    istsosEpsg {String}
+)
+* getObservationConf() //AJAX request|GET
+* updateObservationConf( //AJAX request|PUT
+    correctQi {String}
+    statQi {String}
+    defaultQi {String}
+    aggregateNoDataQi {String}
+    maxGoPeriod {String}
+    transactionalLog {String}
+    aggregateNoData {String}    
+)
+* getProxy() //AJAX request|GET
+* updateProxy( //AJAX request|PUT
+    newUrl {String}
+)
 * getEpsgCodes()
 ```
 
