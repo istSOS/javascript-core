@@ -157,6 +157,7 @@ istsos.IstSOS.prototype = {
     },
     /**
      * @param {string} name
+     * @returns {istsos.Server|Object}
      */
     getServer: function (name) {
         for (i = 0; i < this.servers.length; i++) {
@@ -165,6 +166,9 @@ istsos.IstSOS.prototype = {
             }
         }
     },
+    /**
+     * @returns {Array}
+     */
     getServerList: function () {
         return this.servers
     }
@@ -245,6 +249,9 @@ istsos.Server.prototype = {
     getConfig: function () {
         this.config.getConf();
     },
+    /**
+     * @returns {istsos.Configuration|Object}
+     */
     getConfigProperty: function () {
         return this.config;
     },
@@ -261,9 +268,15 @@ istsos.Server.prototype = {
     getDefaultDb: function () {
         this.defaultDb.getDb('default', this);
     },
+    /**
+     * @returns {istsos.Database|Object}
+     */
     getDefaultDbProperty: function () {
         return this.defaultDb;
     },
+    /**
+     * @returns {string}
+     */
     getUrl: function () {
         return this.url;
     }
@@ -334,10 +347,16 @@ istsos.Database.prototype = {
         this.executeRequest(url, 'PUT', newDbConf);
         this.dbConf = newDbConf;
     },
+    /**
+     * @param {istsos.Server|Object} server
+     */
     validateDb: function (server) {
         var url = server.getUrl() + 'wa/istsos/operations/validatedb';
         this.executeRequest(url, istsos.events.EventType.VALIDATE_DB, 'POST', this.dbConf);
     },
+    /**
+     * @returns {JSON|Object}
+     */
     getDbObject: function () {
         return this.dbConf;
     }
@@ -691,7 +710,7 @@ istsos.Service.prototype = {
 
 /** istsos.Date class */
 /**
- * @param {string} descr
+ * @param {string} opt_descr
  * @constructor
  */
 istsos.Date = function (opt_descr) {
