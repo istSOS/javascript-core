@@ -252,7 +252,39 @@ new istsos.Date(opt_descr {String})
 
 ---
 
+###istsos.BaseProcedure *class*
+
+#####*properties:*
+
+#####*methods:*
+
+---
+
 ###istsos.Procedure *class*
+
+#####*properties:*
+
+#####*methods:*
+
+---
+
+###istsos.VirtualProcedure *class*
+
+#####*properties:*
+
+#####*methods:*
+
+---
+
+###istsos.ObservedProperty *class*
+
+#####*properties:*
+
+#####*methods:*
+
+---
+
+###istsos.DataQuality *class*
 
 #####*properties:*
 
