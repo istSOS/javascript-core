@@ -40,8 +40,11 @@ istsos.events.EventType = {
     UPDATE_OFFERING: 'PUT offeringReceived',
     MEMBERLIST: 'memberlistReceived',
     NONMEMBERLIST: 'nonmemberlistReceived',
-    OBSERVED_PROPERTIES: 'observedPropertyReceived',
-    NEW_OBSERVED_PROPERTY: 'POST observedPropertyReceived'
+    OBSERVED_PROPERTIES: 'observedPropertiesReceived',
+    OBSERVED_PROPERTY: 'observedPropertyReceived',
+    NEW_OBSERVED_PROPERTY: 'POST observedPropertyReceived',
+    UPDATE_OBSERVED_PROPERTY: 'PUT observedPropertyReceived',
+    DELETE_OBSERVED_PROPERTY: 'DELETE observedPropertyReceived'
 };
 
 //EVENT RESPONSE
@@ -605,7 +608,7 @@ istsos.Service.prototype = {
     getObservedProperty: function () {
         var url = this.server.getUrl() + 'wa/istsos/services/observedproperties/' +
                                 property.getObservedPropertyObject()['definition'];
-        this.executeRequest(url, istsos.events.EventType.OBSERVED_PROPERTIES, 'GET');
+        this.executeRequest(url, istsos.events.EventType.OBSERVED_PROPERTY, 'GET');
     },
 
     addUom: '',
@@ -846,12 +849,12 @@ istsos.ObservedProperty.prototype = {
         }
         var url = this.server.getUrl() + 'wa/istsos/services/observedproperties/' +
             property.getObservedPropertyObject()['definition'];
-        this.executeRequest(url, istsos.events.EventType.OBSERVED_PROPERTIES, 'PUT', this.getObservedPropertyObject());
+        this.executeRequest(url, istsos.events.EventType.UPDATE_OBSERVED_PROPERTY, 'PUT', this.getObservedPropertyObject());
     },
     deleteObservedProperty: function () {
         var url = this.server.getUrl() + 'wa/istsos/services/observedproperties/' +
             property.getObservedPropertyObject()['definition'];
-        this.executeRequest(url, istsos.events.EventType.OBSERVED_PROPERTIES, 'DELETE');
+        this.executeRequest(url, istsos.events.EventType.DELETE_OBSERVED_PROPERTY, 'DELETE');
     },
     /**
      * @param {string} constraintType
