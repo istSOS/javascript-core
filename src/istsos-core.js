@@ -44,7 +44,12 @@ istsos.events.EventType = {
     OBSERVED_PROPERTY: 'observedPropertyReceived',
     NEW_OBSERVED_PROPERTY: 'POST observedPropertyReceived',
     UPDATE_OBSERVED_PROPERTY: 'PUT observedPropertyReceived',
-    DELETE_OBSERVED_PROPERTY: 'DELETE observedPropertyReceived'
+    DELETE_OBSERVED_PROPERTY: 'DELETE observedPropertyReceived',
+    DATAQUALITIES: 'dataQualitiesReceived',
+    DATAQUALITY: '=dataQualityReceived',
+    NEW_DATAQUALITY: 'POST dataQualityReceived',
+    UPDATE_DATAQUALITY: 'PUT dataQualityReceived',
+    DELETE_DATAQUALITY: 'DELETE dataQualityReceived'
 };
 
 //EVENT RESPONSE
@@ -614,13 +619,30 @@ istsos.Service.prototype = {
     addUom: '',
     registerUom: '',
     getUoms: '',
-
-    addDataQualityIndex: '',
-    registerDataQualityIndex: '',
-    getDataQualities: '',
-
+    /**
+     * @param {istsos.DataQuality|Object} dataQuality
+     */
+    addDataQuality: function (dataQuality) {
+        this.dataQualities.push(dataQuality);
+    },
+    registerDataQuality: function (dataQuality) {
+        var url = this.server.getUrl() + 'wa/istsos/services' + this.getServiceObject()['service'] +
+            '/dataqualities';
+        this.executeRequest(url, istsos.events.EventType.NEW_DATAQUALITY, 'POST', dataQuality.getDataQualityObject());
+    }
+    ,
+    getDataQualities: function () {
+        var url = this.server.getUrl() + 'wa/istsos/services' + this.getServiceObject()['service'] +
+            '/dataqualities';
+        this.executeRequest(url, istsos.events.EventType.DATAQUALITIES, 'GET');
+    },
+    getDataQuality: function (dataQuality) {
+        var url = this.server.getUrl() + 'wa/istsos/services' + this.getServiceObject()['service'] +
+            '/dataqualities' + dataQuality.getDataQualityObject()['code'];
+        this.executeRequest(url, istsos.events.EventType.DATAQUALITY, 'GET');
+    },
     getSystemTypes: function () {
-        var url = this.server.getUrl() + 'wa/istsos/services/' + this.serviceObject['service'] + '/systemtypes';
+        var url = this.server.getUrl() + 'wa/istsos/services/' + this.getServiceObject['service'] + '/systemtypes';
         this.executeRequest(url, istsos.events.EventType.SYSTEM_TYPES, 'GET');
     },
     getDatabaseProperty: function() {
@@ -803,6 +825,11 @@ istsos.ObservedProperty = function (service, propertyName, definitionUrn, proper
 };
 
 istsos.ObservedProperty.prototype = {
+    executeRequest: function (url, eventType, method, opt_data, opt_callback) {
+        goog.net.XhrIo.send(url, function (e) {
+            istsos.fire(eventType, e.target);
+        }, method, opt_data);
+    },
     updateProceduresIncluded: function () {
         var procedures = service.getProceduresProperty();
         var v_procedures = service.getVirtualProceduresProperty();
@@ -902,14 +929,53 @@ istsos.ObservedProperty.prototype = {
 };
 
 /** istsos.DataQuality class */
-
-istsos.DataQuality = function () {
-
+/**
+ * @param {istsos.Service|Object} service
+ * @param {int} codeDQ
+ * @param {string} nameDQ
+ * @param {string} descrDQ
+ * @constructor
+ */
+istsos.DataQuality = function (service, codeDQ, nameDQ, descrDQ) {
+    this.dataQualityObject = {
+        "code": codeDQ,
+        "name": nameDQ,
+        "description": descrDQ
+    };
+    this.service = service;
+    service.addDataQuality(this);
 };
 
 istsos.DataQuality.prototype = {
-    updateDataQualityIndex: '',
-    deleteDataQualityIndex: ''
+    executeRequest: function (url, eventType, method, opt_data, opt_callback) {
+        goog.net.XhrIo.send(url, function (e) {
+            istsos.fire(eventType, e.target);
+        }, method, opt_data);
+    },
+    /**
+     * @returns {JSON|Object}
+     */
+    getDataQualityObject: function () {
+        return this.dataQualityObject;
+    },
+    /**
+     * @param {int} newCodeDQ
+     * @param {string} newNameDQ
+     * @param {string} newDescrDQ
+     */
+    updateDataQuality: function (newCodeDQ, newNameDQ, newDescrDQ) {
+        this.dataQualityObject['code'] = newCodeDQ || this.dataQualityObject['code'];
+        this.dataQualityObject['name'] = newNameDQ || this.dataQualityObject['name'];
+        this.dataQualityObject['description'] = newDescrDQ || this.dataQualityObject['description'];
+        var url = this.service.server.getUrl() + 'wa/istsos/services' + this.service.getServiceObject()['service'] +
+                '/dataqualities/' + this.getDataQualityObject()['code'];
+        this.executeRequest(url, istsos.events.EventType.UPDATE_DATAQUALITY, 'PUT', this.getDataQualityObject());
+     },
+    deleteDataQuality: function () {
+        var url = this.service.server.getUrl() + 'wa/istsos/services' + this.service.getServiceObject()['service'] +
+            '/dataqualities/' + this.getDataQualityObject()['code'];
+        this.executeRequest(url, istsos.events.EventType.DELETE_DATAQUALITY, 'DELETE', this.getDataQualityObject());
+    }
 };
 
 
