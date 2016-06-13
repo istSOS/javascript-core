@@ -90,3 +90,10 @@ server.config.getEpsgCodes();
 service.getSystemTypes();
 service.getOfferingNames();
 service.getOfferings();
+
+var property = new istsos.ObservedProperty(service,'imeObserved', 'urn', 'opis', 'lessThan', 4);
+var uom = new istsos.UnitOfMeasure(service, 'C', 'opis uom');
+var output = new istsos.Output(property, uom, 'descr', 'lessThan', 4);
+
+var proc = new istsos.Procedure('ime','opis','kljucne,reci','ime feature', 4326, 11, 22, 33, [output], 'insitu-mobile-point','opis insitua');
+console.log(proc.getProcedureObject());
