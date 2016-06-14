@@ -54,7 +54,15 @@ istsos.events.EventType = {
     UOMS: 'unitsOfMeasureReceived',
     NEW_UOM: 'POST unitOfMeasureReceived',
     UPDATE_UOM: 'PUT unitOfMeasureReceived',
-    DELETE_UOM: 'DELETE unitOfMeasureReceived'
+    DELETE_UOM: 'DELETE unitOfMeasureReceived',
+    GET_CODE: 'codeReceived',
+    NEW_CODE: 'POST codeReceived',
+    UPDATE_CODE: 'PUT codeReceived',
+    DELETE_CODE: 'DELETE codeReceived',
+    RATING_CURVE: 'ratingCurveReceived',
+    NEW_RATING_CURVE: 'POST ratingCurveReceived',
+    DELETE_RATING_CURVE: 'DELETE ratingCurveReceived'
+
 };
 
 //EVENT RESPONSE
@@ -411,7 +419,7 @@ istsos.Configuration.prototype = {
      */
     updateProvider: function (providerName, providerSite, contactName, contactPosition, contactVoice, contactFax,
                               contactEmail, contactDeliveryPoint, contactPostalCode,
-                              contactCity, contactAdminArea, contactCountry ) {
+                              contactCity, contactAdminArea, contactCountry) {
         var data = {
             "providername": providerName,
             "providersite": providerSite,
@@ -558,9 +566,9 @@ istsos.Configuration.prototype = {
  */
 istsos.Service = function (serviceName, server, opt_db, opt_config, opt_epsg) {
     this.serviceObject = {
-        "service":serviceName
+        "service": serviceName
     };
-    if(opt_epsg || opt_db) {
+    if (opt_epsg || opt_db) {
         if (opt_epsg) {
             this.serviceObject["epsg"] = opt_epsg;
         }
@@ -612,7 +620,7 @@ istsos.Service.prototype = {
     getDataQualitiesProperty: function () {
         return this.dataQualities;
     },
-    addOffering: function(offering) {
+    addOffering: function (offering) {
         this.getOfferingsProperty().push(offering);
     },
     registerOffering: function (offering) {
@@ -660,7 +668,7 @@ istsos.Service.prototype = {
     },
     getObservedProperty: function () {
         var url = this.server.getUrl() + 'wa/istsos/services/observedproperties/' +
-                                property.getObservedPropertyObject()['definition'];
+            property.getObservedPropertyObject()['definition'];
         this.executeRequest(url, istsos.events.EventType.OBSERVED_PROPERTY, 'GET');
     },
     /**
@@ -679,7 +687,7 @@ istsos.Service.prototype = {
     },
     getUom: function (uom) {
         var url = this.server.getUrl() + 'wa/istsos/services/' + this.getServiceObject()['service'] + '/uoms/' +
-                uom.getUomObject()['code'];
+            uom.getUomObject()['code'];
         this.executeRequest(url, istsos.events.EventType.UOM, 'GET');
     },
     /**
@@ -708,7 +716,7 @@ istsos.Service.prototype = {
         var url = this.server.getUrl() + 'wa/istsos/services/' + this.getServiceObject()['service'] + '/systemtypes';
         this.executeRequest(url, istsos.events.EventType.SYSTEM_TYPES, 'GET');
     },
-    getDatabaseProperty: function() {
+    getDatabaseProperty: function () {
         return this.database;
     },
     getDatabase: function () {
@@ -737,10 +745,10 @@ istsos.Date.prototype = {
      * @returns {string}
      */
     getDateString: function (year, month, day, hours, minutes, seconds, gmt) {
-        var gmtFormat = (gmt > 9) ? gmt.toString() : '0' +gmt.toString();
+        var gmtFormat = (gmt > 9) ? gmt.toString() : '0' + gmt.toString();
         var date = year + '-' + month + '-' + day + 'T' +
-                    hours + ':' + minutes + ':' + seconds + '+' +
-                    gmtFormat + ':' + '00';
+            hours + ':' + minutes + ':' + seconds + '+' +
+            gmtFormat + ':' + '00';
         return date;
     },
     getDescription: function () {
@@ -762,7 +770,7 @@ istsos.Offering = function (offeringName, offeringDescription, active, expiratio
         "description": offeringDescription,
         "expiration": expirationDate.getDateString()
     };
-    if(active === true) {
+    if (active === true) {
         this.offeringObject['active'] = 'on';
     }
     this.service = service;
@@ -788,32 +796,32 @@ istsos.Offering.prototype = {
      * @param {boolean} newActive
      * @param {istsos.Date|Object} newExpirationDate
      */
-    updateOffering: function (newName, newDescription, newActive, newExpirationDate ) {
+    updateOffering: function (newName, newDescription, newActive, newExpirationDate) {
         this.offeringObject['name'] = newName || this.offeringObject['name'];
         this.offeringObject['description'] = newDescription || this.offeringObject['description'];
         this.offeringObject['active'] = newActive || this.offeringObject['active'];
         this.offeringObject['expiration'] = newExpirationDate.getDateString() || this.offeringObject['expiration'];
         var url = this.service.server.getUrl() + 'wa/istsos/services/' + this.service.getServiceObject()['service'] +
-                '/offerings/' + this.getOfferingObject()['name'];
+            '/offerings/' + this.getOfferingObject()['name'];
         this.executeRequest(url, istsos.events.EventType.UPDATE_OFFERING, 'PUT', this.getOfferingObject());
     },
-    deleteOffering: function() {
-        for(var i = 0; i < this.service.offerings.length; i++) {
-            if(this === this.service.offerings[i]) {
+    deleteOffering: function () {
+        for (var i = 0; i < this.service.offerings.length; i++) {
+            if (this === this.service.offerings[i]) {
                 this.service.offerings.splice(i, 1);
             }
         }
         var url = this.service.server.getUrl() + 'wa/istsos/services/' + this.service.getServiceObject()['service'] +
-                '/offerings/' + this.getOfferingObject()['name'];
+            '/offerings/' + this.getOfferingObject()['name'];
         var data = {
-            "name":this.getOfferingObject()['name'],
+            "name": this.getOfferingObject()['name'],
             "description": this.getOfferingObject()['description']
         };
         this.executeRequest(url, istsos.events.EventType.DELETE_OFFERING, 'DELETE', data);
     },
     getMemberProcedures: function () {
         var url = this.service.server.getUrl() + 'wa/istsos/services/' + this.service.getServiceObject()['service'] +
-                 '/offerings/' + this.getOfferingObject()['name'] + '/procedures/operations/memberlist';
+            '/offerings/' + this.getOfferingObject()['name'] + '/procedures/operations/memberlist';
         this.executeRequest(url, istsos.events.EventType.MEMBERLIST, 'GET');
     },
     getNonMemberProcedures: function () {
@@ -832,7 +840,7 @@ istsos.Offering.prototype = {
 /** istsos.Procedure class */
 
 istsos.Procedure = function () {
-    
+
 };
 
 istsos.Procedure.prototype = {
@@ -846,10 +854,7 @@ istsos.VirtualProcedure = function () {
 
 };
 
-istsos.VirtualProcedure.prototype = {
-
-};
-
+istsos.VirtualProcedure.prototype = {};
 
 
 /** istsos.ObservedProperty class */
@@ -871,7 +876,7 @@ istsos.ObservedProperty = function (service, propertyName, definitionUrn, proper
         'constraint': {}
     };
     var check = this.validateConstraintInput(opt_constraintType, opt_value);
-    if(check === true) {
+    if (check === true) {
         this.observedPropertyObject['constraint']['role'] = 'urn:x-ogc:def:classifiers:x-istsos:1.0:qualityIndexCheck:level0';
         this.observedPropertyObject['constraint'][opt_constraintType] = opt_value;
     } else {
@@ -898,7 +903,7 @@ istsos.ObservedProperty.prototype = {
         var all = procedures.concat(v_procedures);
         all.forEach(function (procedure) {
             procedure.getOutputs()['definition'].forEach(function (obsv_prop) {
-                if(this.getObservedPropertyObject()['definition'] === obsv_prop.getObservedPropertyObject()['definition']) {
+                if (this.getObservedPropertyObject()['definition'] === obsv_prop.getObservedPropertyObject()['definition']) {
                     this.getProceduresIncluded().push(procedure);
                 }
             })
@@ -927,7 +932,7 @@ istsos.ObservedProperty.prototype = {
         this.observedPropertyObject['name'] = newPropertyName || this.observedPropertyObject['name'];
         this.observedPropertyObject['definition'] = newDefinitionUrn || this.observedPropertyObject['definition'];
         this.observedPropertyObject['description'] = newPropertyName || this.observedPropertyObject['description'];
-        if(this.validateConstraintInput(opt_constraintType, opt_value) === true) {
+        if (this.validateConstraintInput(opt_constraintType, opt_value) === true) {
             this.observedPropertyObject['constraint'][opt_constraintType] = opt_value;
         } else {
             this.observedPropertyObject['constraint'] = null;
@@ -946,13 +951,13 @@ istsos.ObservedProperty.prototype = {
         var properties_service = this.service.getObservedPropertiesProperty();
         var all = procedures.concat(v_procedures);
         var properties_procedure = all.getOutputs();
-        for(var i = 0; i < properties_procedure.length; i++) {
-            if(this === properties_procedure[i]['definition']) {
+        for (var i = 0; i < properties_procedure.length; i++) {
+            if (this === properties_procedure[i]['definition']) {
                 alert('CONNECTED TO PROCEDURE');
                 break;
             } else {
-                for(var i = 0; i < properties_service.length; i++) {
-                    if(this === properties_service[i]) {
+                for (var i = 0; i < properties_service.length; i++) {
+                    if (this === properties_service[i]) {
                         properties_service.splice(i, 1);
                     }
                 }
@@ -971,7 +976,7 @@ istsos.ObservedProperty.prototype = {
         switch (constraintType) {
             case 'between':
                 constraintType = 'interval';
-                if(constraintValue.constructor !== Array) {
+                if (constraintValue.constructor !== Array) {
                     alert('Type of "between" constraint must be Array');
                     return false;
                 } else {
@@ -979,7 +984,7 @@ istsos.ObservedProperty.prototype = {
                 }
             case 'lessThan':
                 constraintType = 'max';
-                if(constraintValue !== parseInt(constraintValue, 10)) {
+                if (constraintValue !== parseInt(constraintValue, 10)) {
                     alert('Type of "lessThan" constraint must be Integer');
                     return false;
                 } else {
@@ -987,14 +992,14 @@ istsos.ObservedProperty.prototype = {
                 }
             case 'greaterThan':
                 constraintType = 'min';
-                if(constraintValue !== parseInt(constraintValue, 10)) {
+                if (constraintValue !== parseInt(constraintValue, 10)) {
                     alert('Type of "greaterThan" constraint must be Integer');
                     return false;
                 } else {
                     return true;
                 }
             case 'valueList':
-                if(constraintValue.constructor !== Array) {
+                if (constraintValue.constructor !== Array) {
                     alert('Type of "between" constraint must be Array');
                     return false;
                 } else {
@@ -1047,14 +1052,14 @@ istsos.DataQuality.prototype = {
         this.dataQualityObject['name'] = newNameDQ || this.dataQualityObject['name'];
         this.dataQualityObject['description'] = newDescrDQ || this.dataQualityObject['description'];
         var url = this.service.server.getUrl() + 'wa/istsos/services' + this.service.getServiceObject()['service'] +
-                '/dataqualities/' + this.getDataQualityObject()['code'];
+            '/dataqualities/' + this.getDataQualityObject()['code'];
         this.executeRequest(url, istsos.events.EventType.UPDATE_DATAQUALITY, 'PUT', this.getDataQualityObject());
-     },
+    },
     deleteDataQuality: function () {
         var dataQualities = this.service.getDataQualitiesProperty();
-        for(var i = 0; i < dataQualities.length; i++) {
-            if(this === dataQualities[i]) {
-                dataQualities.splice(i,1);
+        for (var i = 0; i < dataQualities.length; i++) {
+            if (this === dataQualities[i]) {
+                dataQualities.splice(i, 1);
             }
         }
         var url = this.service.server.getUrl() + 'wa/istsos/services' + this.service.getServiceObject()['service'] +
@@ -1071,7 +1076,7 @@ istsos.DataQuality.prototype = {
  * @param description
  * @constructor
  */
-istsos.UnitOfMeasure  = function (service, code, description) {
+istsos.UnitOfMeasure = function (service, code, description) {
     this.uomObject = {
         'code': code,
         'description': description
@@ -1082,7 +1087,7 @@ istsos.UnitOfMeasure  = function (service, code, description) {
     this.updateProceduresIncluded();
 };
 
-istsos.UnitOfMeasure .prototype = {
+istsos.UnitOfMeasure.prototype = {
     executeRequest: function (url, eventType, method, opt_data, opt_callback) {
         goog.net.XhrIo.send(url, function (e) {
             istsos.fire(eventType, e.target);
@@ -1094,7 +1099,7 @@ istsos.UnitOfMeasure .prototype = {
         var all = procedures.concat(v_procedures);
         all.forEach(function (procedure) {
             procedure.getOutputs().forEach(function (uom) {
-                if(this.getUomObject()['code'] === uom.getUomObject()['code']) {
+                if (this.getUomObject()['code'] === uom.getUomObject()['code']) {
                     this.getProceduresIncluded().push(procedure);
                 }
             })
@@ -1114,7 +1119,7 @@ istsos.UnitOfMeasure .prototype = {
         this.uomObject['code'] = newCode || this.uomObject['code'];
         this.uomObject['description'] = newDescr || this.uomObject['description'];
         var url = this.service.server.getUrl() + 'wa/istsos/services/' + this.service.getServiceObject()['service'] +
-                '/uoms/' + this.getUomObject()['code'];
+            '/uoms/' + this.getUomObject()['code'];
         this.executeRequest(url, istsos.events.EventType.UPDATE_UOM, 'PUT', this.getUomObject());
     },
     deleteUom: function () {
@@ -1122,17 +1127,24 @@ istsos.UnitOfMeasure .prototype = {
         var procedures = this.service.getProceduresProperty();
         var v_procedures = this.service.getVirtualProceduresProperty();
         var all = procedures.concat(v_procedures);
-        var uoms_procedures = all.getOutputs();
-
-        for(var i = 0; i < uoms_procedures.length; i++) {
-            if(this === uoms_procedures[i]['uom']) {
+        var outputs = [];
+        all.forEach(function (p) {
+            p.getOutputs().forEach(function (out) {
+                outputs.push(out);
+            })
+        });
+        var connected = false;
+        for (var i = 0; i < outputs.length; i++) {
+            if (this.getUomObject()['code'] === outputs[i].getOutputObject()['uom']) {
                 alert('CONNECTED TO PROCEDURE');
+                connected = true;
                 break;
-            } else {
-                for(var i = 0; i < uoms_service.length; i++) {
-                    if(this === uoms_service[i]) {
-                        uoms_service.splice(i, 1);
-                    }
+            }
+        }
+        if (connected === false) {
+            for (var j = 0; j < uoms_service.length; j++) {
+                if (this === uoms_service[j]) {
+                    uoms_service.splice(i, 1);
                 }
             }
         }
@@ -1151,7 +1163,7 @@ istsos.Output = function (property, uom, description, opt_constraintType, opt_co
         "constraint": {}
     };
     var check = this.validateConstraintInput(opt_constraintType, opt_constraintValue);
-    if(check === true) {
+    if (check === true) {
         this.outputObject['constraint']['role'] = 'urn:ogc:def:classifiers:x-istsos:1.0:qualityIndex:check:reasonable';
         this.outputObject['constraint'][opt_constraintType] = [opt_constraintValue];
     } else {
@@ -1167,7 +1179,7 @@ istsos.Output.prototype = {
         switch (constraintType) {
             case 'between':
                 constraintType = 'interval';
-                if(constraintValue.constructor !== Array) {
+                if (constraintValue.constructor !== Array) {
                     alert('Type of "between" constraint must be Array');
                     return false;
                 } else {
@@ -1175,7 +1187,7 @@ istsos.Output.prototype = {
                 }
             case 'lessThan':
                 constraintType = 'max';
-                if(constraintValue !== parseInt(constraintValue, 10)) {
+                if (constraintValue !== parseInt(constraintValue, 10)) {
                     alert('Type of "lessThan" constraint must be Integer');
                     return false;
                 } else {
@@ -1183,14 +1195,14 @@ istsos.Output.prototype = {
                 }
             case 'greaterThan':
                 constraintType = 'min';
-                if(constraintValue !== parseInt(constraintValue, 10)) {
+                if (constraintValue !== parseInt(constraintValue, 10)) {
                     alert('Type of "greaterThan" constraint must be Integer');
                     return false;
                 } else {
                     return true;
                 }
             case 'valueList':
-                if(constraintValue.constructor !== Array) {
+                if (constraintValue.constructor !== Array) {
                     alert('Type of "between" constraint must be Array');
                     return false;
                 } else {
@@ -1259,11 +1271,16 @@ istsos.ProcedureBase = function (name, description, keywords, foi_name, epsg, x,
 };
 
 istsos.ProcedureBase.prototype = {
+    executeRequest: function (url, eventType, method, opt_data, opt_callback) {
+        goog.net.XhrIo.send(url, function (e) {
+            istsos.fire(eventType, e.target);
+        }, method, opt_data);
+    },
     getProcedureBaseObject: function () {
         return this.procedureBaseObject;
     },
     createContactForm: function (individualName, voice, fax, email, web, deliveryPoint, city, administrativeArea, postalCode, country) {
-        return  {
+        return {
             'individualName': individualName || '',
             'voice': voice || '',
             'fax': fax || '',
@@ -1273,27 +1290,27 @@ istsos.ProcedureBase.prototype = {
             'city': city || '',
             'administrativeArea': administrativeArea || '',
             'postalCode': postalCode || '',
-            'country':country  || ''
+            'country': country || ''
         };
     },
     getCapabilitiesUom: function () {
         return ['µs', 'ms', 's', 'min', 'h', 'd'];
     },
     getCapabilitiesJson: function () {
-    return [
-        {
-            "name": "Memory Capacity",
-            "definition": "urn:x-ogc:def:classifier:x-istsos:1.0:memoryCapacity",
-            "uom": "Byte",
-            "combo": "Memory Capacity (Byte)"
-        }, {
-            "name": "Battery Current",
-            "definition": "urn:x-ogc:def:phenomenon:x-istsos:1.0:batteryCurrent",
-            "uom": "A.h",
-            "combo": "Battery Current (A.h)"
-        }
-    ];
-},
+        return [
+            {
+                "name": "Memory Capacity",
+                "definition": "urn:x-ogc:def:classifier:x-istsos:1.0:memoryCapacity",
+                "uom": "Byte",
+                "combo": "Memory Capacity (Byte)"
+            }, {
+                "name": "Battery Current",
+                "definition": "urn:x-ogc:def:phenomenon:x-istsos:1.0:batteryCurrent",
+                "uom": "A.h",
+                "combo": "Battery Current (A.h)"
+            }
+        ];
+    },
     getIdentificationNames: function () {
         return [
             {
@@ -1335,6 +1352,8 @@ istsos.Procedure = function (service, name, description, keywords, foi_name, eps
         "definition": "urn:ogc:def:classifier:x-istsos:1.0:sensorType",
         "value": sensorType
     }];
+    this.service = service;
+    this.outputs = outputs;
     service.addProcedure(this);
 };
 goog.inherits(istsos.Procedure, istsos.ProcedureBase);
@@ -1343,18 +1362,33 @@ istsos.Procedure.prototype = {
     getProcedureObject: function () {
         return this.procedureBaseObject;
     },
-    updateProcedure: function () {
-
+    updateProcedure: function (name, description, keywords, foi_name, epsg, x, y, z, outputs, systemType, sensorType) {
+        this.procedureBaseObject['system'] = name || this.procedureBaseObject['system'];
+        this.procedureBaseObject['description'] = description || this.procedureBaseObject['description'];
+        this.procedureBaseObject['keywords'] = keywords || this.procedureBaseObject['keywords'];
+        this.procedureBaseObject['location']['properties']['name'] = foi_name || this.procedureBaseObject['location']['properties']['name'];
+        this.procedureBaseObject['location']['crs']['name'] = epsg || this.procedureBaseObject['location']['crs']['name'];
+        this.procedureBaseObject['location']['geometry']['coordinates'][0] = x || this.procedureBaseObject['location']['geometry']['coordinates'][0];
+        this.procedureBaseObject['location']['geometry']['coordinates'][1] = y || this.procedureBaseObject['location']['geometry']['coordinates'][1];
+        this.procedureBaseObject['location']['geometry']['coordinates'][2] = z || this.procedureBaseObject['location']['geometry']['coordinates'][2];
+        if (outputs || outputs.length !== 0) {
+            this.procedureBaseObject['outputs'].splice(1, this.procedureBaseObject['outputs'].length - 1);
+            var obj = this.procedureBaseObject;
+            outputs.forEach(function (out) {
+                obj['outputs'].push(out.getOutputObject());
+            });
+        }
+        this.procedureBaseObject['classification'][1]['value'] = sensorType;
+        var url = this.service.server.getUrl() + 'wa/istsos/services/' + this.service.getServiceObject()['service'] + '/procedures/' + this.procedureBaseObject['system'];
+        this.executeRequest(url, istsos.events.EventType.UPDATE_PROCEDURE, 'PUT', this.getProcedureObject());
     },
     deleteProcedure: function () {
-
-    },
-    copyProcedure: function () {
-
+        var url = this.service.server.getUrl() + 'wa/istsos/services/' + this.service.getServiceObject()['service'] + '/procedures/' + this.procedureBaseObject['system'];
+        this.executeRequest(url, istsos.events.EventType.DELETE_PROCEDURE, 'DELETE', this.getProcedureObject());
     }
 };
 
-istsos.VirtualProcedure = function (service, name, description, keywords, foi_name, epsg, x, y, z, outputs, systemType, sensorType, code, ratingCurve ) {
+istsos.VirtualProcedure = function (service, name, description, keywords, foi_name, epsg, x, y, z, outputs, systemType, sensorType, code, ratingCurve) {
     istsos.ProcedureBase.call(this, name, description, keywords, foi_name, epsg, x, y, z, outputs);
     this.procedureBaseObject['classification'] = [{
         "name": "System Type",
@@ -1365,8 +1399,10 @@ istsos.VirtualProcedure = function (service, name, description, keywords, foi_na
         "definition": "urn:ogc:def:classifier:x-istsos:1.0:sensorType",
         "value": sensorType
     }];
-    this.code = code || '';
+    this.code = {'code': code} || {};
     this.ratingCurve = ratingCurve || {};
+    this.service = service;
+    this.outputs = outputs;
     service.addVirtualProcedure(this);
 };
 goog.inherits(istsos.VirtualProcedure, istsos.ProcedureBase);
@@ -1376,18 +1412,73 @@ istsos.VirtualProcedure.prototype = {
         return this.procedureBaseObject;
     },
     getCode: function () {
-
+        var url = this.service.server.getUrl() + 'wa/istsos/services/' + this.service.getServiceObject()['service'] +
+            '/virtualprocedures/' + this.getVirtualProcedureObject()['system'] + '/code';
+        this.executeRequest(url, istsos.events.EventType.GET_CODE, 'GET');
+    },
+    registerCode: function () {
+        var url = this.service.server.getUrl() + 'wa/istsos/services/' + this.service.getServiceObject()['service'] +
+            '/virtualprocedures/' + this.getVirtualProcedureObject()['system'] + '/code';
+        this.executeRequest(url, istsos.events.EventType.NEW_CODE, 'POST', this.getCodeProperty());
+    },
+    updateCode: function (newCode) {
+        this.code = newCode || this.code;
+        var url = this.service.server.getUrl() + 'wa/istsos/services/' + this.service.getServiceObject()['service'] +
+            '/virtualprocedures/' + this.getVirtualProcedureObject()['system'] + '/code';
+        this.executeRequest(url, istsos.events.EventType.UPDATE_CODE, 'PUT', this.getCodeProperty());
+    },
+    deleteCode: function () {
+        this.code = '';
+        var url = this.service.server.getUrl() + 'wa/istsos/services/' + this.service.getServiceObject()['service'] +
+            '/virtualprocedures/' + this.getVirtualProcedureObject()['system'] + '/code';
+        this.executeRequest(url, istsos.events.EventType.DELETE_CODE, 'DELETE');
     },
     getCodeProperty: function () {
         return this.code;
     },
     getRatingCurve: function () {
-
+        var url = this.service.server.getUrl() + 'wa/istsos/services/' + this.service.getServiceObject()['service'] +
+            '/virtualprocedures/' + this.getVirtualProcedureObject()['system'] + '/ratingcurve';
+        this.executeRequest(url, istsos.events.EventType.RATING_CURVE, 'GET');
+    },
+    registerRatingCurve: function () {
+        var url = this.service.server.getUrl() + 'wa/istsos/services/' + this.service.getServiceObject()['service'] +
+            '/virtualprocedures/' + this.getVirtualProcedureObject()['system'] + '/ratingcurve';
+        this.executeRequest(url, istsos.events.EventType.NEW_RATING_CURVE, 'POST', this.getRatingCurveProperty());
+    },
+    deleteRatingCurve: function () {
+        this.ratingCurve = {};
+        var url = this.service.server.getUrl() + 'wa/istsos/services/' + this.service.getServiceObject()['service'] +
+            '/virtualprocedures/' + this.getVirtualProcedureObject()['system'] + '/ratingcurve';
+        this.executeRequest(url, istsos.events.EventType.DELETE_RATING_CURVE, 'DELETE');
     },
     getRatingCurveProperty: function () {
         return this.ratingCurve;
+    },
+    updateVirtualProcedure: function (name, description, keywords, foi_name, epsg, x, y, z, outputs, systemType, sensorType) {
+        this.procedureBaseObject['system'] = name || this.procedureBaseObject['system'];
+        this.procedureBaseObject['description'] = description || this.procedureBaseObject['description'];
+        this.procedureBaseObject['keywords'] = keywords || this.procedureBaseObject['keywords'];
+        this.procedureBaseObject['location']['properties']['name'] = foi_name || this.procedureBaseObject['location']['properties']['name'];
+        this.procedureBaseObject['location']['crs']['name'] = epsg || this.procedureBaseObject['location']['crs']['name'];
+        this.procedureBaseObject['location']['geometry']['coordinates'][0] = x || this.procedureBaseObject['location']['geometry']['coordinates'][0];
+        this.procedureBaseObject['location']['geometry']['coordinates'][1] = y || this.procedureBaseObject['location']['geometry']['coordinates'][1];
+        this.procedureBaseObject['location']['geometry']['coordinates'][2] = z || this.procedureBaseObject['location']['geometry']['coordinates'][2];
+        if (outputs || outputs.length !== 0) {
+            this.procedureBaseObject['outputs'].splice(1, this.procedureBaseObject['outputs'].length - 1);
+            var obj = this.procedureBaseObject;
+            outputs.forEach(function (out) {
+                obj['outputs'].push(out.getOutputObject());
+            });
+        }
+        this.procedureBaseObject['classification'][1]['value'] = sensorType;
+        var url = this.service.server.getUrl() + 'wa/istsos/services/' + this.service.getServiceObject()['service'] + '/virtualprocedures/' + this.procedureBaseObject['system'];
+        this.executeRequest(url, istsos.events.EventType.UPDATE_V_PROCEDURE, 'PUT', this.getVirtualProcedureObject());
+    },
+    deleteVirtualProcedure: function () {
+        var url = this.service.server.getUrl() + 'wa/istsos/services/' + this.service.getServiceObject()['service'] + '/virtualprocedures/' + this.procedureBaseObject['system'];
+        this.executeRequest(url, istsos.events.EventType.DELETE_V_PROCEDURE, 'PUT', this.getVirtualProcedureObject());
     }
-
 };
 
 
