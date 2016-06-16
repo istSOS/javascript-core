@@ -46,7 +46,7 @@ istsos.events.EventType = {
     UPDATE_OBSERVED_PROPERTY: 'PUT observedPropertyReceived',
     DELETE_OBSERVED_PROPERTY: 'DELETE observedPropertyReceived',
     DATAQUALITIES: 'dataQualitiesReceived',
-    DATAQUALITY: '=dataQualityReceived',
+    DATAQUALITY: 'dataQualityReceived',
     NEW_DATAQUALITY: 'POST dataQualityReceived',
     UPDATE_DATAQUALITY: 'PUT dataQualityReceived',
     DELETE_DATAQUALITY: 'DELETE dataQualityReceived',
@@ -61,8 +61,14 @@ istsos.events.EventType = {
     DELETE_CODE: 'DELETE codeReceived',
     RATING_CURVE: 'ratingCurveReceived',
     NEW_RATING_CURVE: 'POST ratingCurveReceived',
-    DELETE_RATING_CURVE: 'DELETE ratingCurveReceived'
-
+    DELETE_RATING_CURVE: 'DELETE ratingCurveReceived',
+    NEW_PROCEDURE: 'POST procedureReceived',
+    UPDATE_PROCEDURE: 'PUT procedureReceived',
+    DELETE_PROCEDURE: 'DELETE procedureReceived',
+    ADD_TO_OFFERING: 'POST addToOfferingReceived',
+    REMOVE_FROM_OFFERING: 'DELETE removeFromOfferingReceived',
+    UPDATE_V_PROCEDURE: 'PUT virtualProcedureReceived',
+    DELETE_V_PROCEDURE: 'DELETE virtualProcedureReceived'
 };
 
 //EVENT RESPONSE
@@ -133,7 +139,7 @@ istsos.IstSOS = function () {
 // methods
 istsos.IstSOS.prototype = {
     /**
-     * @param {istsos.Server|Object} server
+     * @param {istsos.Server} server
      */
     addServer: function (server) {
         this.servers.push(server);
@@ -142,8 +148,8 @@ istsos.IstSOS.prototype = {
      * @param {string} old_name
      * @param {string} new_name
      * @param {string} new_url
-     * @param {istsos.Configuration|Object} new_config
-     * @param {istsos.Database|Object} new_defaultDb
+     * @param {istsos.Configuration} new_config
+     * @param {istsos.Database} new_defaultDb
      */
     updateServer: function (old_name, new_name, new_url, new_config, new_defaultDb) {
         var oldServer = this.getServer(old_name);
@@ -165,7 +171,7 @@ istsos.IstSOS.prototype = {
     },
     /**
      * @param {string} name
-     * @returns {istsos.Server|Object}
+     * @returns {istsos.Server}
      */
     getServer: function (name) {
         for (i = 0; i < this.servers.length; i++) {
@@ -187,9 +193,9 @@ istsos.IstSOS.prototype = {
 /**
  * @param {string} serverName
  * @param {string} url
- * @param {istsos.Database|Object} defaultDb
- * @param {istsos.Configuration|Object} opt_config
- * @param {JSON|Object} opt_loginConfig
+ * @param {istsos.Database} defaultDb
+ * @param {istsos.Configuration} opt_config
+ * @param {JSON} opt_loginConfig
  * @constructor
  */
 istsos.Server = function (serverName, url, defaultDb, opt_config, opt_loginConfig) {
@@ -207,7 +213,7 @@ istsos.Server.prototype = {
      * @param {string} url
      * @param {istsos.events.EventType} eventType
      * @param {string} method
-     * @param {JSON|Object} opt_data
+     * @param {JSON} opt_data
      * @param {function} opt_callback
      */
     executeRequest: function (url, eventType, method, opt_data, opt_callback) {
@@ -216,30 +222,30 @@ istsos.Server.prototype = {
         }, method, opt_data);
     },
     /**
-     * @param {istsos.Service|Object} service */
+     * @param {istsos.Service} service */
     getService: function (service) {
-        var url = this.url + 'wa/istsos/services/' + service.getServiceObject()['service'];
+        var url = this.url + 'wa/istsos/services/' + service.getServiceJSON()['service'];
         this.executeRequest(url, istsos.events.EventType.SERVICE, 'GET');
     },
     /**
-     * @param {istsos.Service|Object} service */
+     * @param {istsos.Service} service */
     addService: function (service) {
         this.services.push(service);
     },
     /**
-     * @param {istsos.Service|Object} service
+     * @param {istsos.Service} service
      */
     registerService: function (service) {
         var url = this.getUrl() + 'wa/istsos/services';
-        this.executeRequest(url, istsos.events.EventType.NEW_SERVICE, 'POST', service.getServiceObject());
+        this.executeRequest(url, istsos.events.EventType.NEW_SERVICE, 'POST', service.getServiceJSON());
     },
     /**
-     * @param {istsos.Service|Object} service
+     * @param {istsos.Service} service
      */
     deleteService: function (service) {
         var i;
         for (i = 0; i < this.services.length; i++) {
-            if (this.services[i].getServiceObject()['service'] === service.getServiceObject()['service']) {
+            if (this.services[i].getServiceJSON()['service'] === service.getServiceJSON()['service']) {
                 this.services.splice(i, 1);
             }
         }
@@ -258,7 +264,7 @@ istsos.Server.prototype = {
         this.config.getConf();
     },
     /**
-     * @returns {istsos.Configuration|Object}
+     * @returns {istsos.Configuration}
      */
     getConfigProperty: function () {
         return this.config;
@@ -277,7 +283,7 @@ istsos.Server.prototype = {
         this.defaultDb.getDb('default', this);
     },
     /**
-     * @returns {istsos.Database|Object}
+     * @returns {istsos.Database}
      */
     getDefaultDbProperty: function () {
         return this.defaultDb;
@@ -301,13 +307,11 @@ istsos.Server.prototype = {
  * @constructor
  */
 istsos.Database = function (dbname, host, user, password, port) {
-    this.dbConf = {
-        "user": user,
-        "password": password,
-        "host": host,
-        "port": port,
-        "dbname": dbname
-    };
+    this.dbname = dbname;
+    this.host = host;
+    this.user = user;
+    this.password = password;
+    this.port = port;
 };
 
 // methods
@@ -316,7 +320,7 @@ istsos.Database.prototype = {
      * @param {string} url
      * @param {istsos.events.EventType} eventType
      * @param {string} method
-     * @param {JSON|Object} opt_data
+     * @param {JSON} opt_data
      * @param {function} opt_callback
      */
     executeRequest: function (url, eventType, method, opt_data, opt_callback) {
@@ -326,12 +330,12 @@ istsos.Database.prototype = {
     },
     /**
      * @param {string} serviceName
-     * @param {istsos.Server|Object} server
+     * @param {istsos.Server} server
      */
     getDb: function (serviceName, server) {
-        var sname = 'default' || serviceName;
-        var url = server.getUrl() + 'wa/istsos/services/' + sname + '/configsections/connection';
-        this.executeRequest(url, istsos.events.EventType.DATABASE, 'GET');
+        var sname = "default" || serviceName;
+        var url = server.getUrl() + "wa/istsos/services/" + sname + "/configsections/connection";
+        this.executeRequest(url, istsos.events.EventType.DATABASE, "GET");
     },
     /**
      * @param {string} dbname
@@ -339,34 +343,36 @@ istsos.Database.prototype = {
      * @param {string} user
      * @param {string} password
      * @param {int} port
-     * @param {istsos.Server|Object} server
-     * @param {istsos.Service|Object} opt_service
+     * @param {istsos.Server} server
+     * @param {istsos.Service} opt_service
      */
     setDb: function (dbname, host, user, password, port, server, opt_service) {
-        var newDbConf = {
-            "user": user,
-            "password": password,
-            "host": host,
-            "port": port,
-            "dbname": dbname
-        };
-        var sname = 'default' || service.getServiceObject()['service'];
-        var url = server.getUrl() + 'wa/istsos/services/' + sname + '/connection';
-        this.executeRequest(url, 'PUT', newDbConf);
-        this.dbConf = newDbConf;
+        this.dbname = dbname || this.dbname;
+        this.host = host || this.host;
+        this.password = password || this.password;
+        this.port = port || this.port;
+        var sname = "default" || opt_service.getServiceJSON()["service"];
+        var url = server.getUrl() + "wa/istsos/services/" + sname + "/connection";
+        this.executeRequest(url, "PUT", this.getDbJSON());
     },
     /**
-     * @param {istsos.Server|Object} server
+     * @param {istsos.Server} server
      */
     validateDb: function (server) {
-        var url = server.getUrl() + 'wa/istsos/operations/validatedb';
-        this.executeRequest(url, istsos.events.EventType.VALIDATE_DB, 'POST', this.dbConf);
+        var url = server.getUrl() + "wa/istsos/operations/validatedb";
+        this.executeRequest(url, istsos.events.EventType.VALIDATE_DB, "POST", this.getDbJSON());
     },
     /**
-     * @returns {JSON|Object}
+     * @returns {JSON}
      */
-    getDbObject: function () {
-        return this.dbConf;
+    getDbJSON: function () {
+        return {
+            "user": this.user,
+            "password": this.password,
+            "host": this.host,
+            "port": this.port.toString(),
+            "dbname": this.dbname
+        };
     }
 };
 
@@ -374,11 +380,11 @@ istsos.Database.prototype = {
 
 /**
  * @param {string} serviceName
- * @param {istsos.Server|Object} server
+ * @param {istsos.Server} server
  * @constructor
  */
 istsos.Configuration = function (serviceName, server) {
-    this.sname = serviceName || 'default';
+    this.sname = serviceName || "default";
     this.serverUrl = server.getUrl();
 };
 //methods
@@ -387,7 +393,7 @@ istsos.Configuration.prototype = {
      * @param {string} url
      * @param {istsos.events.EventType} eventType
      * @param {string} method
-     * @param {JSON|Object} opt_data
+     * @param {JSON} opt_data
      * @param {function} opt_callback
      */
     executeRequest: function (url, eventType, method, opt_data, opt_callback) {
@@ -396,12 +402,12 @@ istsos.Configuration.prototype = {
         }, method, opt_data);
     },
     getConf: function () {
-        var url = this.serverUrl + 'wa/istsos/services/' + this.sname + '/configsections';
-        this.executeRequest(url, istsos.events.EventType.CONFIGSECTIONS, 'GET');
+        var url = this.serverUrl + "wa/istsos/services/" + this.sname + "/configsections";
+        this.executeRequest(url, istsos.events.EventType.CONFIGSECTIONS, "GET");
     },
     getProvider: function () {
-        var url = this.serverUrl + 'wa/istsos/services/' + this.sname + '/configsections/provider';
-        this.executeRequest(url, istsos.events.EventType.PROVIDER, 'GET');
+        var url = this.serverUrl + "wa/istsos/services/" + this.sname + "/configsections/provider";
+        this.executeRequest(url, istsos.events.EventType.PROVIDER, "GET");
     },
     /**
      * @param {string} providerName
@@ -434,12 +440,12 @@ istsos.Configuration.prototype = {
             "contactadminarea": contactAdminArea,
             "contactcountry": contactCountry
         };
-        var url = this.serverUrl + 'wa/istsos/services/' + this.sname + '/configsections/provider';
-        this.executeRequest(url, istsos.events.EventType.UPDATE_PROVIDER, 'PUT', data);
+        var url = this.serverUrl + "wa/istsos/services/" + this.sname + "/configsections/provider";
+        this.executeRequest(url, istsos.events.EventType.UPDATE_PROVIDER, "PUT", data);
     },
     getIdentification: function () {
-        var url = this.serverUrl + 'wa/istsos/services/' + this.sname + '/configsections/identification';
-        this.executeRequest(url, istsos.events.EventType.IDENTIFICATION, 'GET');
+        var url = this.serverUrl + "wa/istsos/services/" + this.sname + "/configsections/identification";
+        this.executeRequest(url, istsos.events.EventType.IDENTIFICATION, "GET");
     },
     /**
      * @param {string} title
@@ -460,12 +466,12 @@ istsos.Configuration.prototype = {
             "keywords": keywords,
             "accesscontrains": accessConstrains
         };
-        var url = this.serverUrl + 'wa/istsos/services/' + this.sname + '/configsections/identification';
-        this.executeRequest(url, istsos.events.EventType.UPDATE_IDENTIFICATION, 'PUT', data);
+        var url = this.serverUrl + "wa/istsos/services/" + this.sname + "/configsections/identification";
+        this.executeRequest(url, istsos.events.EventType.UPDATE_IDENTIFICATION, "PUT", data);
     },
     getMqtt: function () {
-        var url = this.serverUrl + 'wa/istsos/services/' + this.sname + '/configsections/mqtt';
-        this.executeRequest(url, istsos.events.EventType.MQTT, 'GET');
+        var url = this.serverUrl + "wa/istsos/services/" + this.sname + "/configsections/mqtt";
+        this.executeRequest(url, istsos.events.EventType.MQTT, "GET");
     },
     /**
      * @param {string} brokerPassword
@@ -482,12 +488,12 @@ istsos.Configuration.prototype = {
             "broker_url": brokerUrl,
             "broker_port": brokerPort
         };
-        var url = this.serverUrl + 'wa/istsos/services/' + this.sname + '/configsections/mqtt';
-        this.executeRequest(url, istsos.events.EventType.UPDATE_MQTT, 'PUT', data);
+        var url = this.serverUrl + "wa/istsos/services/" + this.sname + "/configsections/mqtt";
+        this.executeRequest(url, istsos.events.EventType.UPDATE_MQTT, "PUT", data);
     },
     getCrs: function () {
-        var url = this.serverUrl + 'wa/istsos/services/' + this.sname + '/configsections/geo';
-        this.executeRequest(url, istsos.events.EventType.CRS, 'GET');
+        var url = this.serverUrl + "wa/istsos/services/" + this.sname + "/configsections/geo";
+        this.executeRequest(url, istsos.events.EventType.CRS, "GET");
     },
     /**
      * @param {string} z_axis_name
@@ -504,12 +510,12 @@ istsos.Configuration.prototype = {
             "allowedepsg": allowedEpsg,
             "istsosepsg": istsosEpsg
         };
-        var url = this.serverUrl + 'wa/istsos/services/' + this.sname + '/configsections/geo';
-        this.executeRequest(url, istsos.events.EventType.UPDATE_CRS, 'PUT', data);
+        var url = this.serverUrl + "wa/istsos/services/" + this.sname + "/configsections/geo";
+        this.executeRequest(url, istsos.events.EventType.UPDATE_CRS, "PUT", data);
     },
     getObservationConf: function () {
-        var url = this.serverUrl + 'wa/istsos/services/' + this.sname + '/configsections/getobservation';
-        this.executeRequest(url, istsos.events.EventType.OBSERVATION_CONF, 'GET');
+        var url = this.serverUrl + "wa/istsos/services/" + this.sname + "/configsections/getobservation";
+        this.executeRequest(url, istsos.events.EventType.OBSERVATION_CONF, "GET");
     },
     /**
      * @param {string} correctQi
@@ -531,12 +537,12 @@ istsos.Configuration.prototype = {
             "transactional_log": transactionalLog,
             "aggregatenodata": aggregateNoData
         };
-        var url = this.serverUrl + 'wa/istsos/services/' + this.sname + '/configsections/getobservation';
-        this.executeRequest(url, istsos.events.EventType.UPDATE_OBSERVATION_CONF, 'PUT', data);
+        var url = this.serverUrl + "wa/istsos/services/" + this.sname + "/configsections/getobservation";
+        this.executeRequest(url, istsos.events.EventType.UPDATE_OBSERVATION_CONF, "PUT", data);
     },
     getProxy: function () {
-        var url = this.serverUrl + 'wa/istsos/services/' + this.sname + '/configsections/serviceurl';
-        this.executeRequest(url, istsos.events.EventType.PROXY, 'GET');
+        var url = this.serverUrl + "wa/istsos/services/" + this.sname + "/configsections/serviceurl";
+        this.executeRequest(url, istsos.events.EventType.PROXY, "GET");
     },
     /**
      * @param {string} newUrl
@@ -545,42 +551,29 @@ istsos.Configuration.prototype = {
         var data = {
             "url": newUrl
         };
-        var url = this.serverUrl + 'wa/istsos/services/' + this.sname + '/configsections/serviceurl';
-        this.executeRequest(url, istsos.events.EventType.UPDATE_PROXY, 'PUT', data);
+        var url = this.serverUrl + "wa/istsos/services/" + this.sname + "/configsections/serviceurl";
+        this.executeRequest(url, istsos.events.EventType.UPDATE_PROXY, "PUT", data);
     },
     getEpsgCodes: function () {
-        var url = this.serverUrl + 'wa/istsos/services/' + this.sname + '/epsgs';
-        this.executeRequest(url, istsos.events.EventType.EPSG_CODES, 'GET');
+        var url = this.serverUrl + "wa/istsos/services/" + this.sname + "/epsgs";
+        this.executeRequest(url, istsos.events.EventType.EPSG_CODES, "GET");
     }
 };
 
 /** istsos.Service class */
 
 /**
- * @param {istsos.Server|Object} server
+ * @param {istsos.Server} server
  * @param {string} serviceName
- * @param {istsos.Database|Object} opt_db
- * @param {istsos.Configuration|Object} opt_config
+ * @param {istsos.Database} opt_db
+ * @param {istsos.Configuration} opt_config
  * @param {int} opt_epsg
  * @constructor
  */
 istsos.Service = function (serviceName, server, opt_db, opt_config, opt_epsg) {
-    this.serviceObject = {
-        "service": serviceName
-    };
-    if (opt_epsg || opt_db) {
-        if (opt_epsg) {
-            this.serviceObject["epsg"] = opt_epsg;
-        }
-        if (opt_db) {
-            this.serviceObject["dbname"] = opt_db["dbname"];
-            this.serviceObject["host"] = opt_db["host"];
-            this.serviceObject["user"] = opt_db["user"];
-            this.serviceObject["password"] = opt_db["password"];
-            this.serviceObject["port"] = opt_db["port"];
-        }
-    }
-    this.database = opt_db || server.getDefaultDbProperty();
+    this.serviceName = serviceName;
+    this.db = opt_db || server.getDefaultDbProperty();
+    this.epsg = opt_epsg || null;
     this.config = opt_config || new istsos.Configuration(serviceName, server); // configsections
     this.server = server;
     this.offerings = [];
@@ -590,6 +583,8 @@ istsos.Service = function (serviceName, server, opt_db, opt_config, opt_epsg) {
     this.uoms = [];
     this.dataQualities = [];
     server.addService(this);
+    var temporary_offering = new istsos.Offering("temporary",
+        "temporary offering to hold self-registered procedures/sensors waiting for service adimistration acceptance", true, "", this);
 };
 
 //methods
@@ -599,8 +594,21 @@ istsos.Service.prototype = {
             istsos.fire(eventType, e.target);
         }, method, opt_data);
     },
-    getServiceObject: function () {
-        return this.serviceObject;
+    getServiceJSON: function () {
+        var serviceJSON = {
+            "service": this.serviceName
+        };
+        if (this.epsg) {
+            serviceJSON["epsg"] = this.epsg.toString();
+        }
+        if (this.db !== this.server.getDefaultDbProperty()) {
+            serviceJSON["dbname"] = this.db["dbname"];
+            serviceJSON["host"] = this.db["host"];
+            serviceJSON["user"] = this.db["user"];
+            serviceJSON["password"] = this.db["password"];
+            serviceJSON["port"] = this.db["port"].toString();
+        }
+        return serviceJSON;
     },
     getOfferingsProperty: function () {
         return this.offerings;
@@ -624,133 +632,142 @@ istsos.Service.prototype = {
         this.getOfferingsProperty().push(offering);
     },
     registerOffering: function (offering) {
-        var url = this.server.getUrl() + 'wa/istsos/services/' + this.getServiceObject()['service'] + '/offerings';
-        this.executeRequest(url, istsos.events.EventType.NEW_OFFERING, 'POST', offering.getOfferingObject());
+        var url = this.server.getUrl() + "wa/istsos/services/" + this.getServiceJSON()["service"] + "/offerings";
+        this.executeRequest(url, istsos.events.EventType.NEW_OFFERING, "POST", offering.getOfferingJSON());
     },
     getOfferingNames: function () {
-        var url = this.server.getUrl() + 'wa/istsos/services/' + this.getServiceObject()['service'] + '/offerings/operations/getlist';
-        this.executeRequest(url, istsos.events.EventType.OFFERING_NAMES, 'GET');
+        var url = this.server.getUrl() + "wa/istsos/services/" + this.getServiceJSON()["service"] + "/offerings/operations/getlist";
+        this.executeRequest(url, istsos.events.EventType.OFFERING_NAMES, "GET");
     },
     getOfferings: function () {
-        var url = this.server.getUrl() + 'wa/istsos/services/' + this.getServiceObject()['service'] + '/offerings';
-        this.executeRequest(url, istsos.events.EventType.OFFERING_LIST, 'GET');
+        var url = this.server.getUrl() + "wa/istsos/services/" + this.getServiceJSON()["service"] + "/offerings";
+        this.executeRequest(url, istsos.events.EventType.OFFERING_LIST, "GET");
     },
 
     addProcedure: function (procedure) {
         this.getProceduresProperty().push(procedure);
     },
-    registerProcedure: '',
-    getProcedure: '',
-    getProcedures: '',
+    registerProcedure: "",
+    getProcedure: "",
+    getProcedures: "",
     addVirtualProcedure: function (v_procedure) {
         this.getVirtualProceduresProperty().push(v_procedure);
     },
-    registerVirtualProcedure: '',
-    getVirtualProcedure: '',
-    getVirtualProcedures: '',
+    registerVirtualProcedure: "",
+    getVirtualProcedure: "",
+    getVirtualProcedures: "",
     /**
-     * @param {istsos.ObservedProperty|Object} property
+     * @param {istsos.ObservedProperty} property
      */
     addObservedProperty: function (property) {
         this.getObservedPropertiesProperty().push(property)
     },
     /**
-     * @param {istsos.ObservedProperty|Object} property
+     * @param {istsos.ObservedProperty} property
      */
     registerObservedProperty: function (property) {
-        var url = this.server.getUrl() + 'wa/istsos/services/' + this.getServiceObject()['service'] +
-            '/observedproperties';
-        this.executeRequest(url, istsos.events.EventType.NEW_OBSERVED_PROPERTY, 'POST', property.getObservedPropertyObject())
+        var url = this.server.getUrl() + "wa/istsos/services/" + this.getServiceJSON()["service"] +
+            "/observedproperties";
+        this.executeRequest(url, istsos.events.EventType.NEW_OBSERVED_PROPERTY, "POST", property.getObservedPropertyJSON())
     },
     getObservedProperties: function () {
-        var url = this.server.getUrl() + 'wa/istsos/services/observedproperties';
-        this.executeRequest(url, istsos.events.EventType.OBSERVED_PROPERTIES, 'GET');
+        var url = this.server.getUrl() + "wa/istsos/services/observedproperties";
+        this.executeRequest(url, istsos.events.EventType.OBSERVED_PROPERTIES, "GET");
     },
     getObservedProperty: function () {
-        var url = this.server.getUrl() + 'wa/istsos/services/observedproperties/' +
-            property.getObservedPropertyObject()['definition'];
-        this.executeRequest(url, istsos.events.EventType.OBSERVED_PROPERTY, 'GET');
+        var url = this.server.getUrl() + "wa/istsos/services/observedproperties/" +
+            property.getObservedPropertyJSON()["definition"];
+        this.executeRequest(url, istsos.events.EventType.OBSERVED_PROPERTY, "GET");
     },
     /**
-     * @param {istsos.UnitOfMeasure|Object} uom
+     * @param {istsos.UnitOfMeasure} uom
      */
     addUom: function (uom) {
         this.getUomsProperty().push(uom);
     },
     registerUom: function (uom) {
-        var url = this.server.getUrl() + 'wa/istsos/services/' + this.getServiceObject()['service'] + '/uoms';
-        this.executeRequest(url, istsos.events.EventType.NEW_UOM, 'POST', uom.getUomObject());
+        var url = this.server.getUrl() + "wa/istsos/services/" + this.getServiceJSON()["service"] + "/uoms";
+        this.executeRequest(url, istsos.events.EventType.NEW_UOM, "POST", uom.getUomJSON());
     },
     getUoms: function () {
-        var url = this.server.getUrl() + 'wa/istsos/services/' + this.getServiceObject()['service'] + '/uoms';
-        this.executeRequest(url, istsos.events.EventType.UOMS, 'GET');
+        var url = this.server.getUrl() + "wa/istsos/services/" + this.getServiceJSON()["service"] + "/uoms";
+        this.executeRequest(url, istsos.events.EventType.UOMS, "GET");
     },
     getUom: function (uom) {
-        var url = this.server.getUrl() + 'wa/istsos/services/' + this.getServiceObject()['service'] + '/uoms/' +
-            uom.getUomObject()['code'];
-        this.executeRequest(url, istsos.events.EventType.UOM, 'GET');
+        var url = this.server.getUrl() + "wa/istsos/services/" + this.getServiceJSON()["service"] + "/uoms/" +
+            uom.getUomJSON()["code"];
+        this.executeRequest(url, istsos.events.EventType.UOM, "GET");
     },
     /**
-     * @param {istsos.DataQuality|Object} dataQuality
+     * @param {istsos.DataQuality} dataQuality
      */
     addDataQuality: function (dataQuality) {
         this.getDataQualitiesProperty().push(dataQuality);
     },
     registerDataQuality: function (dataQuality) {
-        var url = this.server.getUrl() + 'wa/istsos/services' + this.getServiceObject()['service'] +
-            '/dataqualities';
-        this.executeRequest(url, istsos.events.EventType.NEW_DATAQUALITY, 'POST', dataQuality.getDataQualityObject());
+        var url = this.server.getUrl() + "wa/istsos/services" + this.getServiceJSON()["service"] +
+            "/dataqualities";
+        this.executeRequest(url, istsos.events.EventType.NEW_DATAQUALITY, "POST", dataQuality.getDataQualityJSON());
     }
     ,
     getDataQualities: function () {
-        var url = this.server.getUrl() + 'wa/istsos/services' + this.getServiceObject()['service'] +
-            '/dataqualities';
-        this.executeRequest(url, istsos.events.EventType.DATAQUALITIES, 'GET');
+        var url = this.server.getUrl() + "wa/istsos/services" + this.getServiceJSON()["service"] +
+            "/dataqualities";
+        this.executeRequest(url, istsos.events.EventType.DATAQUALITIES, "GET");
     },
     getDataQuality: function (dataQuality) {
-        var url = this.server.getUrl() + 'wa/istsos/services' + this.getServiceObject()['service'] +
-            '/dataqualities' + dataQuality.getDataQualityObject()['code'];
-        this.executeRequest(url, istsos.events.EventType.DATAQUALITY, 'GET');
+        var url = this.server.getUrl() + "wa/istsos/services" + this.getServiceJSON()["service"] +
+            "/dataqualities" + dataQuality.getDataQualityJSON()["code"];
+        this.executeRequest(url, istsos.events.EventType.DATAQUALITY, "GET");
     },
     getSystemTypes: function () {
-        var url = this.server.getUrl() + 'wa/istsos/services/' + this.getServiceObject()['service'] + '/systemtypes';
-        this.executeRequest(url, istsos.events.EventType.SYSTEM_TYPES, 'GET');
+        var url = this.server.getUrl() + "wa/istsos/services/" + this.getServiceJSON()["service"] + "/systemtypes";
+        this.executeRequest(url, istsos.events.EventType.SYSTEM_TYPES, "GET");
     },
     getDatabaseProperty: function () {
         return this.database;
     },
     getDatabase: function () {
-        this.database.getDb(this.getServiceObject()['service'], this.server);
+        this.database.getDb(this.getServiceJSON()["service"], this.server);
     }
 };
 
 /** istsos.Date class */
 /**
- * @param {string} opt_descr
+ * @param {int} year
+ * @param {int} month
+ * @param {int} day
+ * @param {int} hours
+ * @param {int} minutes
+ * @param {int} seconds
+ * @param {int} gmt
+ * @param {string} opt_description
  * @constructor
  */
-istsos.Date = function (opt_descr) {
-    this.description = opt_descr || 'Class for converting date&time to proper istSOS format';
+istsos.Date = function (year, month, day, hours, minutes, seconds, gmt, opt_description) {
+    this.year = year.toString();
+    this.month = month.toString();
+    this.day = day.toString();
+    this.hours = hours.toString();
+    this.minutes = minutes.toString();
+    this.seconds = seconds.toString();
+    this.gmt = (gmt > 9) ? gmt.toString() : "0" + gmt.toString();
+    this.description = opt_description || "Class for converting date&time to proper istSOS format";
 };
 
 istsos.Date.prototype = {
     /**
-     * @param {int} year
-     * @param {int} month
-     * @param {int} day
-     * @param {int} hours
-     * @param {int} minutes
-     * @param {int} seconds
-     * @param {int} gmt
      * @returns {string}
      */
-    getDateString: function (year, month, day, hours, minutes, seconds, gmt) {
-        var gmtFormat = (gmt > 9) ? gmt.toString() : '0' + gmt.toString();
-        var date = year + '-' + month + '-' + day + 'T' +
-            hours + ':' + minutes + ':' + seconds + '+' +
-            gmtFormat + ':' + '00';
-        return date;
+    getDateString: function () {
+        return this.year + "-" + this.month + "-" + this.day + "T" +
+            this.hours + ":" + this.minutes + ":" + this.seconds + "+" +
+            this.gmt + ":" + "00";
+
     },
+    /**
+     * @returns {string|string|*}
+     */
     getDescription: function () {
         return this.description;
     }
@@ -760,19 +777,15 @@ istsos.Date.prototype = {
  * @param {string} offeringName
  * @param {string} offeringDescription
  * @param {boolean} active
- * @param {istsos.Date|Object} expirationDate
- * @param {istsos.Service|Object} service
+ * @param {istsos.Date} expirationDate
+ * @param {istsos.Service} service
  * @constructor
  */
 istsos.Offering = function (offeringName, offeringDescription, active, expirationDate, service) {
-    this.offeringObject = {
-        "name": offeringName,
-        "description": offeringDescription,
-        "expiration": expirationDate.getDateString()
-    };
-    if (active === true) {
-        this.offeringObject['active'] = 'on';
-    }
+    this.offeringName = offeringName;
+    this.offeringDescription = offeringDescription || "";
+    this.active = active || false;
+    this.expirationDate = (expirationDate.constructor == istsos.Date) ? expirationDate.getDateString() : expirationDate
     this.service = service;
     this.memberProcedures = [];
     service.addOffering(this);
@@ -785,7 +798,7 @@ istsos.Offering.prototype = {
         }, method, opt_data);
     },
     /**
-     * @param procedure
+     * @param {istsos.Procedure|istsos.VirtualProcedure} procedure
      */
     addProcedure: function (procedure) {
         this.memberProcedures.push(procedure);
@@ -794,96 +807,86 @@ istsos.Offering.prototype = {
      * @param {string} newName
      * @param {string} newDescription
      * @param {boolean} newActive
-     * @param {istsos.Date|Object} newExpirationDate
+     * @param {istsos.Date} newExpirationDate
      */
     updateOffering: function (newName, newDescription, newActive, newExpirationDate) {
-        this.offeringObject['name'] = newName || this.offeringObject['name'];
-        this.offeringObject['description'] = newDescription || this.offeringObject['description'];
-        this.offeringObject['active'] = newActive || this.offeringObject['active'];
-        this.offeringObject['expiration'] = newExpirationDate.getDateString() || this.offeringObject['expiration'];
-        var url = this.service.server.getUrl() + 'wa/istsos/services/' + this.service.getServiceObject()['service'] +
-            '/offerings/' + this.getOfferingObject()['name'];
-        this.executeRequest(url, istsos.events.EventType.UPDATE_OFFERING, 'PUT', this.getOfferingObject());
+        this.offeringName = newName || this.offeringName;
+        this.offeringDescription = newDescription || this.offeringDescription;
+        this.active = newActive || this.active;
+        this.expirationDate = newExpirationDate || this.expirationDate;
+        var url = this.service.server.getUrl() + "wa/istsos/services/" + this.service.getServiceJSON()["service"] +
+            "/offerings/" + this.getOfferingJSON()["name"];
+        this.executeRequest(url, istsos.events.EventType.UPDATE_OFFERING, "PUT", this.getOfferingJSON());
     },
     deleteOffering: function () {
-        for (var i = 0; i < this.service.offerings.length; i++) {
-            if (this === this.service.offerings[i]) {
-                this.service.offerings.splice(i, 1);
+        for (var i = 0; i < this.service.getOfferingsProperty().length; i++) {
+            if (this === this.service.getOfferingsProperty()[i]) {
+                this.service.getOfferingsProperty().splice(i, 1);
             }
         }
-        var url = this.service.server.getUrl() + 'wa/istsos/services/' + this.service.getServiceObject()['service'] +
-            '/offerings/' + this.getOfferingObject()['name'];
+        var url = this.service.server.getUrl() + "wa/istsos/services/" + this.service.getServiceJSON()["service"] +
+            "/offerings/" + this.getOfferingJSON()["name"];
         var data = {
-            "name": this.getOfferingObject()['name'],
-            "description": this.getOfferingObject()['description']
+            "name": this.getOfferingJSON()["name"],
+            "description": this.getOfferingJSON()["description"]
         };
-        this.executeRequest(url, istsos.events.EventType.DELETE_OFFERING, 'DELETE', data);
+        this.executeRequest(url, istsos.events.EventType.DELETE_OFFERING, "DELETE", data);
+    },
+    getMemberProceduresProperty: function () {
+        return this.memberProcedures;
     },
     getMemberProcedures: function () {
-        var url = this.service.server.getUrl() + 'wa/istsos/services/' + this.service.getServiceObject()['service'] +
-            '/offerings/' + this.getOfferingObject()['name'] + '/procedures/operations/memberlist';
-        this.executeRequest(url, istsos.events.EventType.MEMBERLIST, 'GET');
+        var url = this.service.server.getUrl() + "wa/istsos/services/" + this.service.getServiceJSON()["service"] +
+            "/offerings/" + this.getOfferingJSON()["name"] + "/procedures/operations/memberlist";
+        this.executeRequest(url, istsos.events.EventType.MEMBERLIST, "GET");
     },
     getNonMemberProcedures: function () {
-        var url = this.service.server.getUrl() + 'wa/istsos/services/' + this.service.getServiceObject()['service'] +
-            '/offerings/' + this.getOfferingObject()['name'] + '/procedures/operations/nonmemberlist';
-        this.executeRequest(url, istsos.events.EventType.NONMEMBERLIST, 'GET');
+        var url = this.service.server.getUrl() + "wa/istsos/services/" + this.service.getServiceJSON()["service"] +
+            "/offerings/" + this.getOfferingJSON()["name"] + "/procedures/operations/nonmemberlist";
+        this.executeRequest(url, istsos.events.EventType.NONMEMBERLIST, "GET");
     },
     /**
-     * @returns {JSON|Object}
+     * @returns {JSON}
      */
-    getOfferingObject: function () {
-        return this.offeringObject;
+    getOfferingJSON: function () {
+        var offeringJSON = {
+            "name": this.offeringName,
+            "description": this.offeringDescription,
+            "expiration": this.expirationDate
+        };
+        if (this.active === true) {
+            offeringJSON["active"] = "on"
+        }
+        return offeringJSON;
     }
 };
 
-/** istsos.Procedure class */
-
-istsos.Procedure = function () {
-
-};
-
-istsos.Procedure.prototype = {
-    updateProcedure: '',
-    deleteProcedure: ''
-};
-
-/** istsos.VirtualProcedure class */
-
-istsos.VirtualProcedure = function () {
-
-};
-
-istsos.VirtualProcedure.prototype = {};
-
-
 /** istsos.ObservedProperty class */
 /**
- * @param {istsos.Service|Object} service
- * @param {string} propertyName
+ * @param {istsos.Service} service
+ * @param {string} observedName
  * @param {string} definitionUrn
- * @param {string} propertyDescr
+ * @param {string} observedDescr
  * @param {string} opt_constraintType (allowed_values:"between", "lessThan", "greaterThan", "valueList")
  * @param {Array|int} opt_value (Array or integer, depending on constraint type)
  * @constructor
  */
 
-istsos.ObservedProperty = function (service, propertyName, definitionUrn, propertyDescr, opt_constraintType, opt_value) {
-    this.observedPropertyObject = {
-        'name': propertyName,
-        'definition': definitionUrn,
-        'description': propertyDescr,
-        'constraint': {}
-    };
+istsos.ObservedProperty = function (service, observedName, definitionUrn, observedDescr, opt_constraintType, opt_value) {
+    this.observedName = observedName;
+    this.definitionUrn = definitionUrn;
+    this.observedDescr = observedDescr;
+    this.constraint = {};
     var check = this.validateConstraintInput(opt_constraintType, opt_value);
     if (check === true) {
-        this.observedPropertyObject['constraint']['role'] = 'urn:x-ogc:def:classifiers:x-istsos:1.0:qualityIndexCheck:level0';
-        this.observedPropertyObject['constraint'][opt_constraintType] = opt_value;
+        this.constraint["role"] = "urn:x-ogc:def:classifiers:x-istsos:1.0:qualityIndexCheck:level0";
+        this.constraint[opt_constraintType] = (opt_value.constructor === Array) ?
+            opt_value.toString().split(",") : opt_value.toString();
     } else {
-        console.log('Input constraintType and constraintValue are incorrect or intentionally null/undefined!!! ' +
-            'Object created with null/undefined constraint OR not properly created!!!');
-        alert('Input constraintType and constraintValue are incorrect or intentionally null/undefined!!! ' +
-            'Object created with null/undefined constraint OR not properly created!!!');
+        console.log("Input constraintType and constraintValue are incorrect or intentionally null/undefined!!! " +
+            "Object created with null/undefined constraint OR not properly created!!!");
+        alert("Input constraintType and constraintValue are incorrect or intentionally null/undefined!!! " +
+            "Object created with null/undefined constraint OR not properly created!!!");
     }
     this.service = service;
     this.proceduresIncluded = [];
@@ -901,9 +904,10 @@ istsos.ObservedProperty.prototype = {
         var procedures = this.service.getProceduresProperty();
         var v_procedures = this.service.getVirtualProceduresProperty();
         var all = procedures.concat(v_procedures);
+        var name = this.observedName;
         all.forEach(function (procedure) {
-            procedure.getOutputs()['definition'].forEach(function (obsv_prop) {
-                if (this.getObservedPropertyObject()['definition'] === obsv_prop.getObservedPropertyObject()['definition']) {
+            procedure.getOutputsProperty().forEach(function (out) {
+                if (name === out["name"]) {
                     this.getProceduresIncluded().push(procedure);
                 }
             })
@@ -916,56 +920,71 @@ istsos.ObservedProperty.prototype = {
         return this.proceduresIncluded;
     },
     /**
-     * @returns {JSON|Object}
+     * @returns {JSON}
      */
-    getObservedPropertyObject: function () {
-        return this.observedPropertyObject;
+    getObservedPropertyJSON: function () {
+        var observedJSON = {
+            "name": this.observedName,
+            "definition": this.definitionUrn,
+            "description": this.observedDescr,
+            "constraint": this.constraint
+        }
+        return observedJSON;
     },
     /**
      * @param {string} newPropertyName
      * @param {string} newDefinitionUrn
      * @param {string} newPropertyDescr
      * @param {string} opt_constraintType
-     * @param {Array|int} opt_value
+     * @param {Array<int>|int} opt_value
      */
     updateObservedProperty: function (newPropertyName, newDefinitionUrn, newPropertyDescr, opt_constraintType, opt_value) {
-        this.observedPropertyObject['name'] = newPropertyName || this.observedPropertyObject['name'];
-        this.observedPropertyObject['definition'] = newDefinitionUrn || this.observedPropertyObject['definition'];
-        this.observedPropertyObject['description'] = newPropertyName || this.observedPropertyObject['description'];
+        this.observedName = newPropertyName || this.observedName;
+        this.definitionUrn = newDefinitionUrn || this.definitionUrn;
+        this.observedDescr = newPropertyName || this.observedDescr;
         if (this.validateConstraintInput(opt_constraintType, opt_value) === true) {
-            this.observedPropertyObject['constraint'][opt_constraintType] = opt_value;
+            this.constraint["role"] = "urn:x-ogc:def:classifiers:x-istsos:1.0:qualityIndexCheck:level0";
+            this.constraint[opt_constraintType] = (opt_value.constructor === Array) ?
+                opt_value.toString().split(",") : opt_value.toString();
         } else {
-            this.observedPropertyObject['constraint'] = null;
-            console.log('Input constraintType and constraintValue are incorrect or intentionally null/undefined!!! ' +
-                'Object created with null/undefined constraint OR not properly created!!!');
-            alert('Input constraintType and constraintValue are incorrect or intentionally null/undefined!!! ' +
-                'Object created with null/undefined constraint OR not properly created!!!');
+            this.constraint = {};
+            console.log("Input constraintType and constraintValue are incorrect or intentionally null/undefined!!! " +
+                "Object created with null/undefined constraint OR not properly created!!!");
+            alert("Input constraintType and constraintValue are incorrect or intentionally null/undefined!!! " +
+                "Object created with null/undefined constraint OR not properly created!!!");
         }
-        var url = this.server.getUrl() + 'wa/istsos/services/observedproperties/' +
-            property.getObservedPropertyObject()['definition'];
-        this.executeRequest(url, istsos.events.EventType.UPDATE_OBSERVED_PROPERTY, 'PUT', this.getObservedPropertyObject());
+        var url = this.server.getUrl() + "wa/istsos/services/observedproperties/" +
+            this.getObservedPropertyJSON()["definition"];
+        this.executeRequest(url, istsos.events.EventType.UPDATE_OBSERVED_PROPERTY, "PUT", this.getObservedPropertyJSON());
     },
     deleteObservedProperty: function () {
         var procedures = this.service.getProceduresProperty();
         var v_procedures = this.service.getVirtualProceduresProperty();
         var properties_service = this.service.getObservedPropertiesProperty();
         var all = procedures.concat(v_procedures);
-        var properties_procedure = all.getOutputs();
-        for (var i = 0; i < properties_procedure.length; i++) {
-            if (this === properties_procedure[i]['definition']) {
-                alert('CONNECTED TO PROCEDURE');
-                break;
-            } else {
-                for (var i = 0; i < properties_service.length; i++) {
-                    if (this === properties_service[i]) {
-                        properties_service.splice(i, 1);
-                    }
+        var outputs = [];
+        all.forEach(function (p) {
+            outputs.concat(p.getOutputsProperty());
+        });
+        var name = this.observedName;
+        var connected = false;
+        for (var i = 0; i < outputs.length; i++) {
+            if (name === outputs[i].getOutputJSON()["name"]) {
+                alert("CONNECTED TO PROCEDURE");
+                connected = true;
+                break
+            }
+        }
+        if (connected = false) {
+            for (var j = 0; j < properties_service.length; j++) {
+                if (this === properties_service[j]) {
+                    properties_service.splice(j, 1);
                 }
             }
         }
-        var url = this.server.getUrl() + 'wa/istsos/services/' + this.service.getServiceObject()['service'] + '/observedproperties/' +
-            this.getObservedPropertyObject()['definition'];
-        this.executeRequest(url, istsos.events.EventType.DELETE_OBSERVED_PROPERTY, 'DELETE');
+        var url = this.server.getUrl() + "wa/istsos/services/" + this.service.getServiceJSON()["service"] + "/observedproperties/" +
+            this.getObservedPropertyJSON()["definition"];
+        this.executeRequest(url, istsos.events.EventType.DELETE_OBSERVED_PROPERTY, "DELETE");
     },
     /**
      * @param {string} constraintType
@@ -1014,18 +1033,16 @@ istsos.ObservedProperty.prototype = {
 
 /** istsos.DataQuality class */
 /**
- * @param {istsos.Service|Object} service
+ * @param {istsos.Service} service
  * @param {int} codeDQ
  * @param {string} nameDQ
  * @param {string} descrDQ
  * @constructor
  */
 istsos.DataQuality = function (service, codeDQ, nameDQ, descrDQ) {
-    this.dataQualityObject = {
-        "code": codeDQ,
-        "name": nameDQ,
-        "description": descrDQ
-    };
+    this.code = codeDQ;
+    this.name = nameDQ;
+    this.description = descrDQ;
     this.service = service;
     service.addDataQuality(this);
 };
@@ -1037,10 +1054,15 @@ istsos.DataQuality.prototype = {
         }, method, opt_data);
     },
     /**
-     * @returns {JSON|Object}
+     * @returns {JSON}
      */
-    getDataQualityObject: function () {
-        return this.dataQualityObject;
+    getDataQualityJSON: function () {
+        var dqJSON = {
+            "code": this.code.toString(),
+            "name": this.name,
+            "description": this.description
+        };
+        return dqJSON;
     },
     /**
      * @param {int} newCodeDQ
@@ -1048,12 +1070,12 @@ istsos.DataQuality.prototype = {
      * @param {string} newDescrDQ
      */
     updateDataQuality: function (newCodeDQ, newNameDQ, newDescrDQ) {
-        this.dataQualityObject['code'] = newCodeDQ || this.dataQualityObject['code'];
-        this.dataQualityObject['name'] = newNameDQ || this.dataQualityObject['name'];
-        this.dataQualityObject['description'] = newDescrDQ || this.dataQualityObject['description'];
-        var url = this.service.server.getUrl() + 'wa/istsos/services' + this.service.getServiceObject()['service'] +
-            '/dataqualities/' + this.getDataQualityObject()['code'];
-        this.executeRequest(url, istsos.events.EventType.UPDATE_DATAQUALITY, 'PUT', this.getDataQualityObject());
+        this.code = newCodeDQ || this.code;
+        this.name = newNameDQ || this.name;
+        this.description = newDescrDQ || this.description;
+        var url = this.service.server.getUrl() + "wa/istsos/services" + this.service.getServiceJSON()["service"] +
+            "/dataqualities/" + this.getDataQualityJSON()["code"];
+        this.executeRequest(url, istsos.events.EventType.UPDATE_DATAQUALITY, "PUT", this.getDataQualityJSON());
     },
     deleteDataQuality: function () {
         var dataQualities = this.service.getDataQualitiesProperty();
@@ -1062,25 +1084,22 @@ istsos.DataQuality.prototype = {
                 dataQualities.splice(i, 1);
             }
         }
-        var url = this.service.server.getUrl() + 'wa/istsos/services' + this.service.getServiceObject()['service'] +
-            '/dataqualities/' + this.getDataQualityObject()['code'];
-        this.executeRequest(url, istsos.events.EventType.DELETE_DATAQUALITY, 'DELETE', this.getDataQualityObject());
+        var url = this.service.server.getUrl() + "wa/istsos/services" + this.service.getServiceJSON()["service"] +
+            "/dataqualities/" + this.getDataQualityJSON()["code"];
+        this.executeRequest(url, istsos.events.EventType.DELETE_DATAQUALITY, "DELETE", this.getDataQualityJSON());
     }
 };
 
-
 /** istsos.UnitOfMeasure  class */
 /**
- * @param service
- * @param code
- * @param description
+ * @param {istsos.Service} service
+ * @param {string} code
+ * @param {string} description
  * @constructor
  */
 istsos.UnitOfMeasure = function (service, code, description) {
-    this.uomObject = {
-        'code': code,
-        'description': description
-    };
+    this.code = code;
+    this.description = description;
     this.proceduresIncluded = [];
     this.service = service;
     service.addUom(this);
@@ -1099,78 +1118,87 @@ istsos.UnitOfMeasure.prototype = {
         var all = procedures.concat(v_procedures);
         all.forEach(function (procedure) {
             procedure.getOutputs().forEach(function (uom) {
-                if (this.getUomObject()['code'] === uom.getUomObject()['code']) {
+                if (this.getUomJSON()["code"] === uom.getUomJSON()["code"]) {
                     this.getProceduresIncluded().push(procedure);
                 }
             })
         });
     },
     /**
-     * @returns {JSON|Object}
+     * @returns {JSON}
      */
-    getUomObject: function () {
-        return this.uomObject;
+    getUomJSON: function () {
+        var uomJSON = {
+            "code": this.code,
+            "description": this.description
+        }
+        return uomJSON;
+        
     },
     /**
      * @param {string} newCode
      * @param {string} newDescr
      */
     updateUom: function (newCode, newDescr) {
-        this.uomObject['code'] = newCode || this.uomObject['code'];
-        this.uomObject['description'] = newDescr || this.uomObject['description'];
-        var url = this.service.server.getUrl() + 'wa/istsos/services/' + this.service.getServiceObject()['service'] +
-            '/uoms/' + this.getUomObject()['code'];
-        this.executeRequest(url, istsos.events.EventType.UPDATE_UOM, 'PUT', this.getUomObject());
+        this.code = newCode || this.code;
+        this.description = newDescr || this.description;
+        var url = this.service.server.getUrl() + "wa/istsos/services/" + this.service.getServiceJSON()["service"] +
+            "/uoms/" + this.getUomJSON()["code"];
+        this.executeRequest(url, istsos.events.EventType.UPDATE_UOM, "PUT", this.getUomJSON());
     },
     deleteUom: function () {
-        var uoms_service = this.service.getUomsProperty();
         var procedures = this.service.getProceduresProperty();
         var v_procedures = this.service.getVirtualProceduresProperty();
+        var uoms_service = this.service.getUomsProperty();
         var all = procedures.concat(v_procedures);
         var outputs = [];
         all.forEach(function (p) {
-            p.getOutputs().forEach(function (out) {
-                outputs.push(out);
-            })
+            outputs.concat(p.getOutputsProperty());
         });
+        var code = this.code;
         var connected = false;
         for (var i = 0; i < outputs.length; i++) {
-            if (this.getUomObject()['code'] === outputs[i].getOutputObject()['uom']) {
-                alert('CONNECTED TO PROCEDURE');
+            if (code === outputs[i].getOutputJSON()["uom"]) {
+                alert("CONNECTED TO PROCEDURE");
                 connected = true;
-                break;
+                break
             }
         }
-        if (connected === false) {
+        if (connected = false) {
             for (var j = 0; j < uoms_service.length; j++) {
                 if (this === uoms_service[j]) {
-                    uoms_service.splice(i, 1);
+                    uoms_service.splice(j, 1);
                 }
             }
         }
-        var url = this.service.server.getUrl() + 'wa/istsos/services/' + this.service.getServiceObject()['service'] +
-            '/uoms/' + this.getUomObject()['code'];
-        this.executeRequest(url, istsos.events.EventType.DELETE_UOM, 'DELETE', this.getUomObject());
+        var url = this.service.server.getUrl() + "wa/istsos/services/" + this.service.getServiceJSON()["service"] +
+            "/uoms/" + this.getUomJSON()["code"];
+        this.executeRequest(url, istsos.events.EventType.DELETE_UOM, "DELETE", this.getUomJSON());
     }
 };
 
 istsos.Output = function (property, uom, description, opt_constraintType, opt_constraintValue) {
     this.outputObject = {
-        "name": property.getObservedPropertyObject()['name'],
-        "definition": property.getObservedPropertyObject()['definition'],
-        "uom": uom.getUomObject()['code'],
+        "name": property.getObservedPropertyJSON()["name"],
+        "definition": property.getObservedPropertyJSON()["definition"],
+        "uom": uom.getUomJSON()["code"],
         "description": description || "",
         "constraint": {}
     };
+    this.observedProperty = property;
+    this.uom = uom;
+    this.description = description;
+    this.constraint = {};
     var check = this.validateConstraintInput(opt_constraintType, opt_constraintValue);
     if (check === true) {
-        this.outputObject['constraint']['role'] = 'urn:ogc:def:classifiers:x-istsos:1.0:qualityIndex:check:reasonable';
-        this.outputObject['constraint'][opt_constraintType] = [opt_constraintValue];
+        this.constraint["role"] = "urn:ogc:def:classifiers:x-istsos:1.0:qualityIndex:check:reasonable";
+        this.constraint[opt_constraintType] = (opt_constraintValue.constructor === Array) ?
+            opt_constraintValue.toString().split(",") : opt_constraintValue.toString();
     } else {
-        console.log('Input constraintType and constraintValue are incorrect or intentionally null/undefined!!! ' +
-            'Object created with null/undefined constraint OR not properly created!!!');
-        alert('Input constraintType and constraintValue are incorrect or intentionally null/undefined!!! ' +
-            'Object created with null/undefined constraint OR not properly created!!!');
+        console.log("Input constraintType and constraintValue are incorrect or intentionally null/undefined!!! " +
+            "Object created with null/undefined constraint OR not properly created!!!");
+        alert("Input constraintType and constraintValue are incorrect or intentionally null/undefined!!! " +
+            "Object created with null/undefined constraint OR not properly created!!!");
     }
 };
 
@@ -1213,8 +1241,15 @@ istsos.Output.prototype = {
                 return false;
         }
     },
-    getOutputObject: function () {
-        return this.outputObject;
+    getOutputJSON: function () {
+        var outputJSON = {
+            "name": this.observedProperty.getObservedPropertyJSON()["name"],
+            "definition": this.observedProperty.getObservedPropertyJSON()["definition"],
+            "uom": this.uom.getUomJSON()["code"],
+            "description": this.description || "",
+            "constraint": this.constraint
+        };
+        return outputJSON;
     }
 };
 /** istsos.ProcedureBase class - ABSTRACT */
@@ -1227,7 +1262,7 @@ istsos.Output.prototype = {
  * @param {int} x
  * @param {int} y
  * @param {int} z
- * @param {Array<istsos.Outputs|Object>} outputs
+ * @param {Array<istsos.Output>} outputs
  * @constructor
  */
 istsos.ProcedureBase = function (name, description, keywords, foi_name, epsg, x, y, z, outputs) {
@@ -1266,8 +1301,9 @@ istsos.ProcedureBase = function (name, description, keywords, foi_name, epsg, x,
     };
     var obj = this.procedureBaseObject;
     outputs.forEach(function (out) {
-        obj['outputs'].push(out.getOutputObject());
+        obj['outputs'].push(out.getOutputJSON());
     });
+    this.outputs = outputs;
 };
 
 istsos.ProcedureBase.prototype = {
@@ -1275,6 +1311,9 @@ istsos.ProcedureBase.prototype = {
         goog.net.XhrIo.send(url, function (e) {
             istsos.fire(eventType, e.target);
         }, method, opt_data);
+    },
+    getOutputsProperty: function () {
+        return this.outputs;
     },
     getProcedureBaseObject: function () {
         return this.procedureBaseObject;
@@ -1353,8 +1392,8 @@ istsos.Procedure = function (service, name, description, keywords, foi_name, eps
         "value": sensorType
     }];
     this.service = service;
-    this.outputs = outputs;
     service.addProcedure(this);
+    service.getOfferingsProperty()[0].getMemberProceduresProperty().push(this);
 };
 goog.inherits(istsos.Procedure, istsos.ProcedureBase);
 
@@ -1375,16 +1414,39 @@ istsos.Procedure.prototype = {
             this.procedureBaseObject['outputs'].splice(1, this.procedureBaseObject['outputs'].length - 1);
             var obj = this.procedureBaseObject;
             outputs.forEach(function (out) {
-                obj['outputs'].push(out.getOutputObject());
+                obj['outputs'].push(out.getOutputJSON());
             });
         }
         this.procedureBaseObject['classification'][1]['value'] = sensorType;
-        var url = this.service.server.getUrl() + 'wa/istsos/services/' + this.service.getServiceObject()['service'] + '/procedures/' + this.procedureBaseObject['system'];
+        var url = this.service.server.getUrl() + 'wa/istsos/services/' + this.service.getServiceJSON()['service'] + '/procedures/' + this.procedureBaseObject['system'];
         this.executeRequest(url, istsos.events.EventType.UPDATE_PROCEDURE, 'PUT', this.getProcedureObject());
     },
     deleteProcedure: function () {
-        var url = this.service.server.getUrl() + 'wa/istsos/services/' + this.service.getServiceObject()['service'] + '/procedures/' + this.procedureBaseObject['system'];
+        var url = this.service.server.getUrl() + 'wa/istsos/services/' + this.service.getServiceJSON()['service'] + '/procedures/' + this.procedureBaseObject['system'];
         this.executeRequest(url, istsos.events.EventType.DELETE_PROCEDURE, 'DELETE', this.getProcedureObject());
+    },
+    addMembershipToOffering: function (offering) {
+        offering.getMemberProceduresProperty().push(this);
+        var url = this.service.server.getUrl() + "wa/istsos/services/" + this.service.getServiceJSON()["service"] + "/offerings/" +
+            offering.getOfferingJSON()["name"] + "/procedures";
+        this.executeRequest(url, istsos.events.EventType.ADD_TO_OFFERING, 'POST', [{
+            "offering": offering.getOfferingJSON()["name"],
+            "procedure": this.getProcedureObject()["system"]
+        }])
+    },
+    removeMembershipFromOffering: function (offering) {
+        var procedures = offering.getMemberProceduresProperty();
+        procedures.forEach(function (p) {
+            if (p === this) {
+                procedures.splice(procedures.indexOf(p), 1);
+            }
+        });
+        var url = this.service.server.getUrl() + "wa/istsos/services/" + this.service.getServiceJSON()["service"] + "/offerings/" +
+            offering.getOfferingJSON()["name"] + "/procedures" + this.getProcedureObject()["system"];
+        this.executeRequest(url, istsos.events.EventType.REMOVE_FROM_OFFERING, 'DELETE', [{
+            "offering": offering.getOfferingJSON()["name"],
+            "procedure": this.getProcedureObject()["system"]
+        }])
     }
 };
 
@@ -1402,8 +1464,8 @@ istsos.VirtualProcedure = function (service, name, description, keywords, foi_na
     this.code = {'code': code} || {};
     this.ratingCurve = ratingCurve || {};
     this.service = service;
-    this.outputs = outputs;
     service.addVirtualProcedure(this);
+    service.getOfferingsProperty()[0].getMemberProceduresProperty().push(this);
 };
 goog.inherits(istsos.VirtualProcedure, istsos.ProcedureBase);
 
@@ -1412,24 +1474,24 @@ istsos.VirtualProcedure.prototype = {
         return this.procedureBaseObject;
     },
     getCode: function () {
-        var url = this.service.server.getUrl() + 'wa/istsos/services/' + this.service.getServiceObject()['service'] +
+        var url = this.service.server.getUrl() + 'wa/istsos/services/' + this.service.getServiceJSON()['service'] +
             '/virtualprocedures/' + this.getVirtualProcedureObject()['system'] + '/code';
         this.executeRequest(url, istsos.events.EventType.GET_CODE, 'GET');
     },
     registerCode: function () {
-        var url = this.service.server.getUrl() + 'wa/istsos/services/' + this.service.getServiceObject()['service'] +
+        var url = this.service.server.getUrl() + 'wa/istsos/services/' + this.service.getServiceJSON()['service'] +
             '/virtualprocedures/' + this.getVirtualProcedureObject()['system'] + '/code';
         this.executeRequest(url, istsos.events.EventType.NEW_CODE, 'POST', this.getCodeProperty());
     },
     updateCode: function (newCode) {
         this.code = newCode || this.code;
-        var url = this.service.server.getUrl() + 'wa/istsos/services/' + this.service.getServiceObject()['service'] +
+        var url = this.service.server.getUrl() + 'wa/istsos/services/' + this.service.getServiceJSON()['service'] +
             '/virtualprocedures/' + this.getVirtualProcedureObject()['system'] + '/code';
         this.executeRequest(url, istsos.events.EventType.UPDATE_CODE, 'PUT', this.getCodeProperty());
     },
     deleteCode: function () {
         this.code = '';
-        var url = this.service.server.getUrl() + 'wa/istsos/services/' + this.service.getServiceObject()['service'] +
+        var url = this.service.server.getUrl() + 'wa/istsos/services/' + this.service.getServiceJSON()['service'] +
             '/virtualprocedures/' + this.getVirtualProcedureObject()['system'] + '/code';
         this.executeRequest(url, istsos.events.EventType.DELETE_CODE, 'DELETE');
     },
@@ -1437,18 +1499,18 @@ istsos.VirtualProcedure.prototype = {
         return this.code;
     },
     getRatingCurve: function () {
-        var url = this.service.server.getUrl() + 'wa/istsos/services/' + this.service.getServiceObject()['service'] +
+        var url = this.service.server.getUrl() + 'wa/istsos/services/' + this.service.getServiceJSON()['service'] +
             '/virtualprocedures/' + this.getVirtualProcedureObject()['system'] + '/ratingcurve';
         this.executeRequest(url, istsos.events.EventType.RATING_CURVE, 'GET');
     },
     registerRatingCurve: function () {
-        var url = this.service.server.getUrl() + 'wa/istsos/services/' + this.service.getServiceObject()['service'] +
+        var url = this.service.server.getUrl() + 'wa/istsos/services/' + this.service.getServiceJSON()['service'] +
             '/virtualprocedures/' + this.getVirtualProcedureObject()['system'] + '/ratingcurve';
         this.executeRequest(url, istsos.events.EventType.NEW_RATING_CURVE, 'POST', this.getRatingCurveProperty());
     },
     deleteRatingCurve: function () {
         this.ratingCurve = {};
-        var url = this.service.server.getUrl() + 'wa/istsos/services/' + this.service.getServiceObject()['service'] +
+        var url = this.service.server.getUrl() + 'wa/istsos/services/' + this.service.getServiceJSON()['service'] +
             '/virtualprocedures/' + this.getVirtualProcedureObject()['system'] + '/ratingcurve';
         this.executeRequest(url, istsos.events.EventType.DELETE_RATING_CURVE, 'DELETE');
     },
@@ -1468,17 +1530,48 @@ istsos.VirtualProcedure.prototype = {
             this.procedureBaseObject['outputs'].splice(1, this.procedureBaseObject['outputs'].length - 1);
             var obj = this.procedureBaseObject;
             outputs.forEach(function (out) {
-                obj['outputs'].push(out.getOutputObject());
+                obj['outputs'].push(out.getOutputJSON());
             });
         }
         this.procedureBaseObject['classification'][1]['value'] = sensorType;
-        var url = this.service.server.getUrl() + 'wa/istsos/services/' + this.service.getServiceObject()['service'] + '/virtualprocedures/' + this.procedureBaseObject['system'];
+        var url = this.service.server.getUrl() + 'wa/istsos/services/' + this.service.getServiceJSON()['service'] + '/virtualprocedures/' + this.procedureBaseObject['system'];
         this.executeRequest(url, istsos.events.EventType.UPDATE_V_PROCEDURE, 'PUT', this.getVirtualProcedureObject());
     },
     deleteVirtualProcedure: function () {
-        var url = this.service.server.getUrl() + 'wa/istsos/services/' + this.service.getServiceObject()['service'] + '/virtualprocedures/' + this.procedureBaseObject['system'];
-        this.executeRequest(url, istsos.events.EventType.DELETE_V_PROCEDURE, 'PUT', this.getVirtualProcedureObject());
+        var v_procedures = this.service.getVirtualProceduresProperty();
+        var obj = this.getVirtualProcedureObject();
+        v_procedures.forEach(function (p) {
+            if (p.getVirtualProcedureObject()["system"] === obj["system"]) {
+                v_procedures.splice(procedure.indexOf(p), 1);
+            }
+        });
+        var url = this.service.server.getUrl() + 'wa/istsos/services/' + this.service.getServiceJSON()['service'] + '/virtualprocedures/' + this.procedureBaseObject['system'];
+        this.executeRequest(url, istsos.events.EventType.DELETE_V_PROCEDURE, 'DELETE', this.getVirtualProcedureObject());
+    },
+    addMembershipToOffering: function (offering) {
+        offering.getMemberProceduresProperty().push(this);
+        var url = this.service.server.getUrl() + "wa/istsos/services/" + this.service.getServiceJSON()["service"] + "/offerings/" +
+            offering.getOfferingJSON()["name"] + "/procedures";
+        this.executeRequest(url, istsos.events.EventType.ADD_TO_OFFERING, 'POST', [{
+            "offering": offering.getOfferingJSON()["name"],
+            "procedure": this.getProcedureObject()["system"]
+        }])
+    },
+    removeMembershipFromOffering: function (offering) {
+        var procedures = offering.getMemberProceduresProperty();
+        procedures.forEach(function (p) {
+            if (p === this) {
+                procedures.splice(procedures.indexOf(p), 1);
+            }
+        });
+        var url = this.service.server.getUrl() + "wa/istsos/services/" + this.service.getServiceJSON()["service"] + "/offerings/" +
+            offering.getOfferingJSON()["name"] + "/procedures" + this.getProcedureObject()["system"];
+        this.executeRequest(url, istsos.events.EventType.REMOVE_FROM_OFFERING, 'DELETE', [{
+            "offering": offering.getOfferingJSON()["name"],
+            "procedure": this.getProcedureObject()["system"]
+        }])
     }
+
 };
 
 
