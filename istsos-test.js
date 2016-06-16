@@ -45,7 +45,7 @@ istsos.on(istsos.events.EventType.CRS, function (ev) {
 });
 
 istsos.on(istsos.events.EventType.DATABASE, function (ev) {
-    log(ev.getData(), 'DEFAULT DATABASE') 
+    log(ev.getData(), 'DEFAULT DATABASE');
 });
 
 istsos.on(istsos.events.EventType.SYSTEM_TYPES, function (ev) {
@@ -65,7 +65,7 @@ istsos.on(istsos.events.EventType.OFFERING_LIST, function (ev) {
 });
 
 var ist = new istsos.IstSOS();
-var default_db = new istsos.Database('istsos','localhost','postgres', 'postgres', '5432');
+var default_db = new istsos.Database('istsos','localhost','postgres', 'postgres', 5432);
 var server = new istsos.Server('test','http://istsos.org/istsos/', default_db);
 ist.addServer(server);
 
@@ -92,9 +92,10 @@ service.getOfferingNames();
 service.getOfferings();
 
 var property = new istsos.ObservedProperty(service,'imeObserved', 'urn', 'opis', 'lessThan', 4);
+
 var uom = new istsos.UnitOfMeasure(service, 'C', 'opis uom');
+
 var output = new istsos.Output(property, uom, 'descr', 'lessThan', 4);
 
 var proc = new istsos.Procedure(service,'ime','opis','kljucne,reci','ime feature', 4326, 11, 22, 33, [output], 'insitu-mobile-point','opis insitua');
 
-console.log(proc.getProcedureObject());
