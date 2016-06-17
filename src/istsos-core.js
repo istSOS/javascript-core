@@ -647,15 +647,33 @@ istsos.Service.prototype = {
     addProcedure: function (procedure) {
         this.getProceduresProperty().push(procedure);
     },
-    registerProcedure: "",
-    getProcedure: "",
-    getProcedures: "",
+    registerProcedure: function (procedure) {
+        var url = this.server.getUrl() + "wa/istsos/services/" + this.serviceName + "/procedures";
+        this.executeRequest(url, istsos.events.EventType.NEW_PROCEDURE, "POST", procedure.getProcedureJSON());
+    },
+    getProcedure: function(procedure) {
+        var url = this.server.getUrl() + "wa/istsos/services/" + this.serviceName + "/procedures/" + procedure.getProcedureJSON()["service"];
+        this.executeRequest(url, istsos.events.EventType.PROCEDURE, "GET");
+    },
+    getProcedures: function () {
+        var url = this.server.getUrl() + "wa/istsos/services/" + this.serviceName + "/procedures/operations/getlist";
+        this.executeRequest(url, istsos.events.EventType.PROCEDURES, "GET");
+    },
     addVirtualProcedure: function (v_procedure) {
         this.getVirtualProceduresProperty().push(v_procedure);
     },
-    registerVirtualProcedure: "",
-    getVirtualProcedure: "",
-    getVirtualProcedures: "",
+    registerVirtualProcedure: function (v_procedure) {
+        var url = this.server.getUrl() + "wa/istsos/services/" + this.serviceName + "/procedures";
+        this.executeRequest(url, istsos.events.EventType.NEW_VIRTUAL_PROCEDURE, "POST", v_procedure.getVirtualProcedureJSON());
+    },
+    getVirtualProcedure: function(v_procedure) {
+        var url = this.server.getUrl() + "wa/istsos/services/" + this.serviceName + "/virtualprocedures/" + v_procedure.getVirtualProcedureJSON()["service"];
+        this.executeRequest(url, istsos.events.EventType.VIRTUAL_PROCEDURE, "GET");
+    },
+    getVirtualProcedures: function () {
+        var url = this.server.getUrl() + "wa/istsos/services/" + this.serviceName + "/virtualprocedures/operations/getlist";
+        this.executeRequest(url, istsos.events.EventType.VIRTUAL_PROCEDURES, "GET");
+    },
     /**
      * @param {istsos.ObservedProperty} property
      */
@@ -1133,7 +1151,7 @@ istsos.UnitOfMeasure.prototype = {
             "description": this.description
         }
         return uomJSON;
-        
+
     },
     /**
      * @param {string} newCode
@@ -1266,44 +1284,13 @@ istsos.Output.prototype = {
  * @constructor
  */
 istsos.ProcedureBase = function (name, description, keywords, foi_name, epsg, x, y, z, outputs) {
-    this.procedureBaseObject = {
-        'system_id': name,
-        'system': name,
-        'description': description,
-        'keywords': keywords,
-        'location': {
-            'type': 'Feature',
-            'geometry': {
-                'type': 'Point',
-                'coordinates': [x, y, z]
-            },
-            'crs': {
-                'type': 'name',
-                'properties': {
-                    'name': epsg
-                }
-            },
-            'properties': {
-                'name': foi_name
-            }
-        },
-        'outputs': [
-            {
-                "name": "Time",
-                "definition": "urn:ogc:def:parameter:x-istsos:1.0:time:iso8601",
-                "uom": "iso8601",
-                "description": "",
-                "constraint": {}
-            }
-        ],
-        'inputs': [],
-        'history': []
-    };
-    var obj = this.procedureBaseObject;
-    outputs.forEach(function (out) {
-        obj['outputs'].push(out.getOutputJSON());
-    });
-    this.outputs = outputs;
+    this.name = name;
+    this.description = description || "";
+    this.keywords = keywords || "";
+    this.foi_name = foi_name;
+    this.epsg = epsg;
+    this.coordinates = [x, y, z];
+    this.outputs = outputs || [];
 };
 
 istsos.ProcedureBase.prototype = {
@@ -1315,8 +1302,44 @@ istsos.ProcedureBase.prototype = {
     getOutputsProperty: function () {
         return this.outputs;
     },
-    getProcedureBaseObject: function () {
-        return this.procedureBaseObject;
+    getProcedureBaseJSON: function () {
+        var procedureBaseJSON = {
+            "system_id": this.name,
+            "system": this.name,
+            "description": this.description,
+            "keywords": this.keywords,
+            "location": {
+                "type": "Feature",
+                "geometry": {
+                    "type": "Point",
+                    "coordinates": this.coordinates.toString().split(",")
+                },
+                "crs": {
+                    "type": "name",
+                    "properties": {
+                        "name": this.epsg.toString()
+                    }
+                },
+                "properties": {
+                    "name": this.foi_name
+                }
+            },
+            "outputs": [
+                {
+                    "name": "Time",
+                    "definition": "urn:ogc:def:parameter:x-istsos:1.0:time:iso8601",
+                    "uom": "iso8601",
+                    "description": "",
+                    "constraint": {}
+                }
+            ],
+            "inputs": [],
+            "history": []
+        };
+        this.outputs.forEach(function (out) {
+            procedureBaseJSON["outputs"].push(out.getOutputJSON());
+        });
+
     },
     createContactForm: function (individualName, voice, fax, email, web, deliveryPoint, city, administrativeArea, postalCode, country) {
         return {
@@ -1382,15 +1405,9 @@ istsos.ProcedureBase.prototype = {
 
 istsos.Procedure = function (service, name, description, keywords, foi_name, epsg, x, y, z, outputs, systemType, sensorType) {
     istsos.ProcedureBase.call(this, name, description, keywords, foi_name, epsg, x, y, z, outputs);
-    this.procedureBaseObject['classification'] = [{
-        "name": "System Type",
-        "definition": "urn:ogc:def:classifier:x-istsos:1.0:systemType",
-        "value": (systemType === 'insitu-mobile-point' || systemType === 'insitu-fixed-point') ? systemType : null
-    }, {
-        "name": "Sensor Type",
-        "definition": "urn:ogc:def:classifier:x-istsos:1.0:sensorType",
-        "value": sensorType
-    }];
+    this.systemType = (systemType === "insitu-fixed" || systemType === "insitu-mobile") ?
+        systemType : null;
+    this.sensorType = sensorType || "";
     this.service = service;
     service.addProcedure(this);
     service.getOfferingsProperty()[0].getMemberProceduresProperty().push(this);
@@ -1398,40 +1415,51 @@ istsos.Procedure = function (service, name, description, keywords, foi_name, eps
 goog.inherits(istsos.Procedure, istsos.ProcedureBase);
 
 istsos.Procedure.prototype = {
-    getProcedureObject: function () {
-        return this.procedureBaseObject;
+    getProcedureJSON: function () {
+        var baseJSON = this.getProcedureBaseJSON();
+        baseJSON["classification"] = [{
+            "name": "System Type",
+            "definition": "urn:ogc:def:classifier:x-istsos:1.0:systemType",
+            "value": (this.systemType === "insitu-mobile-point" || this.systemType === "insitu-fixed-point") ? systemType : null
+        }, {
+            "name": "Sensor Type",
+            "definition": "urn:ogc:def:classifier:x-istsos:1.0:sensorType",
+            "value": this.sensorType
+        }];
+        return baseJSON;
     },
     updateProcedure: function (name, description, keywords, foi_name, epsg, x, y, z, outputs, systemType, sensorType) {
-        this.procedureBaseObject['system'] = name || this.procedureBaseObject['system'];
-        this.procedureBaseObject['description'] = description || this.procedureBaseObject['description'];
-        this.procedureBaseObject['keywords'] = keywords || this.procedureBaseObject['keywords'];
-        this.procedureBaseObject['location']['properties']['name'] = foi_name || this.procedureBaseObject['location']['properties']['name'];
-        this.procedureBaseObject['location']['crs']['name'] = epsg || this.procedureBaseObject['location']['crs']['name'];
-        this.procedureBaseObject['location']['geometry']['coordinates'][0] = x || this.procedureBaseObject['location']['geometry']['coordinates'][0];
-        this.procedureBaseObject['location']['geometry']['coordinates'][1] = y || this.procedureBaseObject['location']['geometry']['coordinates'][1];
-        this.procedureBaseObject['location']['geometry']['coordinates'][2] = z || this.procedureBaseObject['location']['geometry']['coordinates'][2];
+        this.name = name || this.name;
+        this.description = description || this.description;
+        this.keywords = keywords || this.keywords;
+        this.foi_name = foi_name || this.foi_name;
+        this.epsg = epsg || this.epsg;
+        this.coordinates = [x, y, z] || this.coordinates;
+        var outputs_array = this.outputs;
         if (outputs || outputs.length !== 0) {
-            this.procedureBaseObject['outputs'].splice(1, this.procedureBaseObject['outputs'].length - 1);
-            var obj = this.procedureBaseObject;
+            outputs_array.splice(1, outputs_array.length - 1);
             outputs.forEach(function (out) {
-                obj['outputs'].push(out.getOutputJSON());
+                outputs_array.push(out)
             });
         }
-        this.procedureBaseObject['classification'][1]['value'] = sensorType;
-        var url = this.service.server.getUrl() + 'wa/istsos/services/' + this.service.getServiceJSON()['service'] + '/procedures/' + this.procedureBaseObject['system'];
-        this.executeRequest(url, istsos.events.EventType.UPDATE_PROCEDURE, 'PUT', this.getProcedureObject());
+
+        this.systemType = (systemType === "insitu-fixed" || systemType === "insitu-mobile") ?
+            systemType : null;
+        this.sensorType = sensorType || "";
+        var url = this.service.server.getUrl() + "wa/istsos/services/" + this.service.getServiceJSON()["service"] + "/procedures/" + this.name;
+        this.executeRequest(url, istsos.events.EventType.UPDATE_PROCEDURE, "PUT", this.getProcedureJSON());
     },
     deleteProcedure: function () {
-        var url = this.service.server.getUrl() + 'wa/istsos/services/' + this.service.getServiceJSON()['service'] + '/procedures/' + this.procedureBaseObject['system'];
-        this.executeRequest(url, istsos.events.EventType.DELETE_PROCEDURE, 'DELETE', this.getProcedureObject());
+        var url = this.service.server.getUrl() + "wa/istsos/services/" + this.service.getServiceJSON()["service"] + "/procedures/" + this.name;
+        this.executeRequest(url, istsos.events.EventType.DELETE_PROCEDURE, "DELETE", this.getProcedureJSON());
     },
     addMembershipToOffering: function (offering) {
         offering.getMemberProceduresProperty().push(this);
         var url = this.service.server.getUrl() + "wa/istsos/services/" + this.service.getServiceJSON()["service"] + "/offerings/" +
             offering.getOfferingJSON()["name"] + "/procedures";
-        this.executeRequest(url, istsos.events.EventType.ADD_TO_OFFERING, 'POST', [{
+        this.executeRequest(url, istsos.events.EventType.ADD_TO_OFFERING, "POST", [{
             "offering": offering.getOfferingJSON()["name"],
-            "procedure": this.getProcedureObject()["system"]
+            "procedure": this.getProcedureJSON()["system"]
         }])
     },
     removeMembershipFromOffering: function (offering) {
@@ -1442,26 +1470,20 @@ istsos.Procedure.prototype = {
             }
         });
         var url = this.service.server.getUrl() + "wa/istsos/services/" + this.service.getServiceJSON()["service"] + "/offerings/" +
-            offering.getOfferingJSON()["name"] + "/procedures" + this.getProcedureObject()["system"];
-        this.executeRequest(url, istsos.events.EventType.REMOVE_FROM_OFFERING, 'DELETE', [{
+            offering.getOfferingJSON()["name"] + "/procedures" + this.getProcedureJSON()["system"];
+        this.executeRequest(url, istsos.events.EventType.REMOVE_FROM_OFFERING, "DELETE", [{
             "offering": offering.getOfferingJSON()["name"],
-            "procedure": this.getProcedureObject()["system"]
+            "procedure": this.getProcedureJSON()["system"]
         }])
     }
 };
 
 istsos.VirtualProcedure = function (service, name, description, keywords, foi_name, epsg, x, y, z, outputs, systemType, sensorType, code, ratingCurve) {
     istsos.ProcedureBase.call(this, name, description, keywords, foi_name, epsg, x, y, z, outputs);
-    this.procedureBaseObject['classification'] = [{
-        "name": "System Type",
-        "definition": "urn:ogc:def:classifier:x-istsos:1.0:systemType",
-        "value": (systemType === 'virtual') ? systemType : null
-    }, {
-        "name": "Sensor Type",
-        "definition": "urn:ogc:def:classifier:x-istsos:1.0:sensorType",
-        "value": sensorType
-    }];
-    this.code = {'code': code} || {};
+    this.systemType = (systemType === "insitu-fixed" || systemType === "insitu-mobile") ?
+        systemType : null;
+    this.sensorType = sensorType || "";
+    this.code = {"code": code} || {};
     this.ratingCurve = ratingCurve || {};
     this.service = service;
     service.addVirtualProcedure(this);
@@ -1470,91 +1492,100 @@ istsos.VirtualProcedure = function (service, name, description, keywords, foi_na
 goog.inherits(istsos.VirtualProcedure, istsos.ProcedureBase);
 
 istsos.VirtualProcedure.prototype = {
-    getVirtualProcedureObject: function () {
-        return this.procedureBaseObject;
+    getVirtualProcedureJSON: function () {
+        var vProcedureJSON = this.getProcedureBaseJSON();
+        vProcedureJSON["classification"] = [{
+            "name": "System Type",
+            "definition": "urn:ogc:def:classifier:x-istsos:1.0:systemType",
+            "value": (this.systemType === "virtual") ? this.systemType : null
+        }, {
+            "name": "Sensor Type",
+            "definition": "urn:ogc:def:classifier:x-istsos:1.0:sensorType",
+            "value": this.sensorType
+        }];
+        return vProcedureJSON;
     },
     getCode: function () {
-        var url = this.service.server.getUrl() + 'wa/istsos/services/' + this.service.getServiceJSON()['service'] +
-            '/virtualprocedures/' + this.getVirtualProcedureObject()['system'] + '/code';
-        this.executeRequest(url, istsos.events.EventType.GET_CODE, 'GET');
+        var url = this.service.server.getUrl() + "wa/istsos/services/" + this.service.getServiceJSON()["service"] +
+            "/virtualprocedures/" + this.getVirtualProcedureJSON()["system"] + "/code";
+        this.executeRequest(url, istsos.events.EventType.GET_CODE, "GET");
     },
     registerCode: function () {
-        var url = this.service.server.getUrl() + 'wa/istsos/services/' + this.service.getServiceJSON()['service'] +
-            '/virtualprocedures/' + this.getVirtualProcedureObject()['system'] + '/code';
-        this.executeRequest(url, istsos.events.EventType.NEW_CODE, 'POST', this.getCodeProperty());
+        var url = this.service.server.getUrl() + "wa/istsos/services/" + this.service.getServiceJSON()["service"] +
+            "/virtualprocedures/" + this.getVirtualProcedureJSON()["system"] + "/code";
+        this.executeRequest(url, istsos.events.EventType.NEW_CODE, "POST", this.getCodeProperty());
     },
     updateCode: function (newCode) {
         this.code = newCode || this.code;
-        var url = this.service.server.getUrl() + 'wa/istsos/services/' + this.service.getServiceJSON()['service'] +
-            '/virtualprocedures/' + this.getVirtualProcedureObject()['system'] + '/code';
-        this.executeRequest(url, istsos.events.EventType.UPDATE_CODE, 'PUT', this.getCodeProperty());
+        var url = this.service.server.getUrl() + "wa/istsos/services/" + this.service.getServiceJSON()["service"] +
+            "/virtualprocedures/" + this.getVirtualProcedureJSON()["system"] + "/code";
+        this.executeRequest(url, istsos.events.EventType.UPDATE_CODE, "PUT", this.getCodeProperty());
     },
     deleteCode: function () {
-        this.code = '';
-        var url = this.service.server.getUrl() + 'wa/istsos/services/' + this.service.getServiceJSON()['service'] +
-            '/virtualprocedures/' + this.getVirtualProcedureObject()['system'] + '/code';
-        this.executeRequest(url, istsos.events.EventType.DELETE_CODE, 'DELETE');
+        this.code = "";
+        var url = this.service.server.getUrl() + "wa/istsos/services/" + this.service.getServiceJSON()["service"] +
+            "/virtualprocedures/" + this.getVirtualProcedureJSON()["system"] + "/code";
+        this.executeRequest(url, istsos.events.EventType.DELETE_CODE, "DELETE");
     },
     getCodeProperty: function () {
         return this.code;
     },
     getRatingCurve: function () {
-        var url = this.service.server.getUrl() + 'wa/istsos/services/' + this.service.getServiceJSON()['service'] +
-            '/virtualprocedures/' + this.getVirtualProcedureObject()['system'] + '/ratingcurve';
-        this.executeRequest(url, istsos.events.EventType.RATING_CURVE, 'GET');
+        var url = this.service.server.getUrl() + "wa/istsos/services/" + this.service.getServiceJSON()["service"] +
+            "/virtualprocedures/" + this.getVirtualProcedureJSON()["system"] + "/ratingcurve";
+        this.executeRequest(url, istsos.events.EventType.RATING_CURVE, "GET");
     },
     registerRatingCurve: function () {
-        var url = this.service.server.getUrl() + 'wa/istsos/services/' + this.service.getServiceJSON()['service'] +
-            '/virtualprocedures/' + this.getVirtualProcedureObject()['system'] + '/ratingcurve';
-        this.executeRequest(url, istsos.events.EventType.NEW_RATING_CURVE, 'POST', this.getRatingCurveProperty());
+        var url = this.service.server.getUrl() + "wa/istsos/services/" + this.service.getServiceJSON()["service"] +
+            "/virtualprocedures/" + this.getVirtualProcedureJSON()["system"] + "/ratingcurve";
+        this.executeRequest(url, istsos.events.EventType.NEW_RATING_CURVE, "POST", this.getRatingCurveProperty());
     },
     deleteRatingCurve: function () {
         this.ratingCurve = {};
-        var url = this.service.server.getUrl() + 'wa/istsos/services/' + this.service.getServiceJSON()['service'] +
-            '/virtualprocedures/' + this.getVirtualProcedureObject()['system'] + '/ratingcurve';
-        this.executeRequest(url, istsos.events.EventType.DELETE_RATING_CURVE, 'DELETE');
+        var url = this.service.server.getUrl() + "wa/istsos/services/" + this.service.getServiceJSON()["service"] +
+            "/virtualprocedures/" + this.getVirtualProcedureJSON()["system"] + "/ratingcurve";
+        this.executeRequest(url, istsos.events.EventType.DELETE_RATING_CURVE, "DELETE");
     },
     getRatingCurveProperty: function () {
         return this.ratingCurve;
     },
     updateVirtualProcedure: function (name, description, keywords, foi_name, epsg, x, y, z, outputs, systemType, sensorType) {
-        this.procedureBaseObject['system'] = name || this.procedureBaseObject['system'];
-        this.procedureBaseObject['description'] = description || this.procedureBaseObject['description'];
-        this.procedureBaseObject['keywords'] = keywords || this.procedureBaseObject['keywords'];
-        this.procedureBaseObject['location']['properties']['name'] = foi_name || this.procedureBaseObject['location']['properties']['name'];
-        this.procedureBaseObject['location']['crs']['name'] = epsg || this.procedureBaseObject['location']['crs']['name'];
-        this.procedureBaseObject['location']['geometry']['coordinates'][0] = x || this.procedureBaseObject['location']['geometry']['coordinates'][0];
-        this.procedureBaseObject['location']['geometry']['coordinates'][1] = y || this.procedureBaseObject['location']['geometry']['coordinates'][1];
-        this.procedureBaseObject['location']['geometry']['coordinates'][2] = z || this.procedureBaseObject['location']['geometry']['coordinates'][2];
+        this.name = name || this.name;
+        this.description = description || this.description;
+        this.keywords = keywords || this.keywords;
+        this.foi_name = foi_name || this.foi_name;
+        this.epsg = epsg || this.epsg;
+        this.coordinates = [x, y, z] || this.coordinates;
+        var outputs_array = this.outputs;
         if (outputs || outputs.length !== 0) {
-            this.procedureBaseObject['outputs'].splice(1, this.procedureBaseObject['outputs'].length - 1);
-            var obj = this.procedureBaseObject;
+            outputs_array.splice(1, outputs_array.length - 1);
             outputs.forEach(function (out) {
-                obj['outputs'].push(out.getOutputJSON());
+                outputs_array.push(out)
             });
         }
-        this.procedureBaseObject['classification'][1]['value'] = sensorType;
-        var url = this.service.server.getUrl() + 'wa/istsos/services/' + this.service.getServiceJSON()['service'] + '/virtualprocedures/' + this.procedureBaseObject['system'];
-        this.executeRequest(url, istsos.events.EventType.UPDATE_V_PROCEDURE, 'PUT', this.getVirtualProcedureObject());
+        this.systemType = systemType || this.systemType;
+        this.sensorType = sensorType || this.sensorType;
+        var url = this.service.server.getUrl() + "wa/istsos/services/" + this.service.getServiceJSON()["service"] + "/virtualprocedures/" + this.name;
+        this.executeRequest(url, istsos.events.EventType.UPDATE_V_PROCEDURE, "PUT", this.getVirtualProcedureJSON());
     },
     deleteVirtualProcedure: function () {
         var v_procedures = this.service.getVirtualProceduresProperty();
-        var obj = this.getVirtualProcedureObject();
+        var obj = this.getVirtualProcedureJSON();
         v_procedures.forEach(function (p) {
-            if (p.getVirtualProcedureObject()["system"] === obj["system"]) {
+            if (p.getVirtualProcedureJSON()["system"] === obj["system"]) {
                 v_procedures.splice(procedure.indexOf(p), 1);
             }
         });
-        var url = this.service.server.getUrl() + 'wa/istsos/services/' + this.service.getServiceJSON()['service'] + '/virtualprocedures/' + this.procedureBaseObject['system'];
-        this.executeRequest(url, istsos.events.EventType.DELETE_V_PROCEDURE, 'DELETE', this.getVirtualProcedureObject());
+        var url = this.service.server.getUrl() + "wa/istsos/services/" + this.service.getServiceJSON()["service"] + "/virtualprocedures/" + this.name;
+        this.executeRequest(url, istsos.events.EventType.DELETE_V_PROCEDURE, "DELETE", this.getVirtualProcedureJSON());
     },
     addMembershipToOffering: function (offering) {
         offering.getMemberProceduresProperty().push(this);
         var url = this.service.server.getUrl() + "wa/istsos/services/" + this.service.getServiceJSON()["service"] + "/offerings/" +
             offering.getOfferingJSON()["name"] + "/procedures";
-        this.executeRequest(url, istsos.events.EventType.ADD_TO_OFFERING, 'POST', [{
+        this.executeRequest(url, istsos.events.EventType.ADD_TO_OFFERING, "POST", [{
             "offering": offering.getOfferingJSON()["name"],
-            "procedure": this.getProcedureObject()["system"]
+            "procedure": this.getProcedureJSON()["system"]
         }])
     },
     removeMembershipFromOffering: function (offering) {
@@ -1565,10 +1596,10 @@ istsos.VirtualProcedure.prototype = {
             }
         });
         var url = this.service.server.getUrl() + "wa/istsos/services/" + this.service.getServiceJSON()["service"] + "/offerings/" +
-            offering.getOfferingJSON()["name"] + "/procedures" + this.getProcedureObject()["system"];
-        this.executeRequest(url, istsos.events.EventType.REMOVE_FROM_OFFERING, 'DELETE', [{
+            offering.getOfferingJSON()["name"] + "/procedures" + this.getProcedureJSON()["system"];
+        this.executeRequest(url, istsos.events.EventType.REMOVE_FROM_OFFERING, "DELETE", [{
             "offering": offering.getOfferingJSON()["name"],
-            "procedure": this.getProcedureObject()["system"]
+            "procedure": this.getProcedureJSON()["system"]
         }])
     }
 
