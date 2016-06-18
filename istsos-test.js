@@ -4,7 +4,7 @@ istsos.on(istsos.events.EventType.ABOUT, function (ev) {
 });
 
 istsos.on(istsos.events.EventType.SERVICE, function (ev) {
-    log(ev.getData(), 'GET SERVICE')
+    log(ev.getData(), 'SERVICE')
 });
 
 istsos.on(istsos.events.EventType.STATUS, function (ev) {
@@ -44,10 +44,6 @@ istsos.on(istsos.events.EventType.CRS, function (ev) {
     log(ev.getData(), 'COORDINATE SYSTEMS');
 });
 
-istsos.on(istsos.events.EventType.DATABASE, function (ev) {
-    log(ev.getData(), 'DEFAULT DATABASE');
-});
-
 istsos.on(istsos.events.EventType.SYSTEM_TYPES, function (ev) {
     log(ev.getData(), 'SYSTEM TYPES')
 });
@@ -64,38 +60,269 @@ istsos.on(istsos.events.EventType.OFFERING_LIST, function (ev) {
     log(ev.getData(), 'OFFERING LIST')
 });
 
+istsos.on(istsos.events.EventType.PROCEDURE, function (ev) {
+    log(ev.getData(), 'PROCEDURE')
+});
+
+istsos.on(istsos.events.EventType.PROCEDURES, function (ev) {
+    log(ev.getData(), 'PROCEDURES')
+});
+
+istsos.on(istsos.events.EventType.OFFERING_LIST, function (ev) {
+    log(ev.getData(), 'OFFERINGS')
+});
+
+istsos.on(istsos.events.EventType.OFFERING_NAMES, function (ev) {
+    log(ev.getData(), 'OFFERING NAMES')
+});
+
+istsos.on(istsos.events.EventType.VIRTUAL_PROCEDURE, function (ev) {
+    log(ev.getData(), 'VIRTUAL PROCEDURE')
+});
+
+istsos.on(istsos.events.EventType.VIRTUAL_PROCEDURES, function (ev) {
+    log(ev.getData(), 'VIRTUAL PROCEDURES')
+});
+
+istsos.on(istsos.events.EventType.OBSERVED_PROPERTIES, function (ev) {
+    log(ev.getData(), 'OBSERVED PROPERTIES')
+});
+
+istsos.on(istsos.events.EventType.OBSERVED_PROPERTY, function (ev) {
+    log(ev.getData(), 'OBSERVED PROPERTY')
+});
+
+istsos.on(istsos.events.EventType.DATAQUALITIES, function (ev) {
+    log(ev.getData(), 'DATA QUALITIES')
+});
+
+istsos.on(istsos.events.EventType.DATAQUALITY, function (ev) {
+    log(ev.getData(), 'DATA QUALITY')
+});
+
+istsos.once(istsos.events.EventType.UOMS, function (ev) {
+    log(ev.getData(), 'UNITS OF MEASURE')
+});
+
+istsos.once(istsos.events.EventType.UOM, function (ev) {
+    log(ev.getData(), 'UNIT OF MEASURE')
+});
+
+istsos.on(istsos.events.EventType.DATABASE, function (ev) {
+    log(ev.getData(), 'DATABASE');
+});
+
+istsos.on(istsos.events.EventType.MEMBERLIST, function (ev) {
+    log(ev.getData(), 'MEMBER PROCEDURES');
+});
+
+istsos.on(istsos.events.EventType.NONMEMBERLIST, function (ev) {
+    log(ev.getData(), 'NON-MEMBER PROCEDURES')
+});
+
+istsos.on(istsos.events.EventType.GET_CODE, function (ev) {
+    log(ev.getData(), 'CODE');
+});
+
+istsos.on(istsos.events.EventType.RATING_CURVE, function (ev) {
+    log(ev.getData(), 'RATING CURVE')
+});
+
+
+
 var ist = new istsos.IstSOS();
 var default_db = new istsos.Database('istsos','localhost','postgres', 'postgres', 5432);
 var server = new istsos.Server('test','http://istsos.org/istsos/', default_db);
 ist.addServer(server);
-
+var default_conf = new istsos.Configuration("default", server);
 var service = new istsos.Service('demo', server);
+var procedure = new istsos.Procedure(service, "BELLINZONA", "", "", "foi", 3857, 25,35,45, [], "insitu-fixed", "");
+var v_procedure = new istsos.VirtualProcedure(service, "V_GNOSCA", "", "", "foi", 3857, 26,36,46, [], "virtual", "");
+var observed_prop = new istsos.ObservedProperty(service, "air-rainfall", "urn:ogc:def:parameter:x-istsos:1.0:meteo:air:rainfall", "", "between", [0,1])
+var dataQuality = new istsos.DataQuality(service, 100, "raw", "format is correct");
+var uom = new istsos.UnitOfMeasure(service, "mm", "milimeter");
+var offering = new istsos.Offering("GRABOW", "", true, null, service);
 
 /** GET REQUEST TESTS */
+//server methods
+function getServiceReq() {
+    server.getService(service);
+}
 
-server.getService(service);
-server.getStatus();
-server.getAboutInfo();
-server.getConfig(); 
-server.getDefaultDb();
+function getStatusReq() {
+    server.getStatus();
+}
 
-server.config.getProvider();
-server.config.getProxy();
-server.config.getIdentification();
-server.config.getObservationConf();
-server.config.getMqtt();
-server.config.getCrs();
-server.config.getEpsgCodes();
+function getAbout() {
+    server.getAboutInfo();
+}
 
-service.getSystemTypes();
-service.getOfferingNames();
-service.getOfferings();
+function getConf() {
+    server.getConfig();
+}
 
-var property = new istsos.ObservedProperty(service,'imeObserved', 'urn', 'opis', 'lessThan', 4);
+function getDb() {
+    server.getDefaultDb();
+}
 
-var uom = new istsos.UnitOfMeasure(service, 'C', 'opis uom');
+function getList() {
+    server.getServices();
+}
 
-var output = new istsos.Output(property, uom, 'descr', 'lessThan', 4);
+//configuration methods
+function getConfigurationReq() {
+    var resp = prompt("Service name or default?", "default")
+    if(resp === "default") {
+        default_conf.getConf();
+    } else {
+        var service_conf = new istsos.Configuration(resp, server);
+        service_conf.getConf();
+    }
+}
 
-var proc = new istsos.Procedure(service,'ime','opis','kljucne,reci','ime feature', 4326, 11, 22, 33, [output], 'insitu-mobile-point','opis insitua');
+function getProviderReq() {
+    var resp = prompt("Service name or default?", "default")
+    if(resp === "default") {
+        default_conf.getProvider();
+    } else {
+        var service_conf = new istsos.Configuration(resp, server);
+        service_conf.getProvider();
+    }
+}
 
+function getIdentReq() {
+    var resp = prompt("Service name or default?", "default")
+    if(resp === "default") {
+        default_conf.getIdentification();
+    } else {
+        var service_conf = new istsos.Configuration(resp, server);
+        service_conf.getIdentification();
+    }
+}
+
+function getCoordSysReq() {
+    var resp = prompt("Service name or default?", "default")
+    if(resp === "default") {
+        default_conf.getCrs();
+    } else {
+        var service_conf = new istsos.Configuration(resp, server);
+        service_conf.getCrs();
+    }
+}
+
+function mqtt() {
+    var resp = prompt("Service name or default?", "default")
+    if(resp === "default") {
+        default_conf.getMqtt();
+    } else {
+        var service_conf = new istsos.Configuration(resp, server);
+        service_conf.getMqtt();
+    }
+}
+
+function getOC() {
+    var resp = prompt("Service name or default?", "default")
+    if(resp === "default") {
+        default_conf.getObservationConf();
+    } else {
+        var service_conf = new istsos.Configuration(resp, server);
+        service_conf.getObservationConf();
+    }
+}
+
+function getProxyReq() {
+    var resp = prompt("Service name or default?", "default")
+    if(resp === "default") {
+        default_conf.getProxy();
+    } else {
+        var service_conf = new istsos.Configuration(resp, server);
+        service_conf.getProxy();
+    }
+}
+
+function getEPSGS() {
+    var resp = prompt("Service name or default?", "default")
+    if(resp === "default") {
+        default_conf.getEpsgCodes();
+    } else {
+        var service_conf = new istsos.Configuration(resp, server);
+        service_conf.getEpsgCodes();
+    }
+}
+
+//Service methods
+function getOffNames() {
+    service.getOfferingNames();
+}
+
+function getOffs() {
+    service.getOfferings();
+}
+
+function getProcs() {
+    service.getProcedures();
+}
+
+function getProc() {
+    service.getProcedure(procedure);
+}
+
+function getVProcs() {
+    service.getVirtualProcedures();
+}
+
+function getVProc() {
+    service.getVirtualProcedure(v_procedure);
+}
+
+function getOPS() {
+    service.getObservedProperties();
+}
+
+function getOP() {
+    service.getObservedProperty(observed_prop);
+}
+
+function getDQs() {
+    service.getDataQualities();
+}
+
+function getDQ() {
+    service.getDataQuality(dataQuality);
+}
+
+function getUOMs() {
+    service.getUoms();
+}
+
+function getUOM() {
+    service.getUom(uom);
+}
+
+function getSysTypes() {
+    service.getSystemTypes();
+}
+
+function getServiceDatabase() {
+    service.getDatabase();
+}
+
+function getMembers() {
+    offering.getMemberProcedures();
+}
+
+function getNonMembers() {
+    offering.getNonMemberProcedures();
+}
+
+function getRCurve() {
+    v_procedure.getRatingCurve();
+}
+
+function getCodeReq() {
+    v_procedure.getCode();
+}
+/*
+ getRatingCurve
+ getCode
+ */
