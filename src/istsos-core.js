@@ -74,13 +74,14 @@ istsos.events.EventType = {
     DELETE_V_PROCEDURE: 'DELETE virtualProcedureReceived',
     PROCEDURES: 'proceduresReceived',
     PROCEDURE: 'procedureReceived',
-
-
-
+    GEOJSON: 'geojsonReceived',
+    GETOBSERVATIONS: 'getobservationsReceived',
+    GETOBSERVATIONS_BY_PROPERTY: 'getobservationsDataReceived'
 };
 
 //EVENT RESPONSE
 istsos.events.JSONResponse = function (type, xhrIo) {
+    this.type = type;
     goog.base(this, type);
     /**
      * The response in text plain
@@ -88,14 +89,12 @@ istsos.events.JSONResponse = function (type, xhrIo) {
      * @api stable
      */
     this['text'] = xhrIo.getResponseText();
-
     /**
      * The JSON response object
      * @type {object}
      * @api stable
      */
     this['json'] = xhrIo.getResponseJson();
-
     /**
      * Show if the response is successfull
      * @type {string}
@@ -114,7 +113,23 @@ istsos.events.JSONResponse = function (type, xhrIo) {
 goog.inherits(istsos.events.JSONResponse, goog.events.Event);
 
 istsos.events.JSONResponse.prototype.getData = function () {
-    return this['json']['data'];
+    if(this.type === "geojsonReceived") {
+        return this['json'];
+    } else if (this.type === "getobservationsDataReceived") {
+        var observationObj = this['json']['data'];
+        console.log(observationObj);
+        var values = observationObj[0]["result"]["DataArray"]["values"];
+        console.log(values);
+        var response = [];
+        for (var i = 0; i < values.length; i++) {
+            response.push({"date": values[i][0], "measurement": values[i][1]})
+        }
+        console.log(response);
+        return response;
+    } else {
+        return this['json']['data'];
+    }
+
 };
 
 // EVENT HANDLER
@@ -768,9 +783,74 @@ istsos.Service.prototype = {
     },
     getDatabase: function () {
         this.db.getDb(this.getServiceJSON()["service"], this.server);
+    },
+    /**
+     * @param {istsos.Offering} offering
+     * @param {istsos.Procedure|istsos.VirtualProcedure} procedure
+     * @param {Array<istsos.ObservedProperty>} observed_properties
+     * @param {istsos.Date} begin_time
+     * @param {istsos.Date} end_time
+     */
+    getObservations: function (offering, procedure, observed_properties, begin_time, end_time) {
+        var proc_name;
+        if (procedure.systemType === "virtual") {
+            proc_name = procedure.getVirtualProcedureJSON()["system"];
+        } else if (procedure.systemType.startsWith("insitu")) {
+            proc_name = procedure.getProcedureJSON()["system"]
+        } else {
+            console.log("WRONG TYPE");
+        }
+        var urns = [];
+        for (var i = 0; i < observed_properties.length; i++) {
+            urns.push(observed_properties[i].getObservedPropertyJSON()["definition"]);
+        }
+        var url = this.server.getUrl() + "wa/istsos/services/" + this.serviceName + "/operations/getobservation/offerings/" +
+        offering.getOfferingJSON()["name"] + "/procedures/" + proc_name + "/observedproperties/" + urns.toString() +
+            "/eventtime/" + begin_time.getDateString() + "/" + end_time.getDateString();
+        console.log(url);
+        this.executeRequest(url, istsos.events.EventType.GETOBSERVATIONS, "GET");
+    },
+    getObservationsBySingleProperty: function (offering, procedure, observed_property, begin_time, end_time) {
+        var proc_name;
+        if (procedure.systemType === "virtual") {
+            proc_name = procedure.getVirtualProcedureJSON()["system"];
+        } else if (procedure.systemType.startsWith("insitu")) {
+            proc_name = procedure.getProcedureJSON()["system"]
+        } else {
+            console.log("WRONG TYPE");
+        }
+        var url = this.server.getUrl() + "wa/istsos/services/" + this.serviceName + "/operations/getobservation/offerings/" +
+            offering.getOfferingJSON()["name"] + "/procedures/" + proc_name + "/observedproperties/" +
+            observed_property.getObservedPropertyJSON()["definition"] + "/eventtime/" + begin_time.getDateString() +
+            "/" + end_time.getDateString();
+        console.log(url);
+        this.executeRequest(url, istsos.events.EventType.GETOBSERVATIONS_BY_PROPERTY, "GET");
+    },
+    /**
+     * @param {int} epsg
+     * @param {istsos.Offering} opt_offering
+     * @param {istsos.Procedure|istsos.VirtualProcedure} opt_procedure
+     */
+    getFeatureCollection: function (opt_epsg, opt_offering, opt_procedure) {
+        var url = this.server.getUrl() + "wa/istsos/services/" + this.serviceName +
+            "/procedures/operations/geojson";
+        if(opt_epsg) {
+            url += "?epsg=" + opt_epsg.toString();
+            if(opt_offering || opt_procedure) {
+                if(opt_offering) {
+                    url += "&offering=" + opt_offering.getOfferingJSON()["name"];
+                }
+                if(opt_procedure && opt_procedure.constructor === istsos.Procedure) {
+                    url += "&procedure=" + opt_procedure.getProcedureJSON()["system"];
+                } else if (opt_procedure && opt_procedure.constructor === istsos.VirtualProcedure) {
+                    url += "&procedure=" + opt_procedure.getVirtualProcedureJSON()["system"];
+                }
+            }
+        }
+        console.log(url);
+        this.executeRequest(url, istsos.events.EventType.GEOJSON, "GET");
     }
 };
-
 /** istsos.Date class */
 /**
  * @param {int} year
@@ -785,11 +865,11 @@ istsos.Service.prototype = {
  */
 istsos.Date = function (year, month, day, hours, minutes, seconds, gmt, opt_description) {
     this.year = year.toString();
-    this.month = month.toString();
-    this.day = day.toString();
-    this.hours = hours.toString();
-    this.minutes = minutes.toString();
-    this.seconds = seconds.toString();
+    this.month = (month > 9) ? month.toString() : "0" + month.toString();
+    this.day = (day > 9) ? day.toString() : "0" + day.toString();
+    this.hours = (hours > 9) ? hours.toString() : "0" + hours.toString();
+    this.minutes = (minutes > 9) ? minutes.toString() : "0" + minutes.toString();
+    this.seconds = (seconds > 9) ? seconds.toString() : "0" + seconds.toString();
     this.gmt = (gmt > 9) ? gmt.toString() : "0" + gmt.toString();
     this.description = opt_description || "Class for converting date&time to proper istSOS format";
 };
@@ -916,16 +996,15 @@ istsos.ObservedProperty = function (service, observedName, definitionUrn, observ
     this.observedName = observedName;
     this.definitionUrn = definitionUrn;
     this.observedDescr = observedDescr;
-    this.constraint = {};
+    this.constraint = null;
     var check = this.validateConstraintInput(opt_constraintType, opt_value);
     if (check === true) {
+        this.constraint = {};
         this.constraint["role"] = "urn:x-ogc:def:classifiers:x-istsos:1.0:qualityIndexCheck:level0";
         this.constraint[opt_constraintType] = (opt_value.constructor === Array) ?
             opt_value.toString().split(",") : opt_value.toString();
     } else {
         console.log("Input constraintType and constraintValue are incorrect or intentionally null/undefined!!! " +
-            "Object created with null/undefined constraint OR not properly created!!!");
-        alert("Input constraintType and constraintValue are incorrect or intentionally null/undefined!!! " +
             "Object created with null/undefined constraint OR not properly created!!!");
     }
     this.service = service;
@@ -989,10 +1068,8 @@ istsos.ObservedProperty.prototype = {
             this.constraint[opt_constraintType] = (opt_value.constructor === Array) ?
                 opt_value.toString().split(",") : opt_value.toString();
         } else {
-            this.constraint = {};
+            this.constraint = null;
             console.log("Input constraintType and constraintValue are incorrect or intentionally null/undefined!!! " +
-                "Object created with null/undefined constraint OR not properly created!!!");
-            alert("Input constraintType and constraintValue are incorrect or intentionally null/undefined!!! " +
                 "Object created with null/undefined constraint OR not properly created!!!");
         }
         var url = this.server.getUrl() + "wa/istsos/services/observedproperties/" +
@@ -1017,7 +1094,7 @@ istsos.ObservedProperty.prototype = {
                 break
             }
         }
-        if (connected = false) {
+        if (connected === false) {
             for (var j = 0; j < properties_service.length; j++) {
                 if (this === properties_service[j]) {
                     properties_service.splice(j, 1);
@@ -1038,7 +1115,6 @@ istsos.ObservedProperty.prototype = {
             case 'between':
                 constraintType = 'interval';
                 if (constraintValue.constructor !== Array) {
-                    alert('Type of "between" constraint must be Array');
                     return false;
                 } else {
                     return true;
@@ -1046,7 +1122,6 @@ istsos.ObservedProperty.prototype = {
             case 'lessThan':
                 constraintType = 'max';
                 if (constraintValue !== parseInt(constraintValue, 10)) {
-                    alert('Type of "lessThan" constraint must be Integer');
                     return false;
                 } else {
                     return true;
@@ -1054,20 +1129,18 @@ istsos.ObservedProperty.prototype = {
             case 'greaterThan':
                 constraintType = 'min';
                 if (constraintValue !== parseInt(constraintValue, 10)) {
-                    alert('Type of "greaterThan" constraint must be Integer');
                     return false;
                 } else {
                     return true;
                 }
             case 'valueList':
                 if (constraintValue.constructor !== Array) {
-                    alert('Type of "between" constraint must be Array');
                     return false;
                 } else {
                     return true;
                 }
             default:
-                alert('Constraint type must be "between", "lessThan", "greaterThan" or "valueList"');
+                console.log('Constraint type must be "between", "lessThan", "greaterThan" or "valueList"');
                 return false;
         }
     }
@@ -1242,8 +1315,6 @@ istsos.Output = function (property, uom, description, opt_constraintType, opt_co
     } else {
         console.log("Input constraintType and constraintValue are incorrect or intentionally null/undefined!!! " +
             "Object created with null/undefined constraint OR not properly created!!!");
-        alert("Input constraintType and constraintValue are incorrect or intentionally null/undefined!!! " +
-            "Object created with null/undefined constraint OR not properly created!!!");
     }
 };
 
@@ -1253,7 +1324,6 @@ istsos.Output.prototype = {
             case 'between':
                 constraintType = 'interval';
                 if (constraintValue.constructor !== Array) {
-                    alert('Type of "between" constraint must be Array');
                     return false;
                 } else {
                     return true;
@@ -1261,7 +1331,6 @@ istsos.Output.prototype = {
             case 'lessThan':
                 constraintType = 'max';
                 if (constraintValue !== parseInt(constraintValue, 10)) {
-                    alert('Type of "lessThan" constraint must be Integer');
                     return false;
                 } else {
                     return true;
@@ -1269,20 +1338,18 @@ istsos.Output.prototype = {
             case 'greaterThan':
                 constraintType = 'min';
                 if (constraintValue !== parseInt(constraintValue, 10)) {
-                    alert('Type of "greaterThan" constraint must be Integer');
                     return false;
                 } else {
                     return true;
                 }
             case 'valueList':
                 if (constraintValue.constructor !== Array) {
-                    alert('Type of "between" constraint must be Array');
                     return false;
                 } else {
                     return true;
                 }
             default:
-                alert('Constraint type must be "between", "lessThan", "greaterThan" or "valueList"');
+                console.log('Constraint type must be "between", "lessThan", "greaterThan" or "valueList"');
                 return false;
         }
     },
