@@ -125,10 +125,20 @@ istsos.on(istsos.events.EventType.GET_CODE, function (ev) {
 });
 
 istsos.on(istsos.events.EventType.RATING_CURVE, function (ev) {
-    log(ev.getData(), 'RATING CURVE')
+    log(ev.getData(), 'RATING CURVE');
 });
 
+istsos.on(istsos.events.EventType.GEOJSON, function (ev) {
+    log(ev.getData(), 'GET FEATURE COLLECTION');
+});
 
+istsos.on(istsos.events.EventType.GETOBSERVATIONS, function (ev) {
+    log(ev.getData(), 'GET OBSERVATIONS');
+});
+
+istsos.on(istsos.events.EventType.GETOBSERVATIONS_BY_PROPERTY, function (ev) {
+    log(ev.getData(), 'GET OBSERVATIONS DATA BY SINGLE PROPERTY')
+});
 
 var ist = new istsos.IstSOS();
 var default_db = new istsos.Database('istsos','localhost','postgres', 'postgres', 5432);
@@ -138,11 +148,14 @@ var default_conf = new istsos.Configuration("default", server);
 var service = new istsos.Service('demo', server);
 var procedure = new istsos.Procedure(service, "BELLINZONA", "", "", "foi", 3857, 25,35,45, [], "insitu-fixed", "");
 var v_procedure = new istsos.VirtualProcedure(service, "V_GNOSCA", "", "", "foi", 3857, 26,36,46, [], "virtual", "");
-var observed_prop = new istsos.ObservedProperty(service, "air-rainfall", "urn:ogc:def:parameter:x-istsos:1.0:meteo:air:rainfall", "", "between", [0,1])
+var observed_prop = new istsos.ObservedProperty(service, "air-rainfall", "urn:ogc:def:parameter:x-istsos:1.0:meteo:air:rainfall", "", "between", [0,1]);
+
 var dataQuality = new istsos.DataQuality(service, 100, "raw", "format is correct");
 var uom = new istsos.UnitOfMeasure(service, "mm", "milimeter");
-var offering = new istsos.Offering("GRABOW", "", true, null, service);
-
+var offering = new istsos.Offering("BELLINZONA", "", true, null, service);
+var v_offering = new istsos.Offering("V_GNOSCA", "", true, null, service);
+var beginTime = new istsos.Date(2014,05,27,00,00,00,2,"");
+var endTime = new istsos.Date(2014,05,28,00,00,00,2,"");
 /** GET REQUEST TESTS */
 //server methods
 function getServiceReq() {
@@ -322,7 +335,33 @@ function getRCurve() {
 function getCodeReq() {
     v_procedure.getCode();
 }
-/*
- getRatingCurve
- getCode
- */
+
+function getGEOJSON() {
+    //TRY WITH
+    //service.getFeatureCollection(3857)
+    //service.getFeatureCollection(3857, offering)
+    //service.getFeatureCollection(3857, null, procedure)
+    //service.getFeatureCollection(3857, null, v_procedure)
+    //service.getFeatureCollection(3857, offering, procedure)
+    //service.getFeatureCollection(3857, offering, v_procedure)
+    service.getFeatureCollection(3857, offering);
+}
+var air_rainfall = new istsos.ObservedProperty(service, "air-rainfall", "urn:ogc:def:parameter:x-istsos:1.0:meteo:air:rainfall", "", null, null);
+var air_temperature = new istsos.ObservedProperty(service, "air-temperature", "urn:ogc:def:parameter:x-istsos:1.0:meteo:air:temperature", "", null, null);
+var air_relative_humidity = new istsos.ObservedProperty(service, "air-relative-humidity", "urn:ogc:def:parameter:x-istsos:1.0:meteo:air:relative:humidity", "", null, null);
+var air_wind_velocity = new istsos.ObservedProperty(service, "air-wind-velocity", "urn:ogc:def:parameter:x-istsos:1.0:meteo:air:wind:velocity", "", null, null);
+
+function getOBSERVATIONS() {
+    //TRY WITH
+    //service.getObservations(v_offering, v_procedure, [], beginTime, endTime);
+    /*air-rainfall (mm)
+     air-temperature (°C)
+     air-relative-humidity (%)
+     air-wind-velocity (m/s)*/
+    
+    service.getObservations(offering, procedure, [air_rainfall], beginTime, endTime);
+}
+
+function getOBSERVATIONDATA() {
+    service.getObservationsBySingleProperty(offering, procedure, air_rainfall, beginTime, endTime);
+}
