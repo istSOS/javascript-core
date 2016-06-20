@@ -349,6 +349,8 @@ istsos.Database.prototype = {
      */
     executeRequest: function (url, eventType, method, opt_data, opt_callback) {
         goog.net.XhrIo.send(url, function (e) {
+            var obj = e.target.getResponseJson();
+            console.log(obj);
             istsos.fire(eventType, e.target);
         }, method, opt_data);
     },
@@ -359,6 +361,7 @@ istsos.Database.prototype = {
     getDb: function (serviceName, server) {
         var sname = serviceName || "default";
         var url = server.getUrl() + "wa/istsos/services/" + sname + "/configsections/connection";
+        console.log(url);
         this.executeRequest(url, istsos.events.EventType.DATABASE, "GET");
     },
     /**
@@ -375,27 +378,28 @@ istsos.Database.prototype = {
         this.host = host || this.host;
         this.password = password || this.password;
         this.port = port || this.port;
-        var sname = "default" || opt_service.getServiceJSON()["service"];
-        var url = server.getUrl() + "wa/istsos/services/" + sname + "/connection";
-        this.executeRequest(url, "PUT", this.getDbJSON());
+        var sname = (opt_service) ? opt_service.getServiceJSON()["service"] : "default";
+        var url = server.getUrl() + "wa/istsos/services/" + sname + "/configsections/connection";
+        console.log(JSON.stringify(this.getDbJSON()));
+        this.executeRequest(url, istsos.events.EventType.UPDATE_DATABASE, "PUT", JSON.stringify(this.getDbJSON()));
     },
     /**
      * @param {istsos.Server} server
      */
     validateDb: function (server) {
         var url = server.getUrl() + "wa/istsos/operations/validatedb";
-        this.executeRequest(url, istsos.events.EventType.VALIDATE_DB, "POST", this.getDbJSON());
+        this.executeRequest(url, istsos.events.EventType.VALIDATE_DB, "POST", JSON.stringify(this.getDbJSON()));
     },
     /**
      * @returns {JSON}
      */
     getDbJSON: function () {
         return {
+            "dbname": this.dbname,
+            "host": this.host,
             "user": this.user,
             "password": this.password,
-            "host": this.host,
             "port": this.port.toString(),
-            "dbname": this.dbname
         };
     }
 };
@@ -619,6 +623,8 @@ istsos.Service = function (serviceName, server, opt_db, opt_config, opt_epsg) {
 istsos.Service.prototype = {
     executeRequest: function (url, eventType, method, opt_data, opt_callback) {
         goog.net.XhrIo.send(url, function (e) {
+            var obj = e.target.getResponseJson();
+            console.log(obj);
             istsos.fire(eventType, e.target);
         }, method, opt_data);
     },
@@ -661,7 +667,8 @@ istsos.Service.prototype = {
     },
     registerOffering: function (offering) {
         var url = this.server.getUrl() + "wa/istsos/services/" + this.getServiceJSON()["service"] + "/offerings";
-        this.executeRequest(url, istsos.events.EventType.NEW_OFFERING, "POST", offering.getOfferingJSON());
+        console.log(url);
+        this.executeRequest(url, istsos.events.EventType.NEW_OFFERING, "POST", JSON.stringify(offering.getOfferingJSON()));
     },
     getOfferingNames: function () {
         var url = this.server.getUrl() + "wa/istsos/services/" + this.getServiceJSON()["service"] + "/offerings/operations/getlist";
@@ -736,7 +743,7 @@ istsos.Service.prototype = {
     },
     registerUom: function (uom) {
         var url = this.server.getUrl() + "wa/istsos/services/" + this.getServiceJSON()["service"] + "/uoms";
-        this.executeRequest(url, istsos.events.EventType.NEW_UOM, "POST", uom.getUomJSON());
+        this.executeRequest(url, istsos.events.EventType.NEW_UOM, "POST", JSON.stringify(uom.getUomJSON()));
     },
     getUoms: function () {
         var url = this.server.getUrl() + "wa/istsos/services/" + this.getServiceJSON()["service"] + "/uoms";
@@ -757,7 +764,7 @@ istsos.Service.prototype = {
         var url = this.server.getUrl() + "wa/istsos/services/" + this.getServiceJSON()["service"] +
             "/dataqualities";
         console.log(url)
-        this.executeRequest(url, istsos.events.EventType.NEW_DATAQUALITY, "POST", dataQuality.getDataQualityJSON());
+        this.executeRequest(url, istsos.events.EventType.NEW_DATAQUALITY, "POST", JSON.stringify(dataQuality.getDataQualityJSON()));
     }
     ,
     getDataQualities: function () {
@@ -910,6 +917,8 @@ istsos.Offering = function (offeringName, offeringDescription, active, expiratio
 istsos.Offering.prototype = {
     executeRequest: function (url, eventType, method, opt_data, opt_callback) {
         goog.net.XhrIo.send(url, function (e) {
+            var obj = e.target.getResponseJson();
+            console.log(obj);
             istsos.fire(eventType, e.target);
         }, method, opt_data);
     },
@@ -926,13 +935,15 @@ istsos.Offering.prototype = {
      * @param {istsos.Date} newExpirationDate
      */
     updateOffering: function (newName, newDescription, newActive, newExpirationDate) {
-        this.offeringName = newName || this.offeringName;
+        var oldOfferingName = this.offeringName;
+        this.offeringName = newName || this.offeringName
         this.offeringDescription = newDescription || this.offeringDescription;
         this.active = newActive || this.active;
         this.expirationDate = newExpirationDate || this.expirationDate;
         var url = this.service.server.getUrl() + "wa/istsos/services/" + this.service.getServiceJSON()["service"] +
-            "/offerings/" + this.getOfferingJSON()["name"];
-        this.executeRequest(url, istsos.events.EventType.UPDATE_OFFERING, "PUT", this.getOfferingJSON());
+            "/offerings/" + oldOfferingName;
+        console.log(this.getOfferingJSON());
+        this.executeRequest(url, istsos.events.EventType.UPDATE_OFFERING, "PUT", JSON.stringify(this.getOfferingJSON()));
     },
     deleteOffering: function () {
         for (var i = 0; i < this.service.getOfferingsProperty().length; i++) {
@@ -946,7 +957,7 @@ istsos.Offering.prototype = {
             "name": this.getOfferingJSON()["name"],
             "description": this.getOfferingJSON()["description"]
         };
-        this.executeRequest(url, istsos.events.EventType.DELETE_OFFERING, "DELETE", data);
+        this.executeRequest(url, istsos.events.EventType.DELETE_OFFERING, "DELETE", JSON.stringify(data));
     },
     getMemberProceduresProperty: function () {
         return this.memberProcedures;
@@ -1181,13 +1192,14 @@ istsos.DataQuality.prototype = {
      * @param {string} newNameDQ
      * @param {string} newDescrDQ
      */
-    updateDataQuality: function (newCodeDQ, newNameDQ, newDescrDQ) {
+    updateDataQuality: function ( newCodeDQ, newNameDQ, newDescrDQ) {
+        var oldName = this.code;
         this.code = newCodeDQ || this.code;
         this.name = newNameDQ || this.name;
         this.description = newDescrDQ || this.description;
-        var url = this.service.server.getUrl() + "wa/istsos/services" + this.service.getServiceJSON()["service"] +
-            "/dataqualities/" + this.getDataQualityJSON()["code"];
-        this.executeRequest(url, istsos.events.EventType.UPDATE_DATAQUALITY, "PUT", this.getDataQualityJSON());
+        var url = this.service.server.getUrl() + "wa/istsos/services/" + this.service.getServiceJSON()["service"] +
+            "/dataqualities/" + oldName;
+        this.executeRequest(url, istsos.events.EventType.UPDATE_DATAQUALITY, "PUT", JSON.stringify(this.getDataQualityJSON()));
     },
     deleteDataQuality: function () {
         var dataQualities = this.service.getDataQualitiesProperty();
@@ -1196,21 +1208,21 @@ istsos.DataQuality.prototype = {
                 dataQualities.splice(i, 1);
             }
         }
-        var url = this.service.server.getUrl() + "wa/istsos/services" + this.service.getServiceJSON()["service"] +
+        var url = this.service.server.getUrl() + "wa/istsos/services/" + this.service.getServiceJSON()["service"] +
             "/dataqualities/" + this.getDataQualityJSON()["code"];
-        this.executeRequest(url, istsos.events.EventType.DELETE_DATAQUALITY, "DELETE", this.getDataQualityJSON());
+        this.executeRequest(url, istsos.events.EventType.DELETE_DATAQUALITY, "DELETE", JSON.stringify(this.getDataQualityJSON()));
     }
 };
 
 /** istsos.UnitOfMeasure  class */
 /**
  * @param {istsos.Service} service
- * @param {string} code
+ * @param {string} name
  * @param {string} description
  * @constructor
  */
-istsos.UnitOfMeasure = function (service, code, description) {
-    this.code = code;
+istsos.UnitOfMeasure = function (service, name, description) {
+    this.name = name;
     this.description = description;
     this.proceduresIncluded = [];
     this.service = service;
@@ -1228,7 +1240,7 @@ istsos.UnitOfMeasure.prototype = {
         var procedures = this.service.getProceduresProperty();
         var v_procedures = this.service.getVirtualProceduresProperty();
         var all = procedures.concat(v_procedures);
-        var code = this.code;
+        var code = this.name;
         if(all.length !== 0) {
             for (var i = 0; i < all.length; i++) {
                 for (var j = 0; j < all[i].getOutputsProperty().length; j++) {
@@ -1244,22 +1256,23 @@ istsos.UnitOfMeasure.prototype = {
      */
     getUomJSON: function () {
         var uomJSON = {
-            "code": this.code,
+            "name": this.name,
             "description": this.description
         }
         return uomJSON;
 
     },
     /**
-     * @param {string} newCode
+     * @param {string} newName
      * @param {string} newDescr
      */
-    updateUom: function (newCode, newDescr) {
-        this.code = newCode || this.code;
+    updateUom: function (newName, newDescr) {
+        var oldName = this.name;
+        this.name = newName || this.name;
         this.description = newDescr || this.description;
         var url = this.service.server.getUrl() + "wa/istsos/services/" + this.service.getServiceJSON()["service"] +
-            "/uoms/" + this.getUomJSON()["code"];
-        this.executeRequest(url, istsos.events.EventType.UPDATE_UOM, "PUT", this.getUomJSON());
+            "/uoms/" + oldName;
+        this.executeRequest(url, istsos.events.EventType.UPDATE_UOM, "PUT", JSON.stringify(this.getUomJSON()));
     },
     deleteUom: function () {
         var procedures = this.service.getProceduresProperty();
@@ -1270,7 +1283,7 @@ istsos.UnitOfMeasure.prototype = {
         all.forEach(function (p) {
             outputs.concat(p.getOutputsProperty());
         });
-        var code = this.code;
+        var code = this.name;
         var connected = false;
         for (var i = 0; i < outputs.length; i++) {
             if (code === outputs[i].getOutputJSON()["uom"]) {
@@ -1287,8 +1300,8 @@ istsos.UnitOfMeasure.prototype = {
             }
         }
         var url = this.service.server.getUrl() + "wa/istsos/services/" + this.service.getServiceJSON()["service"] +
-            "/uoms/" + this.getUomJSON()["code"];
-        this.executeRequest(url, istsos.events.EventType.DELETE_UOM, "DELETE", this.getUomJSON());
+            "/uoms/" + this.getUomJSON()["name"];
+        this.executeRequest(url, istsos.events.EventType.DELETE_UOM, "DELETE", JSON.stringify(this.getUomJSON()));
     }
 };
 
