@@ -145,7 +145,7 @@ istsos.on(istsos.events.EventType.NEW_SERVICE, function (ev) {
 });
 
 istsos.on(istsos.events.EventType.DELETE_SERVICE, function (ev) {
-    console.log("DELETE SERVICE")
+    console.log("DELETE SERVICE");
 });
 
 istsos.on(istsos.events.EventType.UPDATE_PROVIDER, function (ev) {
@@ -178,6 +178,52 @@ istsos.on(istsos.events.EventType.UPDATE_PROXY, function (ev) {
     service_local.config.getProxy();
 });
 
+istsos.on(istsos.events.EventType.UPDATE_DATABASE, function (ev) {
+    console.log(ev.getData());
+    service_local.db.getDb(service_local.serviceName, server_local);
+});
+
+istsos.on(istsos.events.EventType.VALIDATE_DB, function (ev) {
+    log(ev.getData(), 'TEST CONNECTION');
+});
+
+istsos.on(istsos.events.EventType.NEW_OFFERING, function (ev) {
+    console.log(ev.getData());
+    service.getOfferingNames();
+});
+
+istsos.on(istsos.events.EventType.UPDATE_OFFERING, function (ev) {
+    service.getOfferingNames();
+});
+
+istsos.on(istsos.events.EventType.DELETE_OFFERING, function (ev) {
+    console.log("DELETE OFFERING");
+});
+
+istsos.on(istsos.events.EventType.NEW_DATAQUALITY, function (ev) {
+    service.getDataQuality(newDataQuality);
+});
+
+istsos.on(istsos.events.EventType.UPDATE_DATAQUALITY, function (ev) {
+    service.getDataQuality(newDataQuality);
+});
+
+istsos.on(istsos.events.EventType.DELETE_DATAQUALITY, function (ev) {
+    console.log("DELETE DATA QUALITY");
+});
+
+istsos.on(istsos.events.EventType.NEW_UOM, function (ev) {
+    service.getUoms();
+});
+
+istsos.on(istsos.events.EventType.UPDATE_UOM, function (ev) {
+    service.getUoms();
+});
+
+istsos.on(istsos.events.EventType.DELETE_UOM, function (ev) {
+    console.log("DELETE UNIT OF MEASURE");
+});
+
 
 var ist = new istsos.IstSOS();
 var default_db = new istsos.Database('istsos', 'localhost', 'postgres', 'postgres', 5432);
@@ -185,7 +231,7 @@ var server = new istsos.Server('test', 'http://istsos.org/istsos/', default_db);
 ist.addServer(server);
 ist.addServer(server_local);
 var default_conf = new istsos.Configuration("default", server);
-var service = new istsos.Service('demo', server);
+var service = new istsos.Service("demo", server);
 var procedure = new istsos.Procedure(service, "BELLINZONA", "", "", "foi", 3857, 25, 35, 45, [], "insitu-fixed", "");
 var v_procedure = new istsos.VirtualProcedure(service, "V_GNOSCA", "", "", "foi", 3857, 26, 36, 46, [], "virtual", "");
 var observed_prop = new istsos.ObservedProperty(service, "air-rainfall", "urn:ogc:def:parameter:x-istsos:1.0:meteo:air:rainfall", "", "between", [0, 1]);
@@ -473,3 +519,67 @@ function putProxy() {
         service_local.config.updateProxy("www.newUrl.com");
     }
 }
+
+//DATABASE
+function getDatabase() {
+    var resp = prompt("Default or not?", "default");
+    if(resp === "default") {
+        var defaultdb = new istsos.Database("istsos", "localhost", "postgres", "postgres", 5432);
+        defaultdb.getDb("default", server_local);
+    } else {
+        db.getDb("test_post", server_local);
+    }
+}
+var db = new istsos.Database("istsos","localhost", "postgres", "postgres", 5432);
+function putDatabase() {
+    db.setDb("istsos_test","localhost", "postgres", "postgres", 5432, server_local, service_local);
+}
+
+function validateDB() {
+    var db = new istsos.Database("istsos","localhost", "postgres", "postgres", 5432);
+    db.validateDb(server_local);
+}
+
+//SERVICE - OFFERING
+var newOffering = new istsos.Offering("offering_post", "testing post request for offering", true, "", service);
+function regOffering() {
+    service.registerOffering(newOffering);
+}
+
+function putOffering() {
+    newOffering.updateOffering("offering_put","TESTED PUT request for offering", true, "");
+}
+
+function delOffering() {
+    newOffering.deleteOffering();
+}
+
+//SERVICE - DATA QUALITY
+var newDataQuality = new istsos.DataQuality(service, 1000, "dataQuality test", "testing POST request for data quality");
+function registerDQ() {
+    service.registerDataQuality(newDataQuality);
+}
+
+function updateDQ() {
+    newDataQuality.updateDataQuality(1500, "dataQuality update", "testing PUT request for data quality");
+}
+
+function deleteDQ() {
+    newDataQuality.deleteDataQuality();
+}
+
+//SERVICE - UNIT OF MEASURE
+var newUom = new istsos.UnitOfMeasure(service, "km", "kilometer");
+function registerUOM() {
+    service.registerUom(newUom);
+}
+
+function putUOM() {
+    newUom.updateUom("km2", "square kilometer");
+}
+
+function deleteUOM() {
+    newUom.deleteUom();
+}
+
+//SERVICE - DATA QUALITY

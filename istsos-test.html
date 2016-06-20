@@ -79,10 +79,6 @@
         a {
             cursor: pointer;
         }
-        form {
-            margin-top: 10px;
-            margin-bottom: 10px;
-        }
 
     </style>
 </head>
@@ -119,10 +115,17 @@
                     <li class="list-group-item"><button class="btn btn-success" onclick="putProxy()">PUT PROXY</button></li>
                     <li class="list-group-item"><button class="btn btn-success" onclick="getEPSGS()">GET EPSG CODES</button></li>
                 </ul>
+                <li class="list-group-item" data-toggle="collapse" data-target="#database_content"><a>DATABASE METHODS</a></li>
+                <ul id="database_content" class="collapse list-group">
+                    <li class="list-group-item"><button class="btn btn-success" onclick="getDatabase()">GET DATABASE</button></li>
+                    <li class="list-group-item"><button class="btn btn-success" onclick="putDatabase()">PUT DATABASE</button></li>
+                    <li class="list-group-item"><button class="btn btn-success" onclick="validateDB()">TEST CONNECTION</button></li>
+                </ul>
                 <li class="list-group-item" data-toggle="collapse" data-target="#service_content"><a>SERVICE METHODS</a></li>
                 <ul id="service_content" class="collapse list-group">
                     <li class="list-group-item"><button class="btn btn-success" onclick="getOffNames()">GET OFFERING NAMES</button></li>
                     <li class="list-group-item"><button class="btn btn-success" onclick="getOffs()">GET OFFERINGS</button></li>
+                    <li class="list-group-item"><button class="btn btn-success" onclick="regOffering()">POST OFFERING</button></li>
                     <li class="list-group-item"><button class="btn btn-success" onclick="getProcs()">GET PROCEDURES</button></li>
                     <li class="list-group-item"><button class="btn btn-success" onclick="getProc()">GET PROCEDURE</button></li>
                     <li class="list-group-item"><button class="btn btn-success" onclick="getVProcs()">GET VIRTUAL PROCEDURES</button></li>
@@ -131,8 +134,10 @@
                     <li class="list-group-item"><button class="btn btn-success" onclick="getOP()">GET OBSERVED PROPERTY</button> </li>
                     <li class="list-group-item"><button class="btn btn-success" onclick="getDQs()">GET DATA QUALITIES</button></li>
                     <li class="list-group-item"><button class="btn btn-success" onclick="getDQ()">GET DATA QUALITY</button></li>
+                    <li class="list-group-item"><button class="btn btn-success" onclick="registerDQ()">POST DATA QUALITY</button></li>
                     <li class="list-group-item"><button class="btn btn-success" onclick="getUOMs()">GET UNITS OF MEASURE</button></li>
-                    <li class="list-group-item"><button class="btn btn-success" onclick="getUOM()">GET GET UNIT OF MEASURE</button> </li>
+                    <li class="list-group-item"><button class="btn btn-success" onclick="getUOM()">GET UNIT OF MEASURE</button> </li>
+                    <li class="list-group-item"><button class="btn btn-success" onclick="registerUOM()">POST UNIT OF MEASURE</button> </li>
                     <li class="list-group-item"><button class="btn btn-success" onclick="getServiceDatabase()">GET SERVICE DATABASE</button> </li>
                     <li class="list-group-item"><button class="btn btn-success" onclick="getSysTypes()">GET SYSTEM TYPES</button> </li>
                     <li class="list-group-item"><button class="btn btn-success" onclick="getGEOJSON()">GET FEATURE COLLECTION</button> </li>
@@ -141,6 +146,8 @@
                 </ul>
                 <li class="list-group-item" data-toggle="collapse" data-target="#offering_content"><a>OFFERING METHODS</a></li>
                 <ul id="offering_content" class="collapse list-group">
+                    <li class="list-group-item"><button class="btn btn-success" onclick="putOffering()">PUT OFFERING</button></li>
+                    <li class="list-group-item"><button class="btn btn-success" onclick="delOffering()">DELETE OFFERING</button></li>
                     <li class="list-group-item"><button class="btn btn-success" onclick="getMembers()">MEMBER PROCEDURES</button></li>
                     <li class="list-group-item"><button class="btn btn-success" onclick="getNonMembers()">NON-MEMBER PROCEDURES</button></li>
                 </ul>
@@ -152,9 +159,15 @@
                     <li class="list-group-item"><button class="btn btn-success" onclick="getCodeReq()">CODE</button></li>
                 </ul>
                 <li class="list-group-item" data-toggle="collapse" data-target="#uom_content"><a>UNIT OF MEASURE METHODS</a></li>
-                <ul id="uom_content" class="collapse list-group"></ul>
+                <ul id="uom_content" class="collapse list-group">
+                    <li class="list-group-item"><button class="btn btn-success" onclick="putUOM()">PUT UNIT OF MEASURE</button></li>
+                    <li class="list-group-item"><button class="btn btn-success" onclick="deleteUOM()">DELETE UNIT OF MEASURE</button></li>
+                </ul>
                 <li class="list-group-item" data-toggle="collapse" data-target="#dq_content"><a>DATA QUALITY METHODS</a></li>
-                <ul id="dq_content" class="collapse list-group"></ul>
+                <ul id="dq_content" class="collapse list-group">
+                    <li class="list-group-item"><button class="btn btn-success" onclick="updateDQ()">PUT DATA QUALITY</button></li>
+                    <li class="list-group-item"><button class="btn btn-success" onclick="deleteDQ()">DELETE DATA QUALITY</button></li>
+                </ul>
                 <li class="list-group-item" data-toggle="collapse" data-target="#op_content"><a>OBSERVED PROPERTY METHODS</a></li>
                 <ul id="op_content" class="collapse list-group"></ul>
             </ul>
