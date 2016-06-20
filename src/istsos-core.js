@@ -260,7 +260,8 @@ istsos.Server.prototype = {
      */
     registerService: function (service) {
         var url = this.getUrl() + 'wa/istsos/services';
-        this.executeRequest(url, istsos.events.EventType.NEW_SERVICE, 'POST', service.getServiceJSON());
+        console.log(service.getServiceJSON())
+        this.executeRequest(url, istsos.events.EventType.NEW_SERVICE, 'POST', JSON.stringify(service.getServiceJSON()));
     },
     /**
      * @param {istsos.Service} service
@@ -272,8 +273,8 @@ istsos.Server.prototype = {
                 this.services.splice(i, 1);
             }
         }
-        var url = this.url + 'wa/istsos/services/' + serviceName;
-        this.executeRequest(url, istsos.events.EventType.DELETE_SERVICE, 'DELETE', {"name": serviceName});
+        var url = this.url + 'wa/istsos/services/' + service.serviceName;
+        this.executeRequest(url, istsos.events.EventType.DELETE_SERVICE, 'DELETE', JSON.stringify({"name": service.serviceName}));
     },
     getStatus: function () {
         var url = this.url + 'wa/istsos/operations/status';
@@ -421,17 +422,17 @@ istsos.Configuration.prototype = {
      */
     executeRequest: function (url, eventType, method, opt_data, opt_callback) {
         goog.net.XhrIo.send(url, function (e) {
+            var obj = e.target.getResponseJson();
+            console.log(obj);
             istsos.fire(eventType, e.target);
         }, method, opt_data);
     },
     getConf: function () {
         var url = this.serverUrl + "wa/istsos/services/" + this.sname + "/configsections";
-        console.log(url);
         this.executeRequest(url, istsos.events.EventType.CONFIGSECTIONS, "GET");
     },
     getProvider: function () {
         var url = this.serverUrl + "wa/istsos/services/" + this.sname + "/configsections/provider";
-        console.log(url);
         this.executeRequest(url, istsos.events.EventType.PROVIDER, "GET");
     },
     /**
@@ -466,11 +467,10 @@ istsos.Configuration.prototype = {
             "contactcountry": contactCountry
         };
         var url = this.serverUrl + "wa/istsos/services/" + this.sname + "/configsections/provider";
-        this.executeRequest(url, istsos.events.EventType.UPDATE_PROVIDER, "PUT", data);
+        this.executeRequest(url, istsos.events.EventType.UPDATE_PROVIDER, "PUT", JSON.stringify(data));
     },
     getIdentification: function () {
         var url = this.serverUrl + "wa/istsos/services/" + this.sname + "/configsections/identification";
-        console.log(url);
         this.executeRequest(url, istsos.events.EventType.IDENTIFICATION, "GET");
     },
     /**
@@ -490,14 +490,15 @@ istsos.Configuration.prototype = {
             "authority": authority,
             "fees": fees,
             "keywords": keywords,
-            "accesscontrains": accessConstrains
+            "accessconstrains": accessConstrains
         };
         var url = this.serverUrl + "wa/istsos/services/" + this.sname + "/configsections/identification";
-        this.executeRequest(url, istsos.events.EventType.UPDATE_IDENTIFICATION, "PUT", data);
+        console.log(url);
+        console.log(JSON.stringify(data));
+        this.executeRequest(url, istsos.events.EventType.UPDATE_IDENTIFICATION, "PUT", JSON.stringify(data));
     },
     getMqtt: function () {
         var url = this.serverUrl + "wa/istsos/services/" + this.sname + "/configsections/mqtt";
-        console.log(url);
         this.executeRequest(url, istsos.events.EventType.MQTT, "GET");
     },
     /**
@@ -516,11 +517,10 @@ istsos.Configuration.prototype = {
             "broker_port": brokerPort
         };
         var url = this.serverUrl + "wa/istsos/services/" + this.sname + "/configsections/mqtt";
-        this.executeRequest(url, istsos.events.EventType.UPDATE_MQTT, "PUT", data);
+        this.executeRequest(url, istsos.events.EventType.UPDATE_MQTT, "PUT", JSON.stringify(data));
     },
     getCrs: function () {
         var url = this.serverUrl + "wa/istsos/services/" + this.sname + "/configsections/geo";
-        console.log(url);
         this.executeRequest(url, istsos.events.EventType.CRS, "GET");
     },
     /**
@@ -539,11 +539,10 @@ istsos.Configuration.prototype = {
             "istsosepsg": istsosEpsg
         };
         var url = this.serverUrl + "wa/istsos/services/" + this.sname + "/configsections/geo";
-        this.executeRequest(url, istsos.events.EventType.UPDATE_CRS, "PUT", data);
+        this.executeRequest(url, istsos.events.EventType.UPDATE_CRS, "PUT", JSON.stringify(data));
     },
     getObservationConf: function () {
         var url = this.serverUrl + "wa/istsos/services/" + this.sname + "/configsections/getobservation";
-        console.log(url);
         this.executeRequest(url, istsos.events.EventType.OBSERVATION_CONF, "GET");
     },
     /**
@@ -567,11 +566,10 @@ istsos.Configuration.prototype = {
             "aggregatenodata": aggregateNoData
         };
         var url = this.serverUrl + "wa/istsos/services/" + this.sname + "/configsections/getobservation";
-        this.executeRequest(url, istsos.events.EventType.UPDATE_OBSERVATION_CONF, "PUT", data);
+        this.executeRequest(url, istsos.events.EventType.UPDATE_OBSERVATION_CONF, "PUT", JSON.stringify(data));
     },
     getProxy: function () {
         var url = this.serverUrl + "wa/istsos/services/" + this.sname + "/configsections/serviceurl";
-        console.log(url);
         this.executeRequest(url, istsos.events.EventType.PROXY, "GET");
     },
     /**
@@ -582,11 +580,10 @@ istsos.Configuration.prototype = {
             "url": newUrl
         };
         var url = this.serverUrl + "wa/istsos/services/" + this.sname + "/configsections/serviceurl";
-        this.executeRequest(url, istsos.events.EventType.UPDATE_PROXY, "PUT", data);
+        this.executeRequest(url, istsos.events.EventType.UPDATE_PROXY, "PUT", JSON.stringify(data));
     },
     getEpsgCodes: function () {
         var url = this.serverUrl + "wa/istsos/services/" + this.sname + "/epsgs";
-        console.log(url);
         this.executeRequest(url, istsos.events.EventType.EPSG_CODES, "GET");
     }
 };
@@ -1296,13 +1293,6 @@ istsos.UnitOfMeasure.prototype = {
 };
 
 istsos.Output = function (property, uom, description, opt_constraintType, opt_constraintValue) {
-    this.outputObject = {
-        "name": property.getObservedPropertyJSON()["name"],
-        "definition": property.getObservedPropertyJSON()["definition"],
-        "uom": uom.getUomJSON()["code"],
-        "description": description || "",
-        "constraint": {}
-    };
     this.observedProperty = property;
     this.uom = uom;
     this.description = description;
