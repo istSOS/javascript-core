@@ -79,6 +79,10 @@
         a {
             cursor: pointer;
         }
+        form {
+            margin-top: 10px;
+            margin-bottom: 10px;
+        }
 
     </style>
 </head>
@@ -90,6 +94,8 @@
                 <li class="list-group-item" data-toggle="collapse" data-target="#server_content"><a>SERVER METHODS</a></li>
                 <ul id="server_content" class="collapse list-group">
                     <li class="list-group-item"><button class="btn btn-success" onclick="getServiceReq()">GET SERVICE</button></li>
+                    <li class="list-group-item"><button class="btn btn-success" onclick="registerSERVICE()">POST SERVICE</button></li>
+                    <li class="list-group-item"><button class="btn btn-success" onclick="deleteSERVICE()">DELETE SERVICE</button></li>
                     <li class="list-group-item"><button class="btn btn-success" onclick="getStatusReq()">GET STATUS</button></li>
                     <li class="list-group-item"><button class="btn btn-success" onclick="getAbout()">GET ABOUT INFO</button></li>
                     <li class="list-group-item"><button class="btn btn-success" onclick="getConf()">GET CONFIGURATION</button></li>
@@ -100,11 +106,17 @@
                 <ul id="conf_content" class="collapse list-group">
                     <li class="list-group-item"><button class="btn btn-success" onclick="getConfigurationReq()">GET CONFIGURATION</button></li>
                     <li class="list-group-item"><button class="btn btn-success" onclick="getProviderReq()">GET PROVIDER</button></li>
+                    <li class="list-group-item"><button class="btn btn-success" onclick="putProviderReq()">PUT PROVIDER</button></li>
                     <li class="list-group-item"><button class="btn btn-success" onclick="getIdentReq()">GET IDENTIFICATION</button></li>
+                    <li class="list-group-item"><button class="btn btn-success" onclick="putIdentificationReq()">PUT IDENTIFICATION</button></li>
                     <li class="list-group-item"><button class="btn btn-success" onclick="getCoordSysReq()">GET COORDINATE SYSTEM</button></li>
+                    <li class="list-group-item"><button class="btn btn-success" onclick="putCRS()">PUT COORDINATE SYSTEM</button></li>
                     <li class="list-group-item"><button class="btn btn-success" onclick="mqtt()">GET MQTT</button></li>
+                    <li class="list-group-item"><button class="btn btn-success" onclick="putMqtt()">PUT MQTT</button></li>
                     <li class="list-group-item"><button class="btn btn-success" onclick="getOC()">GET OBSERVATION CONFIG</button></li>
+                    <li class="list-group-item"><button class="btn btn-success" onclick="putOC()">PUT OBSERVATION CONFIG</button></li>
                     <li class="list-group-item"><button class="btn btn-success" onclick="getProxyReq()">GET PROXY</button></li>
+                    <li class="list-group-item"><button class="btn btn-success" onclick="putProxy()">PUT PROXY</button></li>
                     <li class="list-group-item"><button class="btn btn-success" onclick="getEPSGS()">GET EPSG CODES</button></li>
                 </ul>
                 <li class="list-group-item" data-toggle="collapse" data-target="#service_content"><a>SERVICE METHODS</a></li>
@@ -154,5 +166,6 @@
     </div>
 </div>
 <script type="text/javascript" src="istsos-test.js"></script>
+
 </body>
 </html>
