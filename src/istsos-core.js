@@ -684,7 +684,9 @@ istsos.Service.prototype = {
     },
     registerProcedure: function (procedure) {
         var url = this.server.getUrl() + "wa/istsos/services/" + this.serviceName + "/procedures";
-        this.executeRequest(url, istsos.events.EventType.NEW_PROCEDURE, "POST", procedure.getProcedureJSON());
+        console.log(url);
+        console.log(JSON.stringify(procedure.getProcedureJSON()));
+        this.executeRequest(url, istsos.events.EventType.NEW_PROCEDURE, "POST", JSON.stringify(procedure.getProcedureJSON()));
     },
     getProcedure: function(procedure) {
         var url = this.server.getUrl() + "wa/istsos/services/" + this.serviceName + "/procedures/" + procedure.getProcedureJSON()["system"];
@@ -722,7 +724,8 @@ istsos.Service.prototype = {
     registerObservedProperty: function (property) {
         var url = this.server.getUrl() + "wa/istsos/services/" + this.getServiceJSON()["service"] +
             "/observedproperties";
-        this.executeRequest(url, istsos.events.EventType.NEW_OBSERVED_PROPERTY, "POST", property.getObservedPropertyJSON())
+        console.log(JSON.stringify(property.getObservedPropertyJSON()));
+        this.executeRequest(url, istsos.events.EventType.NEW_OBSERVED_PROPERTY, "POST", JSON.stringify(property.getObservedPropertyJSON()));
     },
     getObservedProperties: function () {
         var url = this.server.getUrl() + "wa/istsos/services/" + this.serviceName +  "/observedproperties";
@@ -988,6 +991,12 @@ istsos.Offering.prototype = {
         return offeringJSON;
     }
 };
+istsos.ConstraintInputs = {
+    "between": "interval",
+    "lessThan": "max",
+    "greaterThan": "min",
+    "valueList": "valueList"
+};
 
 /** istsos.ObservedProperty class */
 /**
@@ -1009,11 +1018,10 @@ istsos.ObservedProperty = function (service, observedName, definitionUrn, observ
     if (check === true) {
         this.constraint = {};
         this.constraint["role"] = "urn:x-ogc:def:classifiers:x-istsos:1.0:qualityIndexCheck:level0";
-        this.constraint[opt_constraintType] = (opt_value.constructor === Array) ?
+        this.constraint[istsos.ConstraintInputs[opt_constraintType]] = (opt_value.constructor === Array) ?
             opt_value.toString().split(",") : opt_value.toString();
     } else {
-        console.log("Input constraintType and constraintValue are incorrect or intentionally null/undefined!!! " +
-            "Object created with null/undefined constraint OR not properly created!!!");
+        console.log("Input constraintType and constraintValue are incorrect or intentionally null/undefined!!! ");
     }
     this.service = service;
     this.proceduresIncluded = [];
@@ -1024,6 +1032,8 @@ istsos.ObservedProperty = function (service, observedName, definitionUrn, observ
 istsos.ObservedProperty.prototype = {
     executeRequest: function (url, eventType, method, opt_data, opt_callback) {
         goog.net.XhrIo.send(url, function (e) {
+            var obj = e.target.getResponseJson();
+            console.log(obj);
             istsos.fire(eventType, e.target);
         }, method, opt_data);
     },
@@ -1057,7 +1067,7 @@ istsos.ObservedProperty.prototype = {
             "definition": this.definitionUrn,
             "description": this.observedDescr,
             "constraint": this.constraint
-        }
+        };
         return observedJSON;
     },
     /**
@@ -1068,21 +1078,22 @@ istsos.ObservedProperty.prototype = {
      * @param {Array<int>|int} opt_value
      */
     updateObservedProperty: function (newPropertyName, newDefinitionUrn, newPropertyDescr, opt_constraintType, opt_value) {
+        var oldDefinitionUrn = this.definitionUrn;
         this.observedName = newPropertyName || this.observedName;
         this.definitionUrn = newDefinitionUrn || this.definitionUrn;
         this.observedDescr = newPropertyName || this.observedDescr;
         if (this.validateConstraintInput(opt_constraintType, opt_value) === true) {
+            this.constraint = {};
             this.constraint["role"] = "urn:x-ogc:def:classifiers:x-istsos:1.0:qualityIndexCheck:level0";
-            this.constraint[opt_constraintType] = (opt_value.constructor === Array) ?
+            this.constraint[istsos.ConstraintInputs[opt_constraintType]] = (opt_value.constructor === Array) ?
                 opt_value.toString().split(",") : opt_value.toString();
         } else {
-            this.constraint = null;
-            console.log("Input constraintType and constraintValue are incorrect or intentionally null/undefined!!! " +
-                "Object created with null/undefined constraint OR not properly created!!!");
+            console.log("Input constraintType and constraintValue are INCORRECT or INTENTIONALLY null/undefined!!! CONSTRAINT OBJECT WILL NOT BE CHANGED ");
         }
-        var url = this.server.getUrl() + "wa/istsos/services/observedproperties/" +
-            this.getObservedPropertyJSON()["definition"];
-        this.executeRequest(url, istsos.events.EventType.UPDATE_OBSERVED_PROPERTY, "PUT", this.getObservedPropertyJSON());
+        console.log(this.getObservedPropertyJSON());
+        var url = this.service.server.getUrl() + "wa/istsos/services/" + this.service.getServiceJSON()["service"] +
+            "/observedproperties/" +  oldDefinitionUrn;
+        this.executeRequest(url, istsos.events.EventType.UPDATE_OBSERVED_PROPERTY, "PUT", JSON.stringify(this.getObservedPropertyJSON()));
     },
     deleteObservedProperty: function () {
         var procedures = this.service.getProceduresProperty();
@@ -1109,7 +1120,7 @@ istsos.ObservedProperty.prototype = {
                 }
             }
         }
-        var url = this.server.getUrl() + "wa/istsos/services/" + this.service.getServiceJSON()["service"] + "/observedproperties/" +
+        var url = this.service.server.getUrl() + "wa/istsos/services/" + this.service.getServiceJSON()["service"] + "/observedproperties/" +
             this.getObservedPropertyJSON()["definition"];
         this.executeRequest(url, istsos.events.EventType.DELETE_OBSERVED_PROPERTY, "DELETE");
     },
@@ -1120,28 +1131,25 @@ istsos.ObservedProperty.prototype = {
      */
     validateConstraintInput: function (constraintType, constraintValue) {
         switch (constraintType) {
-            case 'between':
-                constraintType = 'interval';
+            case "between":
                 if (constraintValue.constructor !== Array) {
                     return false;
                 } else {
                     return true;
                 }
-            case 'lessThan':
-                constraintType = 'max';
+            case "lessThan":
                 if (constraintValue !== parseInt(constraintValue, 10)) {
                     return false;
                 } else {
                     return true;
                 }
-            case 'greaterThan':
-                constraintType = 'min';
+            case "greaterThan":
                 if (constraintValue !== parseInt(constraintValue, 10)) {
                     return false;
                 } else {
                     return true;
                 }
-            case 'valueList':
+            case "valueList":
                 if (constraintValue.constructor !== Array) {
                     return false;
                 } else {
@@ -1313,11 +1321,10 @@ istsos.Output = function (property, uom, description, opt_constraintType, opt_co
     var check = this.validateConstraintInput(opt_constraintType, opt_constraintValue);
     if (check === true) {
         this.constraint["role"] = "urn:ogc:def:classifiers:x-istsos:1.0:qualityIndex:check:reasonable";
-        this.constraint[opt_constraintType] = (opt_constraintValue.constructor === Array) ?
+        this.constraint[istsos.ConstraintInputs[opt_constraintType]] = (opt_constraintValue.constructor === Array) ?
             opt_constraintValue.toString().split(",") : opt_constraintValue.toString();
     } else {
-        console.log("Input constraintType and constraintValue are incorrect or intentionally null/undefined!!! " +
-            "Object created with null/undefined constraint OR not properly created!!!");
+        console.log("Input constraintType and constraintValue are incorrect or intentionally null/undefined!!! ");
     }
 };
 
@@ -1325,21 +1332,18 @@ istsos.Output.prototype = {
     validateConstraintInput: function (constraintType, constraintValue) {
         switch (constraintType) {
             case 'between':
-                constraintType = 'interval';
                 if (constraintValue.constructor !== Array) {
                     return false;
                 } else {
                     return true;
                 }
             case 'lessThan':
-                constraintType = 'max';
                 if (constraintValue !== parseInt(constraintValue, 10)) {
                     return false;
                 } else {
                     return true;
                 }
             case 'greaterThan':
-                constraintType = 'min';
                 if (constraintValue !== parseInt(constraintValue, 10)) {
                     return false;
                 } else {
@@ -1360,7 +1364,7 @@ istsos.Output.prototype = {
         var outputJSON = {
             "name": this.observedProperty.getObservedPropertyJSON()["name"],
             "definition": this.observedProperty.getObservedPropertyJSON()["definition"],
-            "uom": this.uom.getUomJSON()["code"],
+            "uom": this.uom.getUomJSON()["name"],
             "description": this.description || "",
             "constraint": this.constraint
         };
@@ -1427,7 +1431,10 @@ istsos.ProcedureBase.prototype = {
                 }
             ],
             "inputs": [],
-            "history": []
+            "history": [],
+            "contacts": [],
+            "documentation": [],
+            "capabilities": []
         };
         this.outputs.forEach(function (out) {
             procedureBaseJSON["outputs"].push(out.getOutputJSON());
@@ -1499,7 +1506,7 @@ istsos.ProcedureBase.prototype = {
 
 istsos.Procedure = function (service, name, description, keywords, foi_name, epsg, x, y, z, outputs, systemType, sensorType) {
     istsos.ProcedureBase.call(this, name, description, keywords, foi_name, epsg, x, y, z, outputs);
-    this.systemType = (systemType === "insitu-fixed" || systemType === "insitu-mobile") ?
+    this.systemType = (systemType === "insitu-fixed-point" || systemType === "insitu-mobile-point") ?
         systemType : null;
     this.sensorType = sensorType || "";
     this.service = service;
@@ -1511,6 +1518,8 @@ goog.inherits(istsos.Procedure, istsos.ProcedureBase);
 istsos.Procedure.prototype = {
     executeRequest: function (url, eventType, method, opt_data, opt_callback) {
         goog.net.XhrIo.send(url, function (e) {
+            var obj = e.target.getResponseJson();
+            console.log(obj);
             istsos.fire(eventType, e.target);
         }, method, opt_data);
     },
@@ -1519,7 +1528,7 @@ istsos.Procedure.prototype = {
         procedureJSON["classification"] = [{
             "name": "System Type",
             "definition": "urn:ogc:def:classifier:x-istsos:1.0:systemType",
-            "value": (this.systemType === "insitu-mobile-point" || this.systemType === "insitu-fixed-point") ? systemType : null
+            "value": (this.systemType === "insitu-mobile-point" || this.systemType === "insitu-fixed-point") ? this.systemType : null
         }, {
             "name": "Sensor Type",
             "definition": "urn:ogc:def:classifier:x-istsos:1.0:sensorType",
@@ -1528,6 +1537,7 @@ istsos.Procedure.prototype = {
         return procedureJSON
     },
     updateProcedure: function (name, description, keywords, foi_name, epsg, x, y, z, outputs, systemType, sensorType) {
+        var oldName = this.name;
         this.name = name || this.name;
         this.description = description || this.description;
         this.keywords = keywords || this.keywords;
@@ -1542,24 +1552,24 @@ istsos.Procedure.prototype = {
             });
         }
 
-        this.systemType = (systemType === "insitu-fixed" || systemType === "insitu-mobile") ?
+        this.systemType = (systemType === "insitu-fixed-point" || systemType === "insitu-mobile-point") ?
             systemType : null;
         this.sensorType = sensorType || "";
-        var url = this.service.server.getUrl() + "wa/istsos/services/" + this.service.getServiceJSON()["service"] + "/procedures/" + this.name;
-        this.executeRequest(url, istsos.events.EventType.UPDATE_PROCEDURE, "PUT", this.getProcedureJSON());
+        var url = this.service.server.getUrl() + "wa/istsos/services/" + this.service.getServiceJSON()["service"] + "/procedures/" + oldName;
+        this.executeRequest(url, istsos.events.EventType.UPDATE_PROCEDURE, "PUT", JSON.stringify(this.getProcedureJSON()));
     },
     deleteProcedure: function () {
         var url = this.service.server.getUrl() + "wa/istsos/services/" + this.service.getServiceJSON()["service"] + "/procedures/" + this.name;
-        this.executeRequest(url, istsos.events.EventType.DELETE_PROCEDURE, "DELETE", this.getProcedureJSON());
+        this.executeRequest(url, istsos.events.EventType.DELETE_PROCEDURE, "DELETE", JSON.stringify(this.getProcedureJSON()));
     },
     addMembershipToOffering: function (offering) {
         offering.getMemberProceduresProperty().push(this);
         var url = this.service.server.getUrl() + "wa/istsos/services/" + this.service.getServiceJSON()["service"] + "/offerings/" +
             offering.getOfferingJSON()["name"] + "/procedures";
-        this.executeRequest(url, istsos.events.EventType.ADD_TO_OFFERING, "POST", [{
+        this.executeRequest(url, istsos.events.EventType.ADD_TO_OFFERING, "POST", JSON.stringify([{
             "offering": offering.getOfferingJSON()["name"],
             "procedure": this.getProcedureJSON()["system"]
-        }])
+        }]));
     },
     removeMembershipFromOffering: function (offering) {
         var procedures = offering.getMemberProceduresProperty();
@@ -1569,11 +1579,11 @@ istsos.Procedure.prototype = {
             }
         });
         var url = this.service.server.getUrl() + "wa/istsos/services/" + this.service.getServiceJSON()["service"] + "/offerings/" +
-            offering.getOfferingJSON()["name"] + "/procedures" + this.getProcedureJSON()["system"];
-        this.executeRequest(url, istsos.events.EventType.REMOVE_FROM_OFFERING, "DELETE", [{
+            offering.getOfferingJSON()["name"] + "/procedures/" + this.getProcedureJSON()["system"];
+        this.executeRequest(url, istsos.events.EventType.REMOVE_FROM_OFFERING, "DELETE", JSON.stringify([{
             "offering": offering.getOfferingJSON()["name"],
             "procedure": this.getProcedureJSON()["system"]
-        }])
+        }]));
     },
     getOutputsProperty: function () {
         return istsos.ProcedureBase.prototype.getOutputsProperty.call(this);
