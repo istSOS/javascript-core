@@ -128,10 +128,12 @@
                     <li class="list-group-item"><button class="btn btn-success" onclick="regOffering()">POST OFFERING</button></li>
                     <li class="list-group-item"><button class="btn btn-success" onclick="getProcs()">GET PROCEDURES</button></li>
                     <li class="list-group-item"><button class="btn btn-success" onclick="getProc()">GET PROCEDURE</button></li>
+                    <li class="list-group-item"><button class="btn btn-success" onclick="registerPROCEDURE()">POST PROCEDURE</button></li>
                     <li class="list-group-item"><button class="btn btn-success" onclick="getVProcs()">GET VIRTUAL PROCEDURES</button></li>
                     <li class="list-group-item"><button class="btn btn-success" onclick="getVProc()">GET VIRTUAL PROCEDURE</button></li>
                     <li class="list-group-item"><button class="btn btn-success" onclick="getOPS()">GET OBSERVED PROPERTIES</button> </li>
                     <li class="list-group-item"><button class="btn btn-success" onclick="getOP()">GET OBSERVED PROPERTY</button> </li>
+                    <li class="list-group-item"><button class="btn btn-success" onclick="registerOP()">POST OBSERVED PROPERTY</button> </li>
                     <li class="list-group-item"><button class="btn btn-success" onclick="getDQs()">GET DATA QUALITIES</button></li>
                     <li class="list-group-item"><button class="btn btn-success" onclick="getDQ()">GET DATA QUALITY</button></li>
                     <li class="list-group-item"><button class="btn btn-success" onclick="registerDQ()">POST DATA QUALITY</button></li>
@@ -152,7 +154,12 @@
                     <li class="list-group-item"><button class="btn btn-success" onclick="getNonMembers()">NON-MEMBER PROCEDURES</button></li>
                 </ul>
                 <li class="list-group-item" data-toggle="collapse" data-target="#procedure_content"><a>PROCEDURE METHODS</a></li>
-                <ul id="procedure_content" class="collapse list-group"></ul>
+                <ul id="procedure_content" class="collapse list-group">
+                    <li class="list-group-item"><button class="btn btn-success" onclick="putPROCEDURE()">PUT PROCEDURE</button></li>
+                    <li class="list-group-item"><button class="btn btn-success" onclick="deletePROCEDURE()">DELETE PROCEDURE</button></li>
+                    <li class="list-group-item"><button class="btn btn-success" onclick="addMembership()">POST MEMBERSHIP</button></li>
+                    <li class="list-group-item"><button class="btn btn-success" onclick="removeMembership()">DELETE MEMBERSHIP</button></li>
+                </ul>
                 <li class="list-group-item" data-toggle="collapse" data-target="#virtual_procedure_content"><a>VIRTUAL PROCEDURE METHODS</a></li>
                 <ul id="virtual_procedure_content" class="collapse list-group">
                     <li class="list-group-item"><button class="btn btn-success" onclick="getRCurve()">RATING CURVE</button></li>
@@ -169,7 +176,10 @@
                     <li class="list-group-item"><button class="btn btn-success" onclick="deleteDQ()">DELETE DATA QUALITY</button></li>
                 </ul>
                 <li class="list-group-item" data-toggle="collapse" data-target="#op_content"><a>OBSERVED PROPERTY METHODS</a></li>
-                <ul id="op_content" class="collapse list-group"></ul>
+                <ul id="op_content" class="collapse list-group">
+                    <li class="list-group-item"><button class="btn btn-success" onclick="putOP()">PUT OBSERVED PROPERTY</button></li>
+                    <li class="list-group-item"><button class="btn btn-success" onclick="deleteOP()">DELETE OBSERVED PROPERTY</button></li>
+                </ul>
             </ul>
         </div>
         <div id="second" class="col-md-9">
