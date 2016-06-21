@@ -268,7 +268,7 @@ ist.addServer(server);
 ist.addServer(server_local);
 var default_conf = new istsos.Configuration("default", server);
 var service = new istsos.Service("demo", server);
-var procedure = new istsos.Procedure(service, "BELLINZONA", "", "", "foi", 3857, 25, 35, 45, [], "insitu-fixed", "");
+var procedure = new istsos.Procedure(service, "BELLINZONA", "", "", "foi", 3857, 25, 35, 45, [], "insitu-fixed-point", "");
 var v_procedure = new istsos.VirtualProcedure(service, "V_GNOSCA", "", "", "foi", 3857, 26, 36, 46, [], "virtual", "");
 var observed_prop = new istsos.ObservedProperty(service, "air-temperature", "urn:ogc:def:parameter:x-istsos:1.0:meteo:air:temperature", "", "between", [0, 1]);
 
@@ -492,11 +492,11 @@ function getOBSERVATIONDATA() {
 var server_local = new istsos.Server("example", "http://localhost/istsos/", default_db);
 var service_local = new istsos.Service("test_post", server_local);
 function registerSERVICE() {
-    server_local.registerService(service_local);
+    server.registerService(service_local);
 }
 
 function deleteSERVICE() {
-    server_local.deleteService(service_local);
+    server.deleteService(service_local);
 }
 
 
