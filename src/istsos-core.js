@@ -754,7 +754,7 @@ istsos.Service.prototype = {
     },
     getUom: function (uom) {
         var url = this.server.getUrl() + "wa/istsos/services/" + this.getServiceJSON()["service"] + "/uoms/" +
-            uom.getUomJSON()["code"];
+            uom.getUomJSON()["name"];
         this.executeRequest(url, istsos.events.EventType.UOM, "GET");
     },
     /**
@@ -802,7 +802,7 @@ istsos.Service.prototype = {
         var proc_name;
         if (procedure.systemType === "virtual") {
             proc_name = procedure.getVirtualProcedureJSON()["system"];
-        } else if (procedure.systemType.startsWith("insitu")) {
+        } else if (procedure.systemType === "insitu-fixed-point" || procedure.systemType === "insitu-mobile-point") {
             proc_name = procedure.getProcedureJSON()["system"]
         } else {
             console.log("WRONG TYPE");
