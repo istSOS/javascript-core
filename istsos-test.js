@@ -146,6 +146,7 @@ istsos.on(istsos.events.EventType.NEW_SERVICE, function (ev) {
 
 istsos.on(istsos.events.EventType.DELETE_SERVICE, function (ev) {
     console.log("DELETE SERVICE");
+    server.getStatus();
 });
 
 istsos.on(istsos.events.EventType.UPDATE_PROVIDER, function (ev) {
@@ -210,6 +211,7 @@ istsos.on(istsos.events.EventType.UPDATE_DATAQUALITY, function (ev) {
 
 istsos.on(istsos.events.EventType.DELETE_DATAQUALITY, function (ev) {
     console.log("DELETE DATA QUALITY");
+    service.getDataQualities();
 });
 
 istsos.on(istsos.events.EventType.NEW_UOM, function (ev) {
@@ -222,8 +224,42 @@ istsos.on(istsos.events.EventType.UPDATE_UOM, function (ev) {
 
 istsos.on(istsos.events.EventType.DELETE_UOM, function (ev) {
     console.log("DELETE UNIT OF MEASURE");
+    service.getUoms();
 });
 
+istsos.on(istsos.events.EventType.NEW_OBSERVED_PROPERTY, function (ev) {
+    service.getObservedProperty(obs_property_null_constraints);
+});
+
+istsos.on(istsos.events.EventType.UPDATE_OBSERVED_PROPERTY, function (ev) {
+    service.getObservedProperty(obs_property_null_constraints);
+});
+
+istsos.on(istsos.events.EventType.DELETE_OBSERVED_PROPERTY, function (ev) {
+    console.log("DELETE OBSERVED PROPERTY");
+    service.getObservedProperties();
+});
+
+istsos.on(istsos.events.EventType.NEW_PROCEDURE, function (ev) {
+    service.getProcedure(newProcedure);
+});
+
+istsos.on(istsos.events.EventType.UPDATE_PROCEDURE, function (ev) {
+    service.getProcedure(newProcedure);
+});
+
+istsos.on(istsos.events.EventType.DELETE_PROCEDURE, function (ev) {
+    console.log("DELETE PROCEDURE");
+    service.getProcedures();
+});
+
+istsos.on(istsos.events.EventType.ADD_TO_OFFERING, function (ev) {
+    offering_proc.getMemberProcedures();
+});
+
+istsos.on(istsos.events.EventType.REMOVE_FROM_OFFERING, function (ev) {
+    offering_proc.getNonMemberProcedures();
+});
 
 var ist = new istsos.IstSOS();
 var default_db = new istsos.Database('istsos', 'localhost', 'postgres', 'postgres', 5432);
@@ -234,14 +270,14 @@ var default_conf = new istsos.Configuration("default", server);
 var service = new istsos.Service("demo", server);
 var procedure = new istsos.Procedure(service, "BELLINZONA", "", "", "foi", 3857, 25, 35, 45, [], "insitu-fixed", "");
 var v_procedure = new istsos.VirtualProcedure(service, "V_GNOSCA", "", "", "foi", 3857, 26, 36, 46, [], "virtual", "");
-var observed_prop = new istsos.ObservedProperty(service, "air-rainfall", "urn:ogc:def:parameter:x-istsos:1.0:meteo:air:rainfall", "", "between", [0, 1]);
+var observed_prop = new istsos.ObservedProperty(service, "air-temperature", "urn:ogc:def:parameter:x-istsos:1.0:meteo:air:temperature", "", "between", [0, 1]);
 
 var dataQuality = new istsos.DataQuality(service, 100, "raw", "format is correct");
 var uom = new istsos.UnitOfMeasure(service, "mm", "milimeter");
 var offering = new istsos.Offering("BELLINZONA", "", true, null, service);
 var v_offering = new istsos.Offering("V_GNOSCA", "", true, null, service);
 var beginTime = new istsos.Date(2014, 05, 27, 00, 00, 00, 2, "");
-var endTime = new istsos.Date(2014, 05, 28, 00, 00, 00, 2, "");
+var endTime = new istsos.Date(2014, 06, 5, 00, 00, 00, 2, "");
 /** GET REQUEST TESTS */
 //server methods
 function getServiceReq() {
@@ -541,17 +577,17 @@ function validateDB() {
 }
 
 //SERVICE - OFFERING
-var newOffering = new istsos.Offering("offering_post", "testing post request for offering", true, "", service);
+var offering_proc = new istsos.Offering("test_membership", "testing procedure membership to an offering", true, "", service);
 function regOffering() {
-    service.registerOffering(newOffering);
+    service.registerOffering(offering_proc);
 }
 
 function putOffering() {
-    newOffering.updateOffering("offering_put","TESTED PUT request for offering", true, "");
+    offering_proc.updateOffering("offering_put","TESTED PUT request for offering", true, "");
 }
 
 function delOffering() {
-    newOffering.deleteOffering();
+    offering_proc.deleteOffering();
 }
 
 //SERVICE - DATA QUALITY
@@ -582,4 +618,49 @@ function deleteUOM() {
     newUom.deleteUom();
 }
 
-//SERVICE - DATA QUALITY
+//SERVICE - OBSERVED PROPERTY
+var obs_property = new istsos.ObservedProperty(service, "air-test", 
+    "urn:ogc:def:parameter:x-istsos:1.0:meteo:air:test","Testing POST request - Observed Property", "between", [0, 100]);
+var obs_property_null_constraints = new istsos.ObservedProperty(service, "air-test2", 
+    "urn:ogc:def:parameter:x-istsos:1.0:meteo:air:test2", "Testing POST request with null constraints");
+function registerOP() {
+    service.registerObservedProperty(obs_property_null_constraints);
+}
+
+function putOP() {
+    obs_property_null_constraints.updateObservedProperty("air-test-put", "urn:ogc:def:parameter:x-istsos:1.0:meteo:air:test:put",
+        "Testing PUT request - Observed Property", "valueList", [1,2,3]);
+}
+
+function deleteOP() {
+    obs_property_null_constraints.deleteObservedProperty();
+}
+
+//SERVICE - PROCEDURE
+
+var uom_proc = new istsos.UnitOfMeasure(service, "km", "kilometer");
+var op_proc = new istsos.ObservedProperty(service, "test-procedure", "urn:ogc:def:parameter:x-istsos:1.0:meteo:test:procedure",
+    "descirpiton", "between", [100, 200]);
+var output_proc = new istsos.Output(op_proc, uom_proc, "output descr", "between", [100, 200]);
+var newProcedure = new istsos.Procedure(service, "test_procedure", "testing POST request for Procedures", "test,procedure",
+    "feature", 3857, 25, 25, 25, [output_proc], "insitu-fixed-point", "test_sensor description");
+function registerPROCEDURE() {
+    service.registerProcedure(newProcedure);
+}
+
+function putPROCEDURE() {
+    newProcedure.updateProcedure("test_procedure_put", "testing PUT request for Procedures", "test,put", "feature_put", 3857, 
+        15, 15, 15, [], "insitu-mobile-point", "test_sensor put description");
+}
+
+function deletePROCEDURE() {
+    newProcedure.deleteProcedure();
+}
+
+function addMembership() {
+    newProcedure.addMembershipToOffering(offering_proc);
+}
+
+function removeMembership() {
+    newProcedure.removeMembershipFromOffering(offering_proc)
+}
