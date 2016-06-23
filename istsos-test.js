@@ -297,6 +297,7 @@ istsos.on(istsos.events.EventType.DELETE_RATING_CURVE, function (ev) {
 });
 
 
+
 /** ==================================================================================================== */
 
 var ist = new istsos.IstSOS();
@@ -617,16 +618,17 @@ function validateDB() {
 
 //SERVICE - OFFERING
 var offering_proc = new istsos.Offering("test_membership", "testing procedure membership to an offering", true, "", service);
+var offering_proc_local = new istsos.Offering("test_membership", "testing procedure membership to an offering", true, "", service_local);
 function regOffering() {
-    service.registerOffering(offering_proc);
+    service_local.registerOffering(offering_proc_local);
 }
 
 function putOffering() {
-    offering_proc.updateOffering("offering_put","TESTED PUT request for offering", true, "");
+    offering_proc_local.updateOffering("offering_put","TESTED PUT request for offering", true, "");
 }
 
 function delOffering() {
-    offering_proc.deleteOffering();
+    offering_proc_local.deleteOffering();
 }
 
 //SERVICE - DATA QUALITY
@@ -767,4 +769,12 @@ function registerRCURVE() {
 
 function deleteRCURVE() {
     newVirtualProcedure_local.deleteRatingCurve();
+}
+
+function addMembershipVP() {
+    newVirtualProcedure_local.addMembershipToOffering(offering_proc_local);
+}
+
+function removeMembershipVP() {
+    newVirtualProcedure_local.removeMembershipFromOffering(offering_proc_local);
 }
