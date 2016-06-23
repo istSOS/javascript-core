@@ -241,6 +241,8 @@ istsos.Server.prototype = {
      */
     executeRequest: function (url, eventType, method, opt_data, opt_callback) {
         goog.net.XhrIo.send(url, function (e) {
+            var obj = e.target.getResponseJson();
+            console.log(obj);
             istsos.fire(eventType, e.target);
         }, method, opt_data);
     },
@@ -702,7 +704,8 @@ istsos.Service.prototype = {
     },
     registerVirtualProcedure: function (v_procedure) {
         var url = this.server.getUrl() + "wa/istsos/services/" + this.serviceName + "/procedures";
-        this.executeRequest(url, istsos.events.EventType.NEW_VIRTUAL_PROCEDURE, "POST", v_procedure.getVirtualProcedureJSON());
+        console.log(JSON.stringify(v_procedure.getVirtualProcedureJSON()));
+        this.executeRequest(url, istsos.events.EventType.NEW_VIRTUAL_PROCEDURE, "POST", JSON.stringify(v_procedure.getVirtualProcedureJSON()));
     },
     getVirtualProcedure: function(v_procedure) {
         var url = this.server.getUrl() + "wa/istsos/services/" + this.serviceName + "/virtualprocedures/" + v_procedure.getVirtualProcedureJSON()["system"];
@@ -1559,8 +1562,15 @@ istsos.Procedure.prototype = {
         this.executeRequest(url, istsos.events.EventType.UPDATE_PROCEDURE, "PUT", JSON.stringify(this.getProcedureJSON()));
     },
     deleteProcedure: function () {
+        var procedures = this.service.getProceduresProperty();
+        var obj = this.getProcedureJSON();
+        procedures.forEach(function (p) {
+            if (p.getProcedureJSON()["system"] === obj["system"]) {
+                procedures.splice(procedures.indexOf(p), 1);
+            }
+        });
         var url = this.service.server.getUrl() + "wa/istsos/services/" + this.service.getServiceJSON()["service"] + "/procedures/" + this.name;
-        this.executeRequest(url, istsos.events.EventType.DELETE_PROCEDURE, "DELETE", JSON.stringify(this.getProcedureJSON()));
+        this.executeRequest(url, istsos.events.EventType.DELETE_PROCEDURE, "DELETE");
     },
     addMembershipToOffering: function (offering) {
         offering.getMemberProceduresProperty().push(this);
@@ -1592,7 +1602,7 @@ istsos.Procedure.prototype = {
 
 istsos.VirtualProcedure = function (service, name, description, keywords, foi_name, epsg, x, y, z, outputs, systemType, sensorType, code, ratingCurve) {
     istsos.ProcedureBase.call(this, name, description, keywords, foi_name, epsg, x, y, z, outputs);
-    this.systemType = (systemType === "insitu-fixed" || systemType === "insitu-mobile") ?
+    this.systemType = (systemType === "virtual") ?
         systemType : null;
     this.sensorType = sensorType || "";
     this.code = {"code": code} || {};
@@ -1606,6 +1616,8 @@ goog.inherits(istsos.VirtualProcedure, istsos.ProcedureBase);
 istsos.VirtualProcedure.prototype = {
     executeRequest: function (url, eventType, method, opt_data, opt_callback) {
         goog.net.XhrIo.send(url, function (e) {
+            var obj = e.target.getResponseJson();
+            console.log(obj);
             istsos.fire(eventType, e.target);
         }, method, opt_data);
     },
@@ -1630,13 +1642,13 @@ istsos.VirtualProcedure.prototype = {
     registerCode: function () {
         var url = this.service.server.getUrl() + "wa/istsos/services/" + this.service.getServiceJSON()["service"] +
             "/virtualprocedures/" + this.getVirtualProcedureJSON()["system"] + "/code";
-        this.executeRequest(url, istsos.events.EventType.NEW_CODE, "POST", this.getCodeProperty());
+        this.executeRequest(url, istsos.events.EventType.NEW_CODE, "POST", JSON.stringify(this.getCodeProperty()));
     },
     updateCode: function (newCode) {
-        this.code = newCode || this.code;
+        this.code = {"code" : newCode} || this.code;
         var url = this.service.server.getUrl() + "wa/istsos/services/" + this.service.getServiceJSON()["service"] +
             "/virtualprocedures/" + this.getVirtualProcedureJSON()["system"] + "/code";
-        this.executeRequest(url, istsos.events.EventType.UPDATE_CODE, "PUT", this.getCodeProperty());
+        this.executeRequest(url, istsos.events.EventType.UPDATE_CODE, "PUT", JSON.stringify(this.getCodeProperty()));
     },
     deleteCode: function () {
         this.code = "";
@@ -1656,7 +1668,7 @@ istsos.VirtualProcedure.prototype = {
     registerRatingCurve: function () {
         var url = this.service.server.getUrl() + "wa/istsos/services/" + this.service.getServiceJSON()["service"] +
             "/virtualprocedures/" + this.getVirtualProcedureJSON()["system"] + "/ratingcurve";
-        this.executeRequest(url, istsos.events.EventType.NEW_RATING_CURVE, "POST", this.getRatingCurveProperty());
+        this.executeRequest(url, istsos.events.EventType.NEW_RATING_CURVE, "POST", JSON.stringify(this.getRatingCurveProperty()));
     },
     deleteRatingCurve: function () {
         this.ratingCurve = {};
@@ -1668,6 +1680,7 @@ istsos.VirtualProcedure.prototype = {
         return this.ratingCurve;
     },
     updateVirtualProcedure: function (name, description, keywords, foi_name, epsg, x, y, z, outputs, systemType, sensorType) {
+        var oldName = this.name;
         this.name = name || this.name;
         this.description = description || this.description;
         this.keywords = keywords || this.keywords;
@@ -1681,30 +1694,30 @@ istsos.VirtualProcedure.prototype = {
                 outputs_array.push(out)
             });
         }
-        this.systemType = systemType || this.systemType;
+        this.systemType = (systemType === "virtual") ? systemType : this.systemType;
         this.sensorType = sensorType || this.sensorType;
-        var url = this.service.server.getUrl() + "wa/istsos/services/" + this.service.getServiceJSON()["service"] + "/virtualprocedures/" + this.name;
-        this.executeRequest(url, istsos.events.EventType.UPDATE_V_PROCEDURE, "PUT", this.getVirtualProcedureJSON());
+        var url = this.service.server.getUrl() + "wa/istsos/services/" + this.service.getServiceJSON()["service"] + "/virtualprocedures/" + oldName;
+        this.executeRequest(url, istsos.events.EventType.UPDATE_V_PROCEDURE, "PUT", JSON.stringify(this.getVirtualProcedureJSON()));
     },
     deleteVirtualProcedure: function () {
         var v_procedures = this.service.getVirtualProceduresProperty();
         var obj = this.getVirtualProcedureJSON();
         v_procedures.forEach(function (p) {
             if (p.getVirtualProcedureJSON()["system"] === obj["system"]) {
-                v_procedures.splice(procedure.indexOf(p), 1);
+                v_procedures.splice(v_procedures.indexOf(p), 1);
             }
         });
         var url = this.service.server.getUrl() + "wa/istsos/services/" + this.service.getServiceJSON()["service"] + "/virtualprocedures/" + this.name;
-        this.executeRequest(url, istsos.events.EventType.DELETE_V_PROCEDURE, "DELETE", this.getVirtualProcedureJSON());
+        this.executeRequest(url, istsos.events.EventType.DELETE_V_PROCEDURE, "DELETE");
     },
     addMembershipToOffering: function (offering) {
         offering.getMemberProceduresProperty().push(this);
         var url = this.service.server.getUrl() + "wa/istsos/services/" + this.service.getServiceJSON()["service"] + "/offerings/" +
             offering.getOfferingJSON()["name"] + "/procedures";
-        this.executeRequest(url, istsos.events.EventType.ADD_TO_OFFERING, "POST", [{
+        this.executeRequest(url, istsos.events.EventType.ADD_TO_OFFERING, "POST", JSON.stringify([{
             "offering": offering.getOfferingJSON()["name"],
-            "procedure": this.getProcedureJSON()["system"]
-        }])
+            "procedure": this.getVirtualProcedureJSON()["system"]
+        }]));
     },
     removeMembershipFromOffering: function (offering) {
         var procedures = offering.getMemberProceduresProperty();
@@ -1715,10 +1728,10 @@ istsos.VirtualProcedure.prototype = {
         });
         var url = this.service.server.getUrl() + "wa/istsos/services/" + this.service.getServiceJSON()["service"] + "/offerings/" +
             offering.getOfferingJSON()["name"] + "/procedures" + this.getProcedureJSON()["system"];
-        this.executeRequest(url, istsos.events.EventType.REMOVE_FROM_OFFERING, "DELETE", [{
+        this.executeRequest(url, istsos.events.EventType.REMOVE_FROM_OFFERING, "DELETE", JSON.stringify([{
             "offering": offering.getOfferingJSON()["name"],
-            "procedure": this.getProcedureJSON()["system"]
-        }])
+            "procedure": this.getVirtualProcedureJSON()["system"]
+        }]));
     },
     getOutputsProperty: function () {
         return istsos.ProcedureBase.prototype.getOutputsProperty.call(this);
