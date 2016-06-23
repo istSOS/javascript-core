@@ -141,7 +141,7 @@ istsos.on(istsos.events.EventType.GETOBSERVATIONS_BY_PROPERTY, function (ev) {
 
 istsos.on(istsos.events.EventType.NEW_SERVICE, function (ev) {
     console.log(ev.getData());
-    server_local.getService(service_local);
+    server.getStatus();
 });
 
 istsos.on(istsos.events.EventType.DELETE_SERVICE, function (ev) {
@@ -199,6 +199,7 @@ istsos.on(istsos.events.EventType.UPDATE_OFFERING, function (ev) {
 
 istsos.on(istsos.events.EventType.DELETE_OFFERING, function (ev) {
     console.log("DELETE OFFERING");
+    service.getOfferingNames();
 });
 
 istsos.on(istsos.events.EventType.NEW_DATAQUALITY, function (ev) {
@@ -261,13 +262,52 @@ istsos.on(istsos.events.EventType.REMOVE_FROM_OFFERING, function (ev) {
     offering_proc.getNonMemberProcedures();
 });
 
+istsos.on(istsos.events.EventType.NEW_VIRTUAL_PROCEDURE, function (ev) {
+    service_local.getVirtualProcedure(newVirtualProcedure_local)
+});
+
+istsos.on(istsos.events.EventType.UPDATE_V_PROCEDURE, function (ev) {
+    service_local.getVirtualProcedure(newVirtualProcedure_local);
+});
+
+istsos.on(istsos.events.EventType.DELETE_V_PROCEDURE, function (ev) {
+    console.log("DELETE VIRTUAL PROCEDURE");
+    service_local.getVirtualProcedures();
+});
+
+istsos.on(istsos.events.EventType.NEW_CODE, function (ev) {
+    newVirtualProcedure_local.getCode()
+});
+
+istsos.on(istsos.events.EventType.UPDATE_CODE, function (ev) {
+    newVirtualProcedure_local.getCode()
+});
+
+istsos.on(istsos.events.EventType.DELETE_CODE, function (ev) {
+    console.log("DELETE VIRTUAL PROCEDURE CODE");
+});
+
+
+istsos.on(istsos.events.EventType.NEW_RATING_CURVE, function (ev) {
+    newVirtualProcedure_local.getRatingCurve();
+});
+
+istsos.on(istsos.events.EventType.DELETE_RATING_CURVE, function (ev) {
+    console.log("DELETE VIRTUAL PROCEDURE RATING CURVE");
+});
+
+
+/** ==================================================================================================== */
+
 var ist = new istsos.IstSOS();
 var default_db = new istsos.Database('istsos', 'localhost', 'postgres', 'postgres', 5432);
 var server = new istsos.Server('test', 'http://istsos.org/istsos/', default_db);
+var server_local = new istsos.Server("test", "http://localhost/istsos/", default_db);
 ist.addServer(server);
 ist.addServer(server_local);
-var default_conf = new istsos.Configuration("default", server);
+var default_conf = new istsos.Configuration("default", server_local);
 var service = new istsos.Service("demo", server);
+var service_local = new istsos.Service("test", server_local);
 var procedure = new istsos.Procedure(service, "BELLINZONA", "", "", "foi", 3857, 25, 35, 45, [], "insitu-fixed-point", "");
 var v_procedure = new istsos.VirtualProcedure(service, "V_GNOSCA", "", "", "foi", 3857, 26, 36, 46, [], "virtual", "");
 var observed_prop = new istsos.ObservedProperty(service, "air-temperature", "urn:ogc:def:parameter:x-istsos:1.0:meteo:air:temperature", "", "between", [0, 1]);
@@ -320,7 +360,7 @@ function getProviderReq() {
     if (resp === "default") {
         default_conf.getProvider();
     } else {
-        var service_conf = new istsos.Configuration(resp, server);
+        var service_conf = new istsos.Configuration(resp, server_local);
         service_conf.getProvider();
     }
 }
@@ -331,7 +371,7 @@ function getIdentReq() {
     if (resp === "default") {
         default_conf.getIdentification();
     } else {
-        var service_conf = new istsos.Configuration(resp, server);
+        var service_conf = new istsos.Configuration(resp, server_local);
         service_conf.getIdentification();
     }
 }
@@ -341,7 +381,7 @@ function getCoordSysReq() {
     if (resp === "default") {
         default_conf.getCrs();
     } else {
-        var service_conf = new istsos.Configuration(resp, server);
+        var service_conf = new istsos.Configuration(resp, server_local);
         service_conf.getCrs();
     }
 }
@@ -351,7 +391,7 @@ function mqtt() {
     if (resp === "default") {
         default_conf.getMqtt();
     } else {
-        var service_conf = new istsos.Configuration(resp, server);
+        var service_conf = new istsos.Configuration(resp, server_local);
         service_conf.getMqtt();
     }
 }
@@ -361,7 +401,7 @@ function getOC() {
     if (resp === "default") {
         default_conf.getObservationConf();
     } else {
-        var service_conf = new istsos.Configuration(resp, server);
+        var service_conf = new istsos.Configuration(resp, server_local);
         service_conf.getObservationConf();
     }
 }
@@ -371,7 +411,7 @@ function getProxyReq() {
     if (resp === "default") {
         default_conf.getProxy();
     } else {
-        var service_conf = new istsos.Configuration(resp, server);
+        var service_conf = new istsos.Configuration(resp, server_local);
         service_conf.getProxy();
     }
 }
@@ -381,7 +421,7 @@ function getEPSGS() {
     if (resp === "default") {
         default_conf.getEpsgCodes();
     } else {
-        var service_conf = new istsos.Configuration(resp, server);
+        var service_conf = new istsos.Configuration(resp, server_local);
         service_conf.getEpsgCodes();
     }
 }
@@ -489,10 +529,9 @@ function getOBSERVATIONDATA() {
 }
 
 //POST
-var server_local = new istsos.Server("example", "http://localhost/istsos/", default_db);
-var service_local = new istsos.Service("test_post", server_local);
+
 function registerSERVICE() {
-    server.registerService(service_local);
+    server_local.registerService(service_local);
 }
 
 function deleteSERVICE() {
@@ -639,11 +678,41 @@ function deleteOP() {
 //SERVICE - PROCEDURE
 
 var uom_proc = new istsos.UnitOfMeasure(service, "km", "kilometer");
+var uom_proc_local = new istsos.UnitOfMeasure(service_local, "km", "kilometer")
 var op_proc = new istsos.ObservedProperty(service, "test-procedure", "urn:ogc:def:parameter:x-istsos:1.0:meteo:test:procedure",
     "descirpiton", "between", [100, 200]);
+var op_proc_local = new istsos.ObservedProperty(service_local, "test-procedure", "urn:ogc:def:parameter:x-istsos:1.0:meteo:test:procedure",
+    "descirpiton", "between", [100, 200]);
 var output_proc = new istsos.Output(op_proc, uom_proc, "output descr", "between", [100, 200]);
+var output_proc_local = new istsos.Output(op_proc_local, uom_proc_local, "output descr", "between", [100, 200]);
 var newProcedure = new istsos.Procedure(service, "test_procedure", "testing POST request for Procedures", "test,procedure",
     "feature", 3857, 25, 25, 25, [output_proc], "insitu-fixed-point", "test_sensor description");
+var newVirtualProcedure = new istsos.VirtualProcedure(service, "test_procedure", "testing POST request for Procedures", "test,procedure",
+    "feature", 3857, 25, 25, 25, [output_proc], "virtual", "test_sensor description", "print('This is a test')", {});
+var rcurve_local = [
+    {
+        "A": "5.781",
+        "C": "1.358",
+        "B": "0.250",
+        "from": "1982-01-01T00:00+01:00",
+        "up_val": "2.5",
+        "K": "0",
+        "low_val": "0",
+        "to": "1983-01-01T00:00+01:00"
+    },
+    {
+        "A": "7.236",
+        "C": "1.988",
+        "B": "0.200",
+        "from": "1983-01-01T00:00+01:00",
+        "up_val": "2.5",
+        "K": "0",
+        "low_val": "0",
+        "to": "1984-01-01T00:00+01:00"
+    }]
+var newVirtualProcedure_local = new istsos.VirtualProcedure(service_local, "test_procedure", "testing POST request for Procedures", "test,procedure",
+    "feature", 3857, 25, 25, 25, [output_proc_local], "virtual", "test_sensor description", "print('This is a test')", rcurve_local);
+
 function registerPROCEDURE() {
     service.registerProcedure(newProcedure);
 }
@@ -663,4 +732,39 @@ function addMembership() {
 
 function removeMembership() {
     newProcedure.removeMembershipFromOffering(offering_proc)
+}
+
+//SERVICE - VIRTUAL PROCEDURE
+function registerVPROCEDURE() {
+    service_local.registerVirtualProcedure(newVirtualProcedure_local);
+}
+
+function updateVPROCEDURE() {
+    newVirtualProcedure_local.updateVirtualProcedure("test_vprocedure_put", "testing PUT request for VirtualProcedures", "test,put, virtual", "feature_put", 3857,
+        15, 15, 15, [], "virtual", "test_virtual_proc put description")
+}
+
+function deleteVPROCEDURE() {
+    newVirtualProcedure_local.deleteVirtualProcedure();
+}
+
+function registerCODE() {
+    newVirtualProcedure_local.registerCode();
+}
+
+function putCODE() {
+    newVirtualProcedure_local.updateCode("print('UPDATED CODE')");
+}
+
+function deleteCODE() {
+    newVirtualProcedure_local.deleteCode();
+}
+
+function registerRCURVE() {
+    newVirtualProcedure_local.registerRatingCurve();
+}
+
+
+function deleteRCURVE() {
+    newVirtualProcedure_local.deleteRatingCurve();
 }
