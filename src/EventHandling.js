@@ -73,8 +73,11 @@ istsos.events.EventType = {
     GETOBSERVATIONS: 'getobservationsReceived',
     GETOBSERVATIONS_BY_PROPERTY: 'getobservationsDataReceived'
 };
-
-//EVENT RESPONSE
+/**
+ * @param type
+ * @param xhrIo
+ * @constructor
+ */
 istsos.events.JSONResponse = function (type, xhrIo) {
     this.type = type;
     goog.base(this, type);
@@ -107,6 +110,9 @@ istsos.events.JSONResponse = function (type, xhrIo) {
 };
 goog.inherits(istsos.events.JSONResponse, goog.events.Event);
 
+/**
+ * @returns {JSON|Array<JSON>}
+ */
 istsos.events.JSONResponse.prototype.getData = function () {
     if(this.type === "geojsonReceived") {
         return this['json'];

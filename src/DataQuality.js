@@ -6,21 +6,30 @@ goog.require('goog.net.XhrIo');
 /**
  * @param {istsos.Service} service
  * @param {int} codeDQ
- * @param {string} nameDQ
- * @param {string} descrDQ
+ * @param {String} nameDQ
+ * @param {String} descrDQ
  * @constructor
  */
 istsos.DataQuality = function (service, codeDQ, nameDQ, descrDQ) {
     this.code = codeDQ;
     this.name = nameDQ;
-    this.description = descrDQ;
+    this.description = descrDQ || "";
     this.service = service;
     service.addDataQuality(this);
 };
 
 istsos.DataQuality.prototype = {
+    /**
+     * @param {String} url
+     * @param {istsos.events.EventType} eventType
+     * @param {String} method
+     * @param {JSON} opt_data
+     * @param {function} opt_callback
+     */
     executeRequest: function (url, eventType, method, opt_data, opt_callback) {
         goog.net.XhrIo.send(url, function (e) {
+            var obj = e.target.getResponseJson();
+            console.log(obj);
             istsos.fire(eventType, e.target);
         }, method, opt_data);
     },
@@ -36,9 +45,10 @@ istsos.DataQuality.prototype = {
         return dqJSON;
     },
     /**
+     * @fires istsos.DataQuality#istsos.events.EventType: UPDATE_DATAQUALITY
      * @param {int} newCodeDQ
-     * @param {string} newNameDQ
-     * @param {string} newDescrDQ
+     * @param {String} newNameDQ
+     * @param {String} newDescrDQ
      */
     updateDataQuality: function ( newCodeDQ, newNameDQ, newDescrDQ) {
         var oldName = this.code;
@@ -49,10 +59,13 @@ istsos.DataQuality.prototype = {
             "/dataqualities/" + oldName;
         this.executeRequest(url, istsos.events.EventType.UPDATE_DATAQUALITY, "PUT", JSON.stringify(this.getDataQualityJSON()));
     },
+    /**
+     * @fires istsos.DataQuality#istsos.events.EventType: DELETE_DATAQUALITY
+     */
     deleteDataQuality: function () {
         var dataQualities = this.service.getDataQualitiesProperty();
         for (var i = 0; i < dataQualities.length; i++) {
-            if (this === dataQualities[i]) {
+            if (this.code === dataQualities[i]["code"]) {
                 dataQualities.splice(i, 1);
             }
         }

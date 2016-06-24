@@ -4,8 +4,8 @@ goog.require('goog.events.EventTarget');
 goog.require('goog.net.XhrIo');
 /** istsos.Offering class */
 /**
- * @param {string} offeringName
- * @param {string} offeringDescription
+ * @param {String} offeringName
+ * @param {String} offeringDescription
  * @param {boolean} active
  * @param {istsos.Date} expirationDate
  * @param {istsos.Service} service
@@ -22,6 +22,13 @@ istsos.Offering = function (offeringName, offeringDescription, active, expiratio
 };
 
 istsos.Offering.prototype = {
+    /**
+     * @param {String} url
+     * @param {istsos.events.EventType} eventType
+     * @param {String} method
+     * @param {JSON} opt_data
+     * @param {function} opt_callback
+     */
     executeRequest: function (url, eventType, method, opt_data, opt_callback) {
         goog.net.XhrIo.send(url, function (e) {
             var obj = e.target.getResponseJson();
@@ -36,8 +43,9 @@ istsos.Offering.prototype = {
         this.memberProcedures.push(procedure);
     },
     /**
-     * @param {string} newName
-     * @param {string} newDescription
+     * @fires istsos.Offering#istsos.events.EventType: UPDATE_OFFFERING
+     * @param {String} newName
+     * @param {String} newDescription
      * @param {boolean} newActive
      * @param {istsos.Date} newExpirationDate
      */
@@ -49,12 +57,14 @@ istsos.Offering.prototype = {
         this.expirationDate = newExpirationDate || this.expirationDate;
         var url = this.service.server.getUrl() + "wa/istsos/services/" + this.service.getServiceJSON()["service"] +
             "/offerings/" + oldOfferingName;
-        console.log(this.getOfferingJSON());
         this.executeRequest(url, istsos.events.EventType.UPDATE_OFFERING, "PUT", JSON.stringify(this.getOfferingJSON()));
     },
+    /**
+     * @fires istsos.Offering#istsos.events.EventType: DELETE_OFFERING
+     */
     deleteOffering: function () {
         for (var i = 0; i < this.service.getOfferingsProperty().length; i++) {
-            if (this === this.service.getOfferingsProperty()[i]) {
+            if (this.offeringName === this.service.getOfferingsProperty()[i]["name"]) {
                 this.service.getOfferingsProperty().splice(i, 1);
             }
         }
@@ -66,15 +76,23 @@ istsos.Offering.prototype = {
         };
         this.executeRequest(url, istsos.events.EventType.DELETE_OFFERING, "DELETE", JSON.stringify(data));
     },
+    /**
+     * @returns {Array<istsos.Procedure|istsos.VirtualProcedure>}
+     */
     getMemberProceduresProperty: function () {
         return this.memberProcedures;
     },
+    /**
+     * @fires istsos.Offering#istsos.events.EventType: MEMBERLIST
+     */
     getMemberProcedures: function () {
         var url = this.service.server.getUrl() + "wa/istsos/services/" + this.service.getServiceJSON()["service"] +
             "/offerings/" + this.getOfferingJSON()["name"] + "/procedures/operations/memberslist";
-        console.log(url);
         this.executeRequest(url, istsos.events.EventType.MEMBERLIST, "GET");
     },
+    /**
+     * @fires istsos.Offering#istsos.events.EventType: NONMEMBERLIST
+     */
     getNonMemberProcedures: function () {
         var url = this.service.server.getUrl() + "wa/istsos/services/" + this.service.getServiceJSON()["service"] +
             "/offerings/" + this.getOfferingJSON()["name"] + "/procedures/operations/nonmemberslist";
