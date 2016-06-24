@@ -11,7 +11,7 @@ goog.require('goog.net.XhrIo');
  * @param {int} minutes
  * @param {int} seconds
  * @param {int} gmt
- * @param {string} opt_description
+ * @param {String} opt_description
  * @constructor
  */
 istsos.Date = function (year, month, day, hours, minutes, seconds, gmt, opt_description) {
@@ -33,10 +33,9 @@ istsos.Date.prototype = {
         return this.year + "-" + this.month + "-" + this.day + "T" +
             this.hours + ":" + this.minutes + ":" + this.seconds + "+" +
             this.gmt + ":" + "00";
-
     },
     /**
-     * @returns {string|string|*}
+     * @returns {String}
      */
     getDescription: function () {
         return this.description;

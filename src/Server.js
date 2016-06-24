@@ -33,9 +33,6 @@ istsos.Server.prototype = {
         goog.net.XhrIo.send(url, function (e) {
             var obj = e.target.getResponseJson();
             console.log(obj);
-            if(e.target.isSuccess()) {
-                opt_callback;
-            }
             istsos.fire(eventType, e.target);
         }, method, opt_data);
     },

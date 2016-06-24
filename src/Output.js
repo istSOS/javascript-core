@@ -13,12 +13,12 @@ goog.require('goog.net.XhrIo');
 istsos.Output = function (property, uom, description, opt_constraintType, opt_constraintValue) {
     this.observedProperty = property;
     this.uom = uom;
-    this.description = description;
+    this.description = description || "";
     this.constraint = {};
     var check = this.validateConstraintInput(opt_constraintType, opt_constraintValue);
     if (check === true) {
         this.constraint["role"] = "urn:ogc:def:classifiers:x-istsos:1.0:qualityIndex:check:reasonable";
-        this.constraint[istsos.ConstraintInputs[opt_constraintType]] = (opt_constraintValue.constructor === Array) ?
+        this.constraint[istsos.observedProperty.ConstraintInputs[opt_constraintType]] = (opt_constraintValue.constructor === Array) ?
             opt_constraintValue.toString().split(",") : opt_constraintValue.toString();
     } else {
         console.log("Input constraintType and constraintValue are incorrect or intentionally null/undefined!!! ");
@@ -26,6 +26,11 @@ istsos.Output = function (property, uom, description, opt_constraintType, opt_co
 };
 
 istsos.Output.prototype = {
+    /**
+     * @param {String} constraintType
+     * @param {Array<int>|int}constraintValue
+     * @returns {boolean}
+     */
     validateConstraintInput: function (constraintType, constraintValue) {
         switch (constraintType) {
             case 'between':
@@ -57,6 +62,9 @@ istsos.Output.prototype = {
                 return false;
         }
     },
+    /**
+     * @returns {JSON}
+     */
     getOutputJSON: function () {
         var outputJSON = {
             "name": this.observedProperty.getObservedPropertyJSON()["name"],
