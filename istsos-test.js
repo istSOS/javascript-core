@@ -536,7 +536,7 @@ function registerSERVICE() {
 }
 
 function deleteSERVICE() {
-    server.deleteService(service_local);
+    server_local.deleteService(service_local);
 }
 
 

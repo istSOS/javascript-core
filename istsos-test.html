@@ -18,6 +18,7 @@
     </script>
     <!-- <script type="text/javascript" src="src/istsos-core.js"></script> -->
     <script type="text/javascript" src="src/IstSOS.js"></script>
+    <script type="text/javascript" src="src/EventHandling.js"></script> -->
     <script type="text/javascript" src="src/Server.js"></script>
     <script type="text/javascript" src="src/Service.js"></script>
     <script type="text/javascript" src="src/Database.js"></script>
@@ -32,12 +33,12 @@
     <script type="text/javascript" src="src/Date.js"></script>
     <script type="text/javascript" src="src/UnitOfMeasure.js"></script>
     <script type="text/javascript" src="src/DataQuality.js"></script>
-    <script type="text/javascript" src="src/EventHandling.js"></script>
+
     <script>
         /** RESPONSE JSON STYLING  */
         function log(obj, str) {
-            goog.dom.getElement('title').innerHTML = str;
-            goog.dom.getElement('json').innerHTML = test_json.prettyPrint(obj);
+            document.getElementById('title').innerHTML = str;
+            document.getElementById('json').innerHTML = test_json.prettyPrint(obj);
         }
 
         var test_json = {
