@@ -2,7 +2,21 @@ goog.require('goog.events');
 goog.require('goog.events.Event');
 goog.require('goog.events.EventTarget');
 goog.require('goog.net.XhrIo');
-
+/**
+ * @param {istsos.Service} service
+ * @param {String} name
+ * @param {String} description
+ * @param {String} keywords
+ * @param {String} foi_name
+ * @param {int} epsg
+ * @param {int} x
+ * @param {int} y
+ * @param {int} z
+ * @param {Array<istsos.Output>} outputs
+ * @param {String} systemType (insitu-fixed-point || insitu-mobile-point)
+ * @param {String} sensorType
+ * @constructor
+ */
 istsos.Procedure = function (service, name, description, keywords, foi_name, epsg, x, y, z, outputs, systemType, sensorType) {
     istsos.ProcedureBase.call(this, name, description, keywords, foi_name, epsg, x, y, z, outputs);
     this.systemType = (systemType === "insitu-fixed-point" || systemType === "insitu-mobile-point") ?
@@ -15,6 +29,13 @@ istsos.Procedure = function (service, name, description, keywords, foi_name, eps
 goog.inherits(istsos.Procedure, istsos.ProcedureBase);
 
 istsos.Procedure.prototype = {
+    /**
+     * @param {String} url
+     * @param {istsos.events.EventType} eventType
+     * @param {String} method
+     * @param {JSON} opt_data
+     * @param {function} opt_callback
+     */
     executeRequest: function (url, eventType, method, opt_data, opt_callback) {
         goog.net.XhrIo.send(url, function (e) {
             var obj = e.target.getResponseJson();
@@ -22,6 +43,9 @@ istsos.Procedure.prototype = {
             istsos.fire(eventType, e.target);
         }, method, opt_data);
     },
+    /**
+     * @returns {JSON}
+     */
     getProcedureJSON: function () {
         var procedureJSON = istsos.ProcedureBase.prototype.getProcedureBaseJSON.call(this);
         procedureJSON["classification"] = [{
@@ -35,6 +59,20 @@ istsos.Procedure.prototype = {
         }];
         return procedureJSON
     },
+    /**
+     * @fires istsos.Procedure#istsos.events.EventType: UPDATE_PROCEDURE
+     * @param {String} name
+     * @param {String} description
+     * @param {String} keywords
+     * @param {String} foi_name
+     * @param {int} epsg
+     * @param {int} x
+     * @param {int} y
+     * @param {int} z
+     * @param {Array<istsos.Output>} outputs
+     * @param {String} systemType (insitu-fixed-point || insitu-mobile-point)
+     * @param {String} sensorType
+     */
     updateProcedure: function (name, description, keywords, foi_name, epsg, x, y, z, outputs, systemType, sensorType) {
         var oldName = this.name;
         this.name = name || this.name;
@@ -50,13 +88,15 @@ istsos.Procedure.prototype = {
                 outputs_array.push(out)
             });
         }
-
         this.systemType = (systemType === "insitu-fixed-point" || systemType === "insitu-mobile-point") ?
             systemType : null;
         this.sensorType = sensorType || "";
         var url = this.service.server.getUrl() + "wa/istsos/services/" + this.service.getServiceJSON()["service"] + "/procedures/" + oldName;
         this.executeRequest(url, istsos.events.EventType.UPDATE_PROCEDURE, "PUT", JSON.stringify(this.getProcedureJSON()));
     },
+    /**
+     * @fires istsos.Procedure#istsos.events.EventType: DELETE_PROCEDURE
+     */
     deleteProcedure: function () {
         var procedures = this.service.getProceduresProperty();
         var obj = this.getProcedureJSON();
@@ -68,6 +108,10 @@ istsos.Procedure.prototype = {
         var url = this.service.server.getUrl() + "wa/istsos/services/" + this.service.getServiceJSON()["service"] + "/procedures/" + this.name;
         this.executeRequest(url, istsos.events.EventType.DELETE_PROCEDURE, "DELETE");
     },
+    /**
+     * @fires istsos.Procedure#istsos.events.EventType: ADD_TO_OFFERING
+     * @param {istsos.Offering} offering
+     */
     addMembershipToOffering: function (offering) {
         offering.getMemberProceduresProperty().push(this);
         var url = this.service.server.getUrl() + "wa/istsos/services/" + this.service.getServiceJSON()["service"] + "/offerings/" +
@@ -77,10 +121,15 @@ istsos.Procedure.prototype = {
             "procedure": this.getProcedureJSON()["system"]
         }]));
     },
+    /**
+     * @fires istsos.Procedure#istsos.events.EventType: REMOVE_FROM_OFFERING
+     * @param {istsos.Offering} offering
+     */
     removeMembershipFromOffering: function (offering) {
         var procedures = offering.getMemberProceduresProperty();
+        var pname = this.name;
         procedures.forEach(function (p) {
-            if (p === this) {
+            if (p.name === pname) {
                 procedures.splice(procedures.indexOf(p), 1);
             }
         });
@@ -91,6 +140,9 @@ istsos.Procedure.prototype = {
             "procedure": this.getProcedureJSON()["system"]
         }]));
     },
+    /**
+     * @returns {Array<istsos.Output>}
+     */
     getOutputsProperty: function () {
         return istsos.ProcedureBase.prototype.getOutputsProperty.call(this);
     }

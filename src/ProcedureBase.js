@@ -4,10 +4,10 @@ goog.require('goog.events.EventTarget');
 goog.require('goog.net.XhrIo');
 /** istsos.ProcedureBase class - ABSTRACT */
 /**
- * @param {string} name
- * @param {string} description
- * @param {string} keywords
- * @param {string} foi_name
+ * @param {String} name
+ * @param {String} description
+ * @param {String} keywords
+ * @param {String} foi_name
  * @param {int} epsg
  * @param {int} x
  * @param {int} y
@@ -27,9 +27,15 @@ istsos.ProcedureBase = function (name, description, keywords, foi_name, epsg, x,
 };
 
 istsos.ProcedureBase.prototype = {
+    /**
+     * @returns {Array<istsos.Output>}
+     */
     getOutputsProperty: function () {
         return this.outputs;
     },
+    /**
+     * @returns {JSON}
+     */
     getProcedureBaseJSON: function () {
         var procedureBaseJSON = {
             "system_id": this.name,
@@ -73,23 +79,42 @@ istsos.ProcedureBase.prototype = {
         return procedureBaseJSON;
 
     },
+    /**
+     * @param {String} individualName
+     * @param {String} voice
+     * @param {String} fax
+     * @param {String} email
+     * @param {String} web
+     * @param {String} deliveryPoint
+     * @param {String} city
+     * @param {String} administrativeArea
+     * @param {String} postalCode
+     * @param {String} country
+     * @returns {JSON}
+     */
     createContactForm: function (individualName, voice, fax, email, web, deliveryPoint, city, administrativeArea, postalCode, country) {
         return {
-            'individualName': individualName || '',
-            'voice': voice || '',
-            'fax': fax || '',
-            'email': email || '',
-            'web': web || '',
-            'deliveryPoint': deliveryPoint || '',
-            'city': city || '',
-            'administrativeArea': administrativeArea || '',
-            'postalCode': postalCode || '',
-            'country': country || ''
+            "individualName": individualName || "",
+            "voice": voice || "",
+            "fax": fax || "",
+            "email": email || "",
+            "web": web || "",
+            "deliveryPoint": deliveryPoint || "",
+            "city": city || "",
+            "administrativeArea": administrativeArea || "",
+            "postalCode": postalCode || "",
+            "country": country || ""
         };
     },
+    /**
+     * @returns {Array<String>}
+     */
     getCapabilitiesUom: function () {
-        return ['µs', 'ms', 's', 'min', 'h', 'd'];
+        return ["µs", "ms", "s", "min", "h", "d"];
     },
+    /**
+     * @returns {Array<JSON>}
+     */
     getCapabilitiesJson: function () {
         return [
             {
@@ -105,6 +130,9 @@ istsos.ProcedureBase.prototype = {
             }
         ];
     },
+    /**
+     * @returns {Array<JSON>}
+     */
     getIdentificationNames: function () {
         return [
             {
