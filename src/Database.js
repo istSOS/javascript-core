@@ -4,10 +4,10 @@ goog.require('goog.events.EventTarget');
 goog.require('goog.net.XhrIo');
 /** istsos.Database class */
 /**
- * @param {string} dbname
- * @param {string} host
- * @param {string} user
- * @param {string} password
+ * @param {String} dbname
+ * @param {String} host
+ * @param {String} user
+ * @param {String} password
  * @param {int} port
  * @constructor
  */
@@ -19,12 +19,11 @@ istsos.Database = function (dbname, host, user, password, port) {
     this.port = port;
 };
 
-// methods
 istsos.Database.prototype = {
     /**
-     * @param {string} url
+     * @param {String} url
      * @param {istsos.events.EventType} eventType
-     * @param {string} method
+     * @param {String} method
      * @param {JSON} opt_data
      * @param {function} opt_callback
      */
@@ -36,20 +35,21 @@ istsos.Database.prototype = {
         }, method, opt_data);
     },
     /**
-     * @param {string} serviceName
+     * @fires istsos.Database#istsos.events.EventType: DATABASE
+     * @param {String} serviceName
      * @param {istsos.Server} server
      */
     getDb: function (serviceName, server) {
         var sname = serviceName || "default";
         var url = server.getUrl() + "wa/istsos/services/" + sname + "/configsections/connection";
-        console.log(url);
         this.executeRequest(url, istsos.events.EventType.DATABASE, "GET");
     },
     /**
-     * @param {string} dbname
-     * @param {string} host
-     * @param {string} user
-     * @param {string} password
+     * @fires istsos.Database#istsos.events.EventType: UPDATE_DATABASE
+     * @param {String} dbname
+     * @param {String} host
+     * @param {String} user
+     * @param {String} password
      * @param {int} port
      * @param {istsos.Server} server
      * @param {istsos.Service} opt_service
@@ -61,10 +61,10 @@ istsos.Database.prototype = {
         this.port = port || this.port;
         var sname = (opt_service) ? opt_service.getServiceJSON()["service"] : "default";
         var url = server.getUrl() + "wa/istsos/services/" + sname + "/configsections/connection";
-        console.log(JSON.stringify(this.getDbJSON()));
         this.executeRequest(url, istsos.events.EventType.UPDATE_DATABASE, "PUT", JSON.stringify(this.getDbJSON()));
     },
     /**
+     * @fires istsos.Database#istsos.events.EventType: VALIDATE_DB
      * @param {istsos.Server} server
      */
     validateDb: function (server) {
