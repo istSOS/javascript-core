@@ -1,5 +1,6 @@
 goog.provide("istsos");
 goog.provide("istsos.events");
+goog.provide("istsos.observedProperty");
 goog.require("goog.events");
 goog.require("goog.events.Event");
 goog.require("goog.events.EventTarget");
@@ -56,7 +57,7 @@ istsos.IstSOS.prototype = {
         }
     },
     /**
-     * @returns {Array}
+     * @returns {Array<istsos.Server>}
      */
     getServerList: function () {
         return this.servers
