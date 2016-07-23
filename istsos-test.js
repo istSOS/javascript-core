@@ -3,9 +3,6 @@ istsos.on(istsos.events.EventType.ABOUT, function (ev) {
 
 });
 
-istsos.off(istsos.events.EventType.ABOUT);
-
-
 istsos.on(istsos.events.EventType.SERVICE, function (ev) {
     log(ev.getData(), 'SERVICE')
 });
