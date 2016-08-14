@@ -54,16 +54,22 @@ var observedProperty_temperature = new istsos.ObservedProperty(service, "air-tem
 // create begin sampling time and end sampling time, by instatiating Date class objects
 var beginTime = new istsos.Date(2014,5,27,0,0,0,2,"Begin sampling time - BELLINZONA"); // OR JUST A STRING "2014-05-27T00:00:00+02:00"
 var endTime = new istsos.Date(2014,5,28,0,0,0,2,"End sampling time - BELLINZONA");// OR JUST A STRING "2014-05-28T00:00:00+02:00"
+```
 
-// PERFORMING STANDARD GET OBSERVATIONS REQUEST
+PERFORMING STANDARD GET OBSERVATIONS REQUEST
+
+```javascript
 service.getObservations(offering, [property], [observedProperty_rainfall, observedProperty_temperature], beginTime, endTime);
 
 istsos.on(istsos.events.EventType.GETOBSERVATIONS, function (ev) { //OR istsos.once(...)
     // ev.getData() returns JSON response object
     document.getElementById("response").innerHTML = JSON.stringify(ev.getData(), null, 3);
 });
+```
 
-//PERFORMING GET OBSERVATIONS REQUEST WITH DATA AGGREGATION 
+PERFORMING GET OBSERVATIONS REQUEST WITH DATA AGGREGATION 
+
+```javascript
 var aggFunc = "AVG"; //allowed - "SUM", "MAX", "MIN" OR "AVG";
 var aggInterval = "P1DT"; // P1DT - 1 day, PT24H - 24 hours...
 service.getObservationsWithAggregation(offering, [property], [observedProperty_rainfall, observedProperty_temperature], beginTime, endTime, aggFunc, aggInterval);
@@ -72,16 +78,21 @@ istsos.on(istsos.events.EventType.GETOBSERVATIONS_AGG, function (ev) { //OR ists
     // ev.getData() returns JSON response object
     document.getElementById("response").innerHTML = JSON.stringify(ev.getData(), null, 3);
 });
+```
 
-//PERFORMING GET OBSERVATIONS REQUEST USING SINGLE PROCEDURE AND SINGLE OBSERVED PROPERTY - RESPONSE [{date: <date&time>, measurement: <observation>}]
+PERFORMING GET OBSERVATIONS REQUEST USING SINGLE PROCEDURE AND SINGLE OBSERVED PROPERTY - RESPONSE [{date: <date&time>, measurement: <observation>}]
+
+```javascript
 service.getObservationsBySingleProperty(offering, property, observedProperty_temperature, beginTime, endTime);
 
 istsos.on(istsos.events.EventType.GETOBSERVATIONS_BY_PROPERTY, function (ev) { //OR istsos.once(...)
     // ev.getData() returns JSON response object
     document.getElementById("response").innerHTML = JSON.stringify(ev.getData(), null, 3);
 });
+```
+PERFORMING  GET OBSERVATIONS REQUEST USING SINGLE PROCEDURE AND SINGLE OBSERVED PROPERTY WITH QUALITY INDEX CONSTRAINT
 
-//PERFORMING  GET OBSERVATIONS REQUEST USING SINGLE PROCEDURE AND SINGLE OBSERVED PROPERTY WITH QUALITY INDEX CONSTRAINT
+```javascript
 var constraintType = "between"; // allowed - lessThan, lessThanAndEqual, equal, greaterThanAndEqual, greatherThan, between
 var qualityNumber = [150, 300]; 
 service.getObservationsByQualityIndexConstraint(offering, property, observedProperty_temperature, beginTime, endTime, constraintType, qualityNumber);
