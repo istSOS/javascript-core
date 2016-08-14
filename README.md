@@ -6,6 +6,10 @@ It will expose in JavaScript language the communication with the istSOS WA REST 
 ---
 
 ### Usage instructions:
+First, import the latest compiled version of th istsos-core-.*.js library:
+```HTML
+<script src=".../src/compiled/istsos-core-.*.js"></script>
+```
 When the instances are created for the purpose of getting the data that already
 exist on a server, than it is necessary, while instantiating, to correctly specify data required for
 interacting with the server. Other info is not that important, for it will not impact the response<br/>
@@ -48,15 +52,41 @@ var observedProperty_rainfall = new istsos.ObservedProperty(service, "air-rainfa
 var observedProperty_temperature = new istsos.ObservedProperty(service, "air-temperature", "urn:ogc:def:parameter:x-istsos:1.0:meteo:air:temperature", "", null, null);
 
 // create begin sampling time and end sampling time, by instatiating Date class objects
-var beginTime = new istsos.Date(2014,5,27,0,0,0,2,"Begin sampling time - BELLINZONA");
-var endTime = new istsos.Date(2014,5,28,0,0,0,2,"End sampling time - BELLINZONA");
+var beginTime = new istsos.Date(2014,5,27,0,0,0,2,"Begin sampling time - BELLINZONA"); // OR JUST A STRING "2014-05-27T00:00:00+02:00"
+var endTime = new istsos.Date(2014,5,28,0,0,0,2,"End sampling time - BELLINZONA");// OR JUST A STRING "2014-05-28T00:00:00+02:00"
 
-// PERFORMING GET OBSERVATIONS REQUEST
-service.getObservations(offering, property, [observedProperty_rainfall, observedProperty_temperature], beginTime, endTime);
+// PERFORMING STANDARD GET OBSERVATIONS REQUEST
+service.getObservations(offering, [property], [observedProperty_rainfall, observedProperty_temperature], beginTime, endTime);
 
-istsos.on(istsos.events.EventType.GETOBSERVATIONS, function (ev) {
+istsos.on(istsos.events.EventType.GETOBSERVATIONS, function (ev) { //OR istsos.once(...)
     // ev.getData() returns JSON response object
     document.getElementById("response").innerHTML = JSON.stringify(ev.getData(), null, 3);
 });
-// 
+
+//PERFORMING GET OBSERVATIONS REQUEST WITH DATA AGGREGATION 
+var aggFunc = "AVG"; //allowed - "SUM", "MAX", "MIN" OR "AVG";
+var aggInterval = "P1DT" // P1DT - 1 day, PT24H - 24 hours...
+service.getObservationsWithAggregation(offering, [property], [observedProperty_rainfall, observedProperty_temperature], beginTime, endTime, aggFunc, aggInterval);
+
+istsos.on(istsos.events.EventType.GETOBSERVATIONS_AGG, function (ev) { //OR istsos.once(...)
+    // ev.getData() returns JSON response object
+    document.getElementById("response").innerHTML = JSON.stringify(ev.getData(), null, 3);
+});
+
+//PERFORMING GET OBSERVATIONS REQUEST USING SINGLE PROCEDURE AND SINGLE OBSERVED PROPERTY - RESPONSE [{date: <date&time>, measurement: <observation>}]
+service.getObservationsBySingleProperty(offering, property, observedProperty_temperature, beginTime, endTime);
+
+istsos.on(istsos.events.EventType.GETOBSERVATIONS_BY_PROPERTY, function (ev) { //OR istsos.once(...)
+    // ev.getData() returns JSON response object
+    document.getElementById("response").innerHTML = JSON.stringify(ev.getData(), null, 3);
+});
+
+//PERFORMING STANDARD GET OBSERVATIONS REQUEST
+service.getObservationsByQualityIndexConstraint(offering, property, observedProperty_temperature, beginTime, endTime);
+
+istsos.on(istsos.events.EventType.GETOBSERVATIONS_BY_QUALITY, function (ev) { //OR istsos.once(...)
+    // ev.getData() returns JSON response object
+    document.getElementById("response").innerHTML = JSON.stringify(ev.getData(), null, 3);
+});
+
 ```
