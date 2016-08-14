@@ -65,7 +65,7 @@ istsos.on(istsos.events.EventType.GETOBSERVATIONS, function (ev) { //OR istsos.o
 
 //PERFORMING GET OBSERVATIONS REQUEST WITH DATA AGGREGATION 
 var aggFunc = "AVG"; //allowed - "SUM", "MAX", "MIN" OR "AVG";
-var aggInterval = "P1DT" // P1DT - 1 day, PT24H - 24 hours...
+var aggInterval = "P1DT"; // P1DT - 1 day, PT24H - 24 hours...
 service.getObservationsWithAggregation(offering, [property], [observedProperty_rainfall, observedProperty_temperature], beginTime, endTime, aggFunc, aggInterval);
 
 istsos.on(istsos.events.EventType.GETOBSERVATIONS_AGG, function (ev) { //OR istsos.once(...)
@@ -81,8 +81,10 @@ istsos.on(istsos.events.EventType.GETOBSERVATIONS_BY_PROPERTY, function (ev) { /
     document.getElementById("response").innerHTML = JSON.stringify(ev.getData(), null, 3);
 });
 
-//PERFORMING STANDARD GET OBSERVATIONS REQUEST
-service.getObservationsByQualityIndexConstraint(offering, property, observedProperty_temperature, beginTime, endTime);
+//PERFORMING  GET OBSERVATIONS REQUEST USING SINGLE PROCEDURE AND SINGLE OBSERVED PROPERTY WITH QUALITY INDEX CONSTRAINT
+var constraintType = "between"; // allowed - lessThan, lessThanAndEqual, equal, greaterThanAndEqual, greatherThan, between
+var qualityNumber = [150, 300]; 
+service.getObservationsByQualityIndexConstraint(offering, property, observedProperty_temperature, beginTime, endTime, constraintType, qualityNumber);
 
 istsos.on(istsos.events.EventType.GETOBSERVATIONS_BY_QUALITY, function (ev) { //OR istsos.once(...)
     // ev.getData() returns JSON response object
