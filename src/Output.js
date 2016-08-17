@@ -2,6 +2,7 @@ goog.require('goog.events');
 goog.require('goog.events.Event');
 goog.require('goog.events.EventTarget');
 goog.require('goog.net.XhrIo');
+/** istsos.Output clas */
 /**
  * @param {istsos.ObservedProperty} property
  * @param {istsos.UnitOfMeasure} uom
