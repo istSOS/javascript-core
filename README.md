@@ -25,6 +25,10 @@ correctly. User will not and can't be warned about the correctness of the data, 
 <br/>
 ###Usage examples:
 _Get Observations example_
+
+getObservations() method requires Service, Offering, array of Procedures || VirtualProcedures, 
+array of ObservedProperties, begin time and end time to be provided
+
 ```javascript
 /*
 getObservations() method requires Service, Offering, Procedure || VirtualProcedure, 
