@@ -1,6 +1,6 @@
 # istSOS JavaScript Core Library
 
-The istSOS JavaScript Core Library is mainly a REST API wrapper. 
+The istSOS JavaScript Core Library is mainly a REST API wrapper.
 It will expose in JavaScript language the communication with the istSOS WA REST interface.
 
 ---
@@ -13,13 +13,13 @@ First, import the latest compiled version of th istsos-core-.*.js library:
 When the instances are created for the purpose of getting the data that already
 exist on a server, than it is necessary, while instantiating, to correctly specify data required for
 interacting with the server. Other info is not that important, for it will not impact the response<br/>
-_**example**: When instantiating Service class object, it is important to specify serviceName and Server, 
+_**example**: When instantiating Service class object, it is important to specify serviceName and Server,
 because that will be used for the GET request. Everything else is not that important. You can also take
 a look at the "get observations example", you will see that some of the params are obviously incorrect,
 but it is not important, because only some of them will be used for interacting with the server._<br/>
 <br/>
 However, when the instances are created for the purpose of posting the data (POST), or changing the
-data (PUT/DELETE) on the server, then it is required, while instantiating, to specify every parameter 
+data (PUT/DELETE) on the server, then it is required, while instantiating, to specify every parameter
 correctly. User will not and can't be warned about the correctness of the data, that he plans to post.
 <br/>
 <br/>
@@ -27,7 +27,7 @@ correctly. User will not and can't be warned about the correctness of the data, 
 _Get Observations example_
 ```javascript
 /*
-getObservations() method requires Service, Offering, Procedure || VirtualProcedure, 
+getObservations() method requires Service, Offering, Procedure || VirtualProcedure,
 array of ObservedProperties, begin time and end time to be provided;
 */
 // create new server container
@@ -38,6 +38,14 @@ var default_db = new istsos.Database("istsos","localhost","postgres", "postgres"
 
 // create new server and add it to server container
 var server = new istsos.Server("example", "http://istsos.org/istsos/", defaultDb);
+istsosContainer.addServer(server);
+
+// FOR SERVERS WITH AUTHENTICATION ENABLED, LOGIN CONFIGURATION OBJECT IS MANDATORY
+var loginConfig = {
+    user: admin,
+    password: istsos
+};
+var server = new istsos.Server("example", "http://istsos.org/istsos/", defaultDb, null, loginConfig);
 istsosContainer.addServer(server);
 
 // create new service, that will be added to specified server automatically upon instatiation
@@ -67,7 +75,7 @@ istsos.on(istsos.events.EventType.GETOBSERVATIONS, function (ev) { //OR istsos.o
 });
 ```
 
-PERFORMING GET OBSERVATIONS REQUEST WITH DATA AGGREGATION 
+PERFORMING GET OBSERVATIONS REQUEST WITH DATA AGGREGATION
 
 ```javascript
 var aggFunc = "AVG"; //allowed - "SUM", "MAX", "MIN" OR "AVG";
@@ -94,7 +102,7 @@ PERFORMING  GET OBSERVATIONS REQUEST USING SINGLE PROCEDURE AND SINGLE OBSERVED 
 
 ```javascript
 var constraintType = "between"; // allowed - lessThan, lessThanAndEqual, equal, greaterThanAndEqual, greatherThan, between
-var qualityNumber = [150, 300]; 
+var qualityNumber = [150, 300];
 service.getObservationsByQualityIndexConstraint(offering, property, observedProperty_temperature, beginTime, endTime, constraintType, qualityNumber);
 
 istsos.on(istsos.events.EventType.GETOBSERVATIONS_BY_QUALITY, function (ev) { //OR istsos.once(...)
