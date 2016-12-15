@@ -4,6 +4,7 @@ goog.require('goog.events.EventTarget');
 goog.require('goog.net.XhrIo');
 
 istsos.events.EventType = {
+    LOGIN: 'loginReceived',
     ABOUT: 'aboutReceived',
     STATUS: 'statusReceived',
     CONFIGSECTIONS: 'configSectionsReceived',

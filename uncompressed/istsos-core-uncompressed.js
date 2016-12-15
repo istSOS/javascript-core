@@ -421,6 +421,7 @@ istsos.Server = function (serverName, url, defaultDb, opt_config, opt_loginConfi
     this.config = opt_config || new istsos.Configuration(null, this);
     this.loginConfig = opt_loginConfig || {};
     this.services = [];
+    this.login();
 };
 
 istsos.Server.prototype = {
@@ -438,6 +439,15 @@ istsos.Server.prototype = {
             istsos.fire(eventType, e.target);
         }, method, opt_data);
     },
+    /**
+     *@fires istsos.Server#istsos.events.EventType: LOGIN
+     */
+     login: function() {
+         var authStr = this.loginConfig.user + ":" + this.loginConfig.password + "@";
+         var url = this.url.match(/http:/gi) ?
+         [this.url.slice(0,7), authStr, this.url.slice(7), "wa/istsos/operations/status"].join("") : "http://" + authStr + this.url + "wa/istsos/operations/status";
+         this.executeRequest(url, istsos.events.EventType.LOGIN, "GET");
+     },
     /**
      * @fires istsos.Server#istsos.events.EventType: SERVICE
      * @param {istsos.Service} service
@@ -536,6 +546,7 @@ istsos.Server.prototype = {
  * @description Event handling
  */
 istsos.events.EventType = {
+    LOGIN: 'loginReceived',
     ABOUT: 'aboutReceived',
     STATUS: 'statusReceived',
     CONFIGSECTIONS: 'configSectionsReceived',
@@ -708,7 +719,10 @@ istsos.events.JSONResponse.prototype.getData = function () {
         }
         this['json']['data'][0]["result"]["DataArray"]["values"] = responseValues;
         return this['json']['data'];
-    } else {
+    } else if (this.type === "loginReceived") {
+        console.log("LOGIN...");
+    }
+    else {
         return this['json']['data'];
     }
 

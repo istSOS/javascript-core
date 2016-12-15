@@ -19,6 +19,7 @@ istsos.Server = function (serverName, url, defaultDb, opt_config, opt_loginConfi
     this.config = opt_config || new istsos.Configuration(null, this);
     this.loginConfig = opt_loginConfig || {};
     this.services = [];
+    this.login();
 };
 
 istsos.Server.prototype = {
@@ -36,6 +37,13 @@ istsos.Server.prototype = {
             istsos.fire(eventType, e.target);
         }, method, opt_data);
     },
+
+    login: function() {
+        var authStr = this.loginConfig.user + ":" + this.loginConfig.password + "@";
+        var url = this.url.match(/http:/gi) ?
+        [this.url.slice(0,7), authStr, this.url.slice(7), "wa/istsos/operations/status"].join("") : "http://" + authStr + this.url + "wa/istsos/operations/status";
+        this.executeRequest(url, istsos.events.EventType.LOGIN, "GET");
+    }
     /**
      * @fires istsos.Server#istsos.events.EventType: SERVICE
      * @param {istsos.Service} service
