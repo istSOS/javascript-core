@@ -1,43 +1,45 @@
-goog.require('goog.events');
-goog.require('goog.events.Event');
-goog.require('goog.events.EventTarget');
-goog.require('goog.net.XhrIo');
-/** istsos.Date class */
-/**
- * @param {int} year
- * @param {int} month
- * @param {int} day
- * @param {int} hours
- * @param {int} minutes
- * @param {int} seconds
- * @param {int} gmt
- * @param {String} opt_description
- * @constructor
- */
-istsos.Date = function (year, month, day, hours, minutes, seconds, gmt, opt_description) {
-    this.year = year.toString();
-    this.month = (month > 9) ? month.toString() : "0" + month.toString();
-    this.day = (day > 9) ? day.toString() : "0" + day.toString();
-    this.hours = (hours > 9) ? hours.toString() : "0" + hours.toString();
-    this.minutes = (minutes > 9) ? minutes.toString() : "0" + minutes.toString();
-    this.seconds = (seconds > 9) ? seconds.toString() : "0" + seconds.toString();
-    this.gmt = (gmt > 9) ? gmt.toString() : "0" + gmt.toString();
-    this.description = opt_description || "Class for converting date&time to proper istSOS format";
-};
+goog.provide("istsos.Date");
 
-istsos.Date.prototype = {
-    /**
-     * @returns {string}
-     */
-    getDateString: function () {
-        return this.year + "-" + this.month + "-" + this.day + "T" +
-            this.hours + ":" + this.minutes + ":" + this.seconds + "+" +
-            this.gmt + ":" + "00";
-    },
-    /**
-     * @returns {String}
-     */
-    getDescription: function () {
-        return this.description;
-    }
-};
+goog.require("istsos");
+
+
+/**
+ * @class istsos.Date
+ */
+istsos.Date = class {
+
+  /**
+   * constructor - Instantiates istsos.Date
+   *
+   * @param  {object} options Set of key-value pairs
+   * @constructor
+   */
+  constructor(options) {
+     this.year = options.year.toString()
+     this.month = (options.month > 9) ? options.month.toString() : `0${options.month.toString()}`;
+     this.day = (options.day > 9) ? options.day.toString() : `0${options.day.toString()}`;
+     this.hours = (options.hours > 9) ? options.hours.toString() : `0${options.hours.toString()}`;
+     this.minutes = (options.minutes > 9) ? options.minutes.toString() : `0${options.minutes.toString()}`;
+     this.seconds = (options.seconds > 9) ? options.seconds.toString() : `0${options.seconds.toString()}`;
+     this.gmt = (options.gmt > 9) ? options.gmt.toString() : `0${options.gmt.toString()}`;
+     this.description = options.opt_description || "Class for converting date&time to proper istSOS format";
+  }
+
+  /**
+   * getDateString - Get date in ISO 8601 format
+   *
+   * @return {string}  ISO 8601 date
+   */
+  getDateString () {
+      return `${this.year}-${this.month}-${this.day}T${this.hours}:${this.minutes}:${this.seconds}+${this.gmt}:00`;
+  }
+
+  /**
+   * getDescription - Get description
+   *
+   * @return {string}  Description   
+   */
+  getDescription () {
+      return this.description;
+  }
+}
