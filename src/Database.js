@@ -29,7 +29,7 @@ istsos.Database = class {
       this.host = options.host || this.host;
       this.password = options.password || this.password;
       this.port = options.port || this.port;
-      var serviceName = (options.opt_service) ? opt_service.getServiceJSON()["service"] : "default";
+      var serviceName = (options.opt_service) ? options.opt_service.getServiceJSON()["service"] : "default";
       var url = `${server.getUrl()}wa/istsos/services/${serviceName}/configsections/connection`;
       this.executeRequest(url, istsos.events.EventType.UPDATE_DATABASE, "PUT", JSON.stringify(this.getDbJSON()));
    }
