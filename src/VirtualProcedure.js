@@ -21,7 +21,7 @@ goog.require('goog.net.XhrIo');
  * @param {JSON} ratingCurve
  * @constructor
  */
-istsos.Procedure = class Procedure extends istsos.ProcedureBase {
+istsos.VirtualProcedure = class VirtualProcedure extends istsos.ProcedureBase {
    constructor(options) {
       super({
          name: options.name,
