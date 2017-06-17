@@ -30,9 +30,15 @@ istsos.Service = class {
       this.dataQualities = [];
       server.addService(this);
 
-      var temporary_offering = new istsos.Offering("temporary",
-         "temporary offering to hold self-registered procedures/sensors waiting for service adimistration acceptance",
-         true, "", this);
+      var offering_config = {
+        offeringName : "temporary",
+        offeringDescription : "temporary offering to hold self-registered procedures/sensors waiting for service adimistration acceptance",
+        active : true,
+        expirationDate : ""
+        service : this
+      }
+
+      var temporary_offering = new istsos.Offering(offering_config);
    }
 
    /**
