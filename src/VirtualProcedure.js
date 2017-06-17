@@ -54,7 +54,7 @@ istsos.Procedure = class Procedure extends istsos.ProcedureBase {
    /**
     * @returns {JSON}
     */
-   getProcedureJSON() {
+   getVirtualProcedureJSON() {
       var vProcedureJSON = super.getProcedureBaseJSON();
       vProcedureJSON["classification"] = [{
          "name": "System Type",
@@ -159,7 +159,7 @@ istsos.Procedure = class Procedure extends istsos.ProcedureBase {
     * @param {String} systemType (virtual)
     * @param {String} sensorType
     */
-   updateProcedure(options) {
+   updateVirtualProcedure(options) {
       const oldName = this.name;
       this.name = options.name || this.name;
       this.description = options.description || this.description;
@@ -174,55 +174,14 @@ istsos.Procedure = class Procedure extends istsos.ProcedureBase {
             outputs_array.push(out)
          });
       }
-      this.systemType = (options.systemType === "insitu-fixed-point" || options.systemType === "insitu-mobile-point") ?
-         options.systemType : null;
+      this.systemType = (options.systemType === "virtual") ? options.systemType : null;
       this.sensorType = options.sensorType || "";
 
-      var url = `${this.service.server.getUrl()}wa/istsos/services/${this.service.getServiceJSON()["service"]}/procedures/${oldName}`;
-      this.executeRequest(url, istsos.events.EventType.UPDATE_PROCEDURE, "PUT", JSON.stringify(this.getProcedureJSON()));
-   }
-}
-
-istsos.VirtualProcedure.prototype = {
-
-   /**
-    * @fires istsos.VirtualProcedure#istsos.events.EventType: UPDATE_V_PROCEDURE
-    * @param {String} name
-    * @param {String} description
-    * @param {String} keywords
-    * @param {String} foi_name
-    * @param {int} epsg
-    * @param {int} x
-    * @param {int} y
-    * @param {int} z
-    * @param {Array<istsos.Output>} outputs
-    * @param {String} systemType (virtual)
-    * @param {String} sensorType
-    */
-   updateVirtualProcedure: function(name, description, keywords, foi_name, epsg, x, y, z, outputs, systemType, sensorType) {
-      var oldName = this.name;
-      this.name = name || this.name;
-      this.description = description || this.description;
-      this.keywords = keywords || this.keywords;
-      this.foi_name = foi_name || this.foi_name;
-      this.epsg = epsg || this.epsg;
-      this.coordinates = [x, y, z] || this.coordinates;
-      var outputs_array = this.outputs;
-      if (outputs || outputs.length !== 0) {
-         outputs_array.splice(1, outputs_array.length - 1);
-         outputs.forEach(function(out) {
-            outputs_array.push(out)
-         });
-      }
-      this.systemType = (systemType === "virtual") ? systemType : this.systemType;
-      this.sensorType = sensorType || this.sensorType;
-      var url = this.service.server.getUrl() + "wa/istsos/services/" + this.service.getServiceJSON()["service"] + "/virtualprocedures/" + oldName;
+      var url = `${this.service.server.getUrl()}wa/istsos/services/${this.service.getServiceJSON()["service"]}/virtualprocedures/${oldName}`;
       this.executeRequest(url, istsos.events.EventType.UPDATE_V_PROCEDURE, "PUT", JSON.stringify(this.getVirtualProcedureJSON()));
-   },
-   /**
-    * @fires istsos.VirtualProcedure#istsos.events.EventType: DELETE_V_PROCEDURE
-    */
-   deleteVirtualProcedure: function() {
+   }
+
+   deleteVirtualProcedure() {
       var v_procedures = this.service.getVirtualProceduresProperty();
       var obj = this.getVirtualProcedureJSON();
       v_procedures.forEach(function(p) {
@@ -230,27 +189,29 @@ istsos.VirtualProcedure.prototype = {
             v_procedures.splice(v_procedures.indexOf(p), 1);
          }
       });
-      var url = this.service.server.getUrl() + "wa/istsos/services/" + this.service.getServiceJSON()["service"] + "/virtualprocedures/" + this.name;
+
+      var url = `${this.service.server.getUrl()}wa/istsos/services/${this.service.getServiceJSON()["service"]}/virtualprocedures/${this.name}`;
       this.executeRequest(url, istsos.events.EventType.DELETE_V_PROCEDURE, "DELETE");
-   },
+   }
+
    /**
     * @fires istsos.VirtualProcedure#istsos.events.EventType: ADD_TO_OFFERING
     * @param {istsos.Offering} offering
     */
-   addMembershipToOffering: function(offering) {
+   addMembershipToOffering(offering) {
       offering.getMemberProceduresProperty().push(this);
-      var url = this.service.server.getUrl() + "wa/istsos/services/" + this.service.getServiceJSON()["service"] + "/offerings/" +
-         offering.getOfferingJSON()["name"] + "/procedures";
+      var url = `${this.service.server.getUrl()}wa/istsos/services/${this.service.getServiceJSON()["service"]}/offerings/${offering.getOfferingJSON()["name"]}/procedures`;
       this.executeRequest(url, istsos.events.EventType.ADD_TO_OFFERING, "POST", JSON.stringify([{
          "offering": offering.getOfferingJSON()["name"],
          "procedure": this.getVirtualProcedureJSON()["system"]
       }]));
-   },
+   }
+
    /**
     * @fires istsos.VirtualProcedure#istsos.events.EventType: REMOVE_FROM_OFFERING
     * @param offering
     */
-   removeMembershipFromOffering: function(offering) {
+   removeMembershipFromOffering(offering) {
       var procedures = offering.getMemberProceduresProperty();
       var vp_name = this.name;
       procedures.forEach(function(p) {
@@ -258,17 +219,17 @@ istsos.VirtualProcedure.prototype = {
             procedures.splice(procedures.indexOf(p), 1);
          }
       });
-      var url = this.service.server.getUrl() + "wa/istsos/services/" + this.service.getServiceJSON()["service"] + "/offerings/" +
-         offering.getOfferingJSON()["name"] + "/procedures/" + this.getVirtualProcedureJSON()["system"];
+      var url = `${this.service.server.getUrl()}wa/istsos/services/${this.service.getServiceJSON()["service"]}/offerings/${offering.getOfferingJSON()["name"]}/procedures/${this.getVirtualProcedureJSON()["system"]}`;
       this.executeRequest(url, istsos.events.EventType.REMOVE_FROM_OFFERING, "DELETE", JSON.stringify([{
          "offering": offering.getOfferingJSON()["name"],
          "procedure": this.getVirtualProcedureJSON()["system"]
       }]));
-   },
+   }
+
    /**
     * @returns {Array<istsos.Output>}
     */
-   getOutputsProperty: function() {
-      return istsos.ProcedureBase.prototype.getOutputsProperty.call(this);
+   getOutputsProperty() {
+      return super.getOutputsProperty();
    }
-};
+}
