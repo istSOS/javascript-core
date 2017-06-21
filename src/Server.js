@@ -8,7 +8,6 @@ import {EventEmitter } from 'EventEmitter';
  * @param {String} url
  * @param {istsos.Database} defaultDb
  * @param {istsos.Configuration} opt_config
- * @param {JSON} opt_loginConfig
  * @constructor
  */
 export var Server = class Server extends EventEmitter {
@@ -21,9 +20,8 @@ export var Server = class Server extends EventEmitter {
 			serviceName: null,
 			server: this
 		});
-		this.loginConfig = options.opt_loginConfig || {};
+		this.loginConfig = null;
 		this.services = [];
-		// this.login();
 	}
 
 	fireEvent(eventType, response) {
@@ -46,10 +44,19 @@ export var Server = class Server extends EventEmitter {
       super.unlistenAll(event, callback);
    }
 
-	login() {
-		var authStr = `${this.loginConfig.user}:${this.loginConfig.password}@`;
-		var url = this.url.match(/http:/gi) ? [this.url.slice(0, 7), authStr, this.url.slice(7), "wa/istsos/operations/status"].join("") : `http://${authStr}${this.url}wa/istsos/operations/status`;
-		this.executeRequest(url, 'LOGIN', "GET");
+   setLoginConfig(username, password) {
+      let loginStr = `${username}:${password}`
+      this.loginConfig = {
+         Authorization: `Basic ${btoa(loginStr)}`
+      }
+   }
+
+	removeLoginConfig() {
+		this.loginConfig = null;
+	}
+
+	getLoginConfig() {
+		return this.loginConfig;
 	}
 
 	/**
@@ -58,7 +65,23 @@ export var Server = class Server extends EventEmitter {
 	 */
 	getService(service) {
 		var url = `${this.url}wa/istsos/services/${service.name}`;
-		this.executeRequest(url, 'SERVICE', "GET");
+
+      let config = {};
+      if(this.getLoginConfig()) {
+         config['headers'] = this.getLoginConfig();
+      }
+      
+      return HttpAPI.get(url, config)
+         .then((result) => {
+            if (result.success) {
+               this.fireEvent('SERVICE', result);
+               return result;
+            } else {
+               throw result.message
+            }
+         }, (error_message) => {
+            throw error_message;
+         });
 	}
 
 	/**
@@ -74,7 +97,24 @@ export var Server = class Server extends EventEmitter {
 	 */
 	registerService(service) {
 		var url = `${this.getUrl()}wa/istsos/services`;
-		this.executeRequest(url, 'NEW_SERVICE', "POST", JSON.stringify(service.getServiceJSON()));
+		
+		let config = {};
+      if(this.getLoginConfig()) {
+         config['headers'] = this.getLoginConfig();
+      }
+      config['data'] = JSON.stringify(service.getServiceJSON());
+
+      return HttpAPI.post(url, config)
+         .then((result) => {
+            if (result.success) {
+               this.fireEvent('NEW_SERVICE', result);
+               return result;
+            } else {
+               throw result.message
+            }
+         }, (error_message) => {
+            throw error_message;
+         });
 	}
 
 	/**
@@ -88,9 +128,24 @@ export var Server = class Server extends EventEmitter {
 			}
 		}
 		var url = `${this.url}wa/istsos/services/${service.name}`;
-		this.executeRequest(url, 'DELETE_SERVICE', "DELETE", JSON.stringify({
-			"name": service.name
-		}));
+		
+		let config = {};
+      if(this.getLoginConfig()) {
+         config['headers'] = this.getLoginConfig();
+      }
+      config['data'] = JSON.stringify({'name': service.name});
+
+      return HttpAPI.delete(url, config)
+         .then((result) => {
+            if (result.success) {
+               this.fireEvent('DELETE_SERVICE', result);
+               return result;
+            } else {
+               throw result.message
+            }
+         }, (error_message) => {
+            throw error_message;
+         });
 	}
 
 	/**
@@ -99,6 +154,23 @@ export var Server = class Server extends EventEmitter {
 	getStatus() {
 		var url = `${this.url}wa/istsos/operations/status`;
 		this.executeRequest(url, 'STATUS', "GET");
+
+		let config = {};
+      if(this.getLoginConfig()) {
+         config['headers'] = this.getLoginConfig();
+      }
+
+      return HttpAPI.delete(url, config)
+         .then((result) => {
+            if (result.success) {
+               this.fireEvent('STATUS', result);
+               return result;
+            } else {
+               throw result.message
+            }
+         }, (error_message) => {
+            throw error_message;
+         });
 	}
 
 	/**
@@ -106,14 +178,30 @@ export var Server = class Server extends EventEmitter {
 	 */
 	getAboutInfo() {
 		var url = `${this.url}wa/istsos/operations/about`;
-		this.executeRequest(url, 'ABOUT', "GET");
+
+		let config = {};
+      if(this.getLoginConfig()) {
+         config['headers'] = this.getLoginConfig();
+      }
+
+      return HttpAPI.delete(url, config)
+         .then((result) => {
+            if (result.success) {
+               this.fireEvent('ABOUT', result);
+               return result;
+            } else {
+               throw result.message
+            }
+         }, (error_message) => {
+            throw error_message;
+         });
 	}
 
 	/**
 	 * @fires istsos.Configuration#istsos.events.EventType: CONFIGURATION
 	 */
 	getConfig() {
-		this.config.getConf();
+		return this.config.getConf();
 	}
 
 	/**
@@ -136,13 +224,30 @@ export var Server = class Server extends EventEmitter {
 	getServices() {
 		var url = `${this.url}wa/istsos/services`;
 		this.executeRequest(url, 'SERVICES', "GET");
+
+		let config = {};
+      if(this.getLoginConfig()) {
+         config['headers'] = this.getLoginConfig();
+      }
+
+      return HttpAPI.delete(url, config)
+         .then((result) => {
+            if (result.success) {
+               this.fireEvent('SERVICES', result);
+               return result;
+            } else {
+               throw result.message
+            }
+         }, (error_message) => {
+            throw error_message;
+         });
 	}
 
 	/**
 	 * @fires istsos.Database#istsos.events.EventType: DATABASE
 	 */
 	getDefaultDb() {
-		this.defaultDb.getDb("default", this);
+		return this.defaultDb.getDb("default", this);
 	}
 
 	/**

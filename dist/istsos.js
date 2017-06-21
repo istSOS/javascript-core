@@ -1037,13 +1037,6 @@ var Server = exports.Server = function (_EventEmitter) {
 			_get(Server.prototype.__proto__ || Object.getPrototypeOf(Server.prototype), 'unlistenAll', this).call(this, event, callback);
 		}
 	}, {
-		key: 'executeRequest',
-		value: function executeRequest(url, eventType, method, opt_data) {
-			goog.net.XhrIo.send(url, function (e) {
-				istsos.fire(eventType, e.target);
-			}, method, opt_data);
-		}
-	}, {
 		key: 'login',
 		value: function login() {
 			var authStr = this.loginConfig.user + ':' + this.loginConfig.password + '@';

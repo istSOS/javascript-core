@@ -36,8 +36,13 @@ export var Database = class Database extends EventEmitter {
 
    getDb(serviceName = 'default', server) {
       var url = `${server.getUrl()}wa/istsos/services/${serviceName}/configsections/connection`;
-
-      return HttpAPI.get(url)
+      
+      let config = {};
+      if(server.getLoginConfig()) {
+         config['headers'] = server.getLoginConfig();
+      }
+      
+      return HttpAPI.get(url, config)
          .then((result) => {
             if (result.success) {
                this.fireEvent('DATABASE', result);
@@ -50,17 +55,22 @@ export var Database = class Database extends EventEmitter {
          });
    }
 
-   setDb(options) {
+   setDb(server, service, options) {
       this.dbname = options.dbname || this.dbname;
       this.host = options.host || this.host;
       this.password = options.password || this.password;
       this.port = options.port || this.port;
-      var serviceName = (options.opt_service) ? options.opt_service.getServiceJSON()["service"] : "default";
+      var serviceName = (service) ? service.getServiceJSON()["service"] : "default";
+      
       var url = `${server.getUrl()}wa/istsos/services/${serviceName}/configsections/connection`;
+      
+      let config = {}
+      if(server.getLoginConfig()) {
+         config['headers'] = server.getLoginConfig();
+      }
+      config['data'] = JSON.stringify(this.getDbJSON());
 
-      return HttpAPI.put(url, {
-            data: JSON.stringify(this.getDbJSON())
-         })
+      return HttpAPI.put(url, config)
          .then((result) => {
             if (result.success) {
                this.fireEvent('UPDATE_DATABASE', result);
@@ -76,10 +86,14 @@ export var Database = class Database extends EventEmitter {
 
    validateDb(server) {
       var url = `${server.getUrl()}wa/istsos/operations/validatedb`;
+      
+      let config = {}
+      if(server.getLoginConfig()) {
+         config['headers'] = server.getLoginConfig();
+      }
+      config['data'] = JSON.stringify(this.getDbJSON());
 
-      return HttpAPI.post(url, {
-            data: JSON.stringify(this.getDbJSON())
-         })
+      return HttpAPI.post(url, config)
          .then((result) => {
             if (result.success) {
                this.fireEvent('VALIDATE_DB', result);

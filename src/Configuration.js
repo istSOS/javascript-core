@@ -8,7 +8,7 @@ export var Configuration = class Configuration extends EventEmitter {
    constructor(options) {
       super();
       this.serviceName = (options.serviceName) ? options.serviceName : "default";
-      this.serverUrl = options.server.getUrl();
+      this.server = options.server;
    }
 
    fireEvent(eventType, response) {
@@ -32,8 +32,14 @@ export var Configuration = class Configuration extends EventEmitter {
    }
 
    getConf() {
-      var url = `${this.serverUrl}wa/istsos/services/${this.serviceName}/configsections`;
-      return HttpAPI.get(url)
+      var url = `${this.server.getUrl()}wa/istsos/services/${this.serviceName}/configsections`;
+      
+      let config = {}
+      if(this.server.getLoginConfig()) {
+         config['headers'] = this.server.getLoginConfig();
+      }
+
+      return HttpAPI.get(url, config)
          .then((result) => {
             if (result.success) {
                this.fireEvent('CONFIGSECTIONS', result);
@@ -47,8 +53,14 @@ export var Configuration = class Configuration extends EventEmitter {
    }
 
    getProvider() {
-      var url = `${this.serverUrl}wa/istsos/services/${this.serviceName}/configsections/provider`;
-      return HttpAPI.get(url)
+      var url = `${this.server.getUrl()}wa/istsos/services/${this.serviceName}/configsections/provider`;
+       
+      let config = {}
+      if(this.server.getLoginConfig()) {
+         config['headers'] = this.server.getLoginConfig();
+      }
+
+      return HttpAPI.get(url, config)
          .then((result) => {
             if (result.success) {
                this.fireEvent('PROVIDER', result);
@@ -77,10 +89,15 @@ export var Configuration = class Configuration extends EventEmitter {
       //    "contactadminarea": options.contactAdminArea || "",
       //    "contactcountry": options.contactCountry || ""
       // };
-      var url = `${this.serverUrl}wa/istsos/services/${this.serviceName}/configsections/provider`;
-      return HttpAPI.put(url, {
-            data: JSON.stringify(options)
-         })
+      var url = `${this.server.getUrl()}wa/istsos/services/${this.serviceName}/configsections/provider`;
+      
+      let config = {}
+      if(this.server.getLoginConfig()) {
+         config['headers'] = this.server.getLoginConfig();
+      }
+      config['data'] = JSON.stringify(options);
+
+      return HttpAPI.put(url, config)
          .then((result) => {
             if (result.success) {
                this.fireEvent('UPDATE_PROVIDER', result);
@@ -95,9 +112,14 @@ export var Configuration = class Configuration extends EventEmitter {
    }
 
    getIdentification() {
-      var url = `${this.serverUrl}wa/istsos/services/${this.serviceName}/configsections/identification`;
+      var url = `${this.server.getUrl()}wa/istsos/services/${this.serviceName}/configsections/identification`;
 
-      return HttpAPI.put(url)
+      let config = {}
+      if(this.server.getLoginConfig()) {
+         config['headers'] = this.server.getLoginConfig();
+      }
+
+      return HttpAPI.get(url, config)
          .then((result) => {
             if (result.success) {
                this.fireEvent('IDENTIFICATION', result);
@@ -121,11 +143,15 @@ export var Configuration = class Configuration extends EventEmitter {
       //    "keywords": keywords || "",
       //    "accessconstrains": accessConstrains || ""
       // };
-      var url = `${this.serverUrl}wa/istsos/services/${this.serviceName}/configsections/identification`;
+      var url = `${this.server.getUrl()}wa/istsos/services/${this.serviceName}/configsections/identification`;
 
-      return HttpAPI.put(url, {
-            data: JSON.stringify(options)
-         })
+      let config = {}
+      if(this.server.getLoginConfig()) {
+         config['headers'] = this.server.getLoginConfig();
+      }
+      config['data'] = JSON.stringify(options);
+
+      return HttpAPI.put(url, config)
          .then((result) => {
             if (result.success) {
                this.fireEvent('UPDATE_IDENTIFICATION', result);
@@ -140,9 +166,14 @@ export var Configuration = class Configuration extends EventEmitter {
    }
 
    getMqtt() {
-      var url = `${this.serverUrl}wa/istsos/services/${this.serviceName}/configsections/mqtt`;
-      
-      return HttpAPI.get(url)
+      var url = `${this.server.getUrl()}wa/istsos/services/${this.serviceName}/configsections/mqtt`;
+       
+      let config = {}
+      if(this.server.getLoginConfig()) {
+         config['headers'] = this.server.getLoginConfig();
+      }
+
+      return HttpAPI.get(url, config)
          .then((result) => {
             if (result.success) {
                this.fireEvent('MQTT', result);
@@ -164,11 +195,15 @@ export var Configuration = class Configuration extends EventEmitter {
       //    "broker_url": brokerUrl || "",
       //    "broker_port": brokerPort || ""
       // };
-      var url = `${this.serverUrl}wa/istsos/services/${this.serviceName}/configsections/mqtt`;
+      var url = `${this.server.getUrl()}wa/istsos/services/${this.serviceName}/configsections/mqtt`;
      
-      return HttpAPI.put(url, {
-            data: JSON.stringify(options)
-         })
+      let config = {}
+      if(this.server.getLoginConfig()) {
+         config['headers'] = this.server.getLoginConfig();
+      }
+      config['data'] = JSON.stringify(options);
+
+      return HttpAPI.put(url, config)
          .then((result) => {
             if (result.success) {
                this.fireEvent('UPDATE_MQTT', result);
@@ -183,9 +218,14 @@ export var Configuration = class Configuration extends EventEmitter {
    }
 
    getCrs() {
-      var url = `${this.serverUrl}wa/istsos/services/${this.serviceName}/configsections/geo`;
+      var url = `${this.server.getUrl()}wa/istsos/services/${this.serviceName}/configsections/geo`;
+ 
+      let config = {}
+      if(this.server.getLoginConfig()) {
+         config['headers'] = this.server.getLoginConfig();
+      }
 
-      return HttpAPI.get(url)
+      return HttpAPI.get(url, config)
          .then((result) => {
             if (result.success) {
                this.fireEvent('CRS', result);
@@ -207,11 +247,15 @@ export var Configuration = class Configuration extends EventEmitter {
       //    "allowedepsg": allowedEpsg.toString() || "",
       //    "istsosepsg": istsosEpsg.toString() || ""
       // };
-      var url = `${this.serverUrl}wa/istsos/services/${this.serviceName}/configsections/geo`;
+      var url = `${this.server.getUrl()}wa/istsos/services/${this.serviceName}/configsections/geo`;
       
-      return HttpAPI.put(url, {
-            data: JSON.stringify(options)
-         })
+      let config = {}
+      if(this.server.getLoginConfig()) {
+         config['headers'] = this.server.getLoginConfig();
+      }
+      config['data'] = JSON.stringify(options);
+
+      return HttpAPI.put(url, config)
          .then((result) => {
             if (result.success) {
                this.fireEvent('UPDATE_CRS', result);
@@ -226,9 +270,14 @@ export var Configuration = class Configuration extends EventEmitter {
    }
 
    getObservationConf() {
-      var url = `${this.serverUrl}wa/istsos/services/${this.serviceName}/configsections/getobservation`;
+      var url = `${this.server.getUrl()}wa/istsos/services/${this.serviceName}/configsections/getobservation`;
 
-      return HttpAPI.get(url)
+      let config = {}
+      if(this.server.getLoginConfig()) {
+         config['headers'] = this.server.getLoginConfig();
+      }
+
+      return HttpAPI.get(url, config)
          .then((result) => {
             if (result.success) {
                this.fireEvent('OBSERVATION_CONF', result);
@@ -252,11 +301,15 @@ export var Configuration = class Configuration extends EventEmitter {
       //    "transactional_log": transactionalLog || "",
       //    "aggregatenodata": aggregateNoData || ""
       // };
-      var url = `${this.serverUrl}wa/istsos/services/${this.serviceName}/configsections/getobservation`;
+      var url = `${this.server.getUrl()}wa/istsos/services/${this.serviceName}/configsections/getobservation`;
       
-      return HttpAPI.put(url, {
-            data: JSON.stringify(options)
-         })
+      let config = {}
+      if(this.server.getLoginConfig()) {
+         config['headers'] = this.server.getLoginConfig();
+      }
+      config['data'] = JSON.stringify(options);
+
+      return HttpAPI.put(url, config)
          .then((result) => {
             if (result.success) {
                this.fireEvent('UPDATE_OBSERVATION_CONF', result);
@@ -271,9 +324,14 @@ export var Configuration = class Configuration extends EventEmitter {
    }
 
    getProxy() {
-      var url = `${this.serverUrl}wa/istsos/services/${this.serviceName}/configsections/serviceurl`;
+      var url = `${this.server.getUrl()}wa/istsos/services/${this.serviceName}/configsections/serviceurl`;
 
-      return HttpAPI.get(url)
+      let config = {}
+      if(this.server.getLoginConfig()) {
+         config['headers'] = this.server.getLoginConfig();
+      }
+
+      return HttpAPI.get(url, config)
          .then((result) => {
             if (result.success) {
                this.fireEvent('PROXY', result);
@@ -291,10 +349,15 @@ export var Configuration = class Configuration extends EventEmitter {
       var data = {
          "url": newUrl || ""
       }
-      var url = `${this.serverUrl}wa/istsos/services/${this.serviceName}/configsections/serviceurl`;
-      return HttpAPI.put(url, {
-            data: JSON.stringify(data)
-         })
+      var url = `${this.server.getUrl()}wa/istsos/services/${this.serviceName}/configsections/serviceurl`;
+      
+      let config = {}
+      if(this.server.getLoginConfig()) {
+         config['headers'] = this.server.getLoginConfig();
+      }
+      config['data'] = JSON.stringify(data);
+
+      return HttpAPI.put(url, config)
          .then((result) => {
             if (result.success) {
                this.fireEvent('UPDATE_PROXY', result);
@@ -309,9 +372,14 @@ export var Configuration = class Configuration extends EventEmitter {
    }
 
    getEpsgCodes() {
-      var url = `${this.serverUrl}wa/istsos/services/${this.serviceName}/epsgs`;
+      var url = `${this.server.getUrl()}wa/istsos/services/${this.serviceName}/epsgs`;
+       
+      let config = {}
+      if(this.server.getLoginConfig()) {
+         config['headers'] = this.server.getLoginConfig();
+      }
 
-      return HttpAPI.get(url)
+      return HttpAPI.get(url, config)
          .then((result) => {
             if (result.success) {
                this.fireEvent('EPSG_CODES', result);
