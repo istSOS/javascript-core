@@ -1,7 +1,6 @@
-goog.require('goog.events');
-goog.require('goog.events.Event');
-goog.require('goog.events.EventTarget');
-goog.require('goog.net.XhrIo');
+import {HttpAPI } from 'HttpAPI'; 
+import {EventEmitter } from 'EventEmitter';
+
 /** istsos.DataQuality class */
 /**
  * @param {istsos.Service} service
@@ -10,8 +9,9 @@ goog.require('goog.net.XhrIo');
  * @param {String} descrDQ
  * @constructor
  */
-istsos.DataQuality = class {
+export var DataQuality = class DataQuality extends EventEmitter {
    constructor(options) {
+      super();
       this.code = options.codeDQ;
       this.name = options.nameDQ;
       this.description = options.descrDQ || "";
@@ -19,10 +19,24 @@ istsos.DataQuality = class {
       service.addDataQuality(this);
    }
 
-   executeRequest(url, eventType, method, opt_data) {
-      goog.net.XhrIo.send(url, function(e) {
-         istsos.fire(eventType, e.target);
-      }, method, opt_data);
+   fireEvent(eventType, response) {
+      super.fire(eventType, response)
+   }
+
+   on(event, callback) {
+      super.on(event, callback);
+   }
+
+   once(event, callback) {
+      super.once(event, callback);
+   }
+
+   off(event, callback) {
+      super.off(event, callback);
+   }
+
+   unlistenAll() {
+      super.unlistenAll(event, callback);
    }
 
    /**
@@ -50,7 +64,24 @@ istsos.DataQuality = class {
       this.description = options.newDescrDQ || this.description;
 
       var url = `${this.service.server.getUrl()}wa/istsos/services/${this.service.getServiceJSON()["service"]}/dataqualities/${oldName}`;
-      this.executeRequest(url, istsos.events.EventType.UPDATE_DATAQUALITY, "PUT", JSON.stringify(this.getDataQualityJSON()));
+      
+      let config = {};
+      if(this.service.server.getLoginConfig()) {
+         config['headers'] = this.service.server.getLoginConfig();
+      }
+      config['data'] = JSON.stringify(this.getDataQualityJSON());
+
+      return HttpAPI.put(url, config)
+         .then((result) => {
+            if (result.success) {
+               this.fireEvent('UPDATE_DATAQUALITY', result);
+               return result;
+            } else {
+               throw result.message
+            }
+         }, (error_message) => {
+            throw error_message;
+         });
    }
 
    /**
@@ -65,7 +96,24 @@ istsos.DataQuality = class {
       }
 
       var url = `${this.service.server.getUrl()}wa/istsos/services/${this.service.getServiceJSON()["service"]}/dataqualities/${this.getDataQualityJSON()["code"]}`;
-      this.executeRequest(url, istsos.events.EventType.DELETE_DATAQUALITY, "DELETE", JSON.stringify(this.getDataQualityJSON()));
+     
+      let config = {};
+      if(this.service.server.getLoginConfig()) {
+         config['headers'] = this.service.server.getLoginConfig();
+      }
+      config['data'] = JSON.stringify(this.getDataQualityJSON());
+
+      return HttpAPI.delete(url, config)
+         .then((result) => {
+            if (result.success) {
+               this.fireEvent('DELETE_DATAQUALITY', result);
+               return result;
+            } else {
+               throw result.message
+            }
+         }, (error_message) => {
+            throw error_message;
+         });
    }
 
 }

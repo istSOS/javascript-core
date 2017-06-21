@@ -1,7 +1,6 @@
-goog.require('goog.events');
-goog.require('goog.events.Event');
-goog.require('goog.events.EventTarget');
-goog.require('goog.net.XhrIo');
+import {HttpAPI } from 'HttpAPI'; 
+import {EventEmitter } from 'EventEmitter';
+
 /** istsos.UnitOfMeasure  class */
 /**
  * @param {istsos.Service} service
@@ -9,8 +8,9 @@ goog.require('goog.net.XhrIo');
  * @param {String} description
  * @constructor
  */
-istsos.UnitOfMeasure = class {
+export var UnitOfMeasure = class UnitOfMeasure extends EventEmitter {
    constructor(options) {
+   	super();
       this.name = options.name;
       this.description = options.description || "";
       this.proceduresIncluded = [];
@@ -19,10 +19,24 @@ istsos.UnitOfMeasure = class {
       this.updateProceduresIncluded();
    }
 
-   executeRequest(url, eventType, method, opt_data) {
-      goog.net.XhrIo.send(url, function(e) {
-         istsos.fire(eventType, e.target);
-      }, method, opt_data);
+   fireEvent(eventType, response) {
+      super.fire(eventType, response)
+   }
+
+   on(event, callback) {
+      super.on(event, callback);
+   }
+
+   once(event, callback) {
+      super.once(event, callback);
+   }
+
+   off(event, callback) {
+      super.off(event, callback);
+   }
+
+   unlistenAll() {
+      super.unlistenAll(event, callback);
    }
 
    updateProceduresIncluded() {
@@ -63,7 +77,24 @@ istsos.UnitOfMeasure = class {
       this.description = options.newDescr || this.description;
 
       var url = `${this.service.server.getUrl()}wa/istsos/services/${this.service.getServiceJSON()["service"]}/uoms/${oldName}`;
-      this.executeRequest(url, istsos.events.EventType.UPDATE_UOM, "PUT", JSON.stringify(this.getUomJSON()));
+   	
+      let config = {};
+      if(this.service.server.getLoginConfig()) {
+         config['headers'] = this.service.server.getLoginConfig();
+      }
+      config['data'] = JSON.stringify(this.getUomJSON());
+
+      return HttpAPI.put(url, config)
+         .then((result) => {
+            if (result.success) {
+               this.fireEvent('UPDATE_UOM', result);
+               return result;
+            } else {
+               throw result.message
+            }
+         }, (error_message) => {
+            throw error_message;
+         });
    }
 
    /**
@@ -94,8 +125,25 @@ istsos.UnitOfMeasure = class {
             }
          }
       }
-      
+
       var url = `${this.service.server.getUrl()}wa/istsos/services/${this.service.getServiceJSON()["service"]}/uoms/${this.getUomJSON()["name"]}`;
-      this.executeRequest(url, istsos.events.EventType.DELETE_UOM, "DELETE", JSON.stringify(this.getUomJSON()));
+
+      let config = {};
+      if(this.service.server.getLoginConfig()) {
+         config['headers'] = this.service.server.getLoginConfig();
+      }
+      config['data'] = JSON.stringify(this.getUomJSON());
+
+      return HttpAPI.delete(url, config)
+         .then((result) => {
+            if (result.success) {
+               this.fireEvent('DELETE_UOM', result);
+               return result;
+            } else {
+               throw result.message
+            }
+         }, (error_message) => {
+            throw error_message;
+         });
    }
 }
