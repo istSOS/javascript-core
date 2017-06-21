@@ -1,35 +1,41 @@
 const path = require('path');
 const webpack = require('webpack');
-
+const ClosureCompilerPlugin = require('webpack-closure-compiler');
 module.exports = {
    context: path.resolve(__dirname, './src'),
    entry: {
-      app: [
-        "../node_modules/closure-library/closure/goog/base.js",
-        "./index.js",
-        "./ServerContainer.js",
-        "./Date.js",
-        //  "./Database.js",
-        //  "./Configuration.js",
-        // "./Server.js",
-        //  "./ObservedProperty.js",
-        //  "./ProcedureBase.js",
-        //  "./Service.js",
-        //  "./EventHandling.js",
-        //  "./Offering.js",
-        //  "./Procedure.js",
-        //  "./UnitOfMeasure.js",
-        //  "./DataQuality.js",
-        //  "./Output.js",
-        //  "./VirtualProcedure.js"
-      ],
+      app: './index.js'
    },
    output: {
       path: path.resolve(__dirname, './dist'),
       filename: 'istsos.js',
+      library: 'istsos',
+      libraryTarget: 'var'
+   },
+   resolve: {
+      alias: {
+         ServerContainer: path.resolve(__dirname, 'src/ServerContainer.js'),
+         Date: path.resolve(__dirname, 'src/Date.js'),
+         Database: path.resolve(__dirname, 'src/Database.js'),
+         Configuration: path.resolve(__dirname, 'src/Configuration.js'),
+         Server: path.resolve(__dirname, 'src/Server.js'),
+         ObservedProperty: path.resolve(__dirname, 'src/ObservedProperty.js'),
+         ProcedureBase: path.resolve(__dirname, 'src/ProcedureBase.js'),
+         Service: path.resolve(__dirname, 'src/Service.js'),
+         EventTypes: path.resolve(__dirname, 'src/EventTypes.js'),
+         EventEmitter: path.resolve(__dirname, 'src/EventEmitter.js'),
+         Offering: path.resolve(__dirname, 'src/Offering.js'),
+         Procedure: path.resolve(__dirname, 'src/Procedure.js'),
+         VirtualProcedure: path.resolve(__dirname, 'src/VirtualProcedure.js'),
+         UnitOfMeasure: path.resolve(__dirname, 'src/UnitOfMeasure.js'),
+         DataQuality: path.resolve(__dirname, 'src/DataQuality.js'),
+         Output: path.resolve(__dirname, 'src/Output.js'),
+         HttpAPI: path.resolve(__dirname, 'src/HttpAPI.js')
+      }
    },
    module: {
-      rules: [{
+      rules: [
+         {
             test: /\.js$/,
             exclude: [/node_modules/],
             use: [{
@@ -40,5 +46,17 @@ module.exports = {
             }],
          }
       ],
+
    }
+   ,
+   // plugins: [
+   //    new ClosureCompilerPlugin({
+   //       compiler: {
+   //          language_in: 'ECMASCRIPT6',
+   //          language_out: 'ECMASCRIPT5',
+   //          compilation_level: 'WHITESPACE_ONLY'
+   //       },
+   //       concurrency: 3,
+   //    })
+   // ]
 };

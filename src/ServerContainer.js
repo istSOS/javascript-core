@@ -1,11 +1,7 @@
-goog.provide("istsos.ServerContainer");
-
-goog.require('istsos');
-
 /**
  * @class istsos.ServerContainer
  */
-istsos.ServerContainer = class {
+export var ServerContainer = class {
 
    /**
     * constructor - Instantiates istsos.ServerContainer

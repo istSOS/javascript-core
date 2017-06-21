@@ -1,11 +1,12 @@
-goog.provide('istsos.Database');
+import {HttpAPI } from 'HttpAPI'; 
+import {EventEmitter } from 'EventEmitter';
 
-goog.require('istsos');
-goog.require('istsos.events.EventType')
-goog.require('goog.net.XhrIo');
-
-istsos.Database = class {
+/**
+ * @class istsos.Database
+ */
+export var Database = class Database extends EventEmitter {
    constructor(options) {
+      super();
       this.dbname = options.dbname;
       this.host = options.host;
       this.user = options.user;
@@ -13,15 +14,40 @@ istsos.Database = class {
       this.port = options.port;
    }
 
-   executeRequest(url, eventType, method, opt_data) {
-      goog.net.XhrIo.send(url, function(e) {
-         istsos.fire(eventType, e.target);
-      }, method, opt_data);
+   fireEvent(eventType, response) {
+      super.fire(eventType, response)
+   }
+
+   on(event, callback) {
+      super.on(event, callback);
+   }
+
+   once(event, callback) {
+      super.once(event, callback);
+   }
+
+   off(event, callback) {
+      super.off(event, callback);
+   }
+
+   unlistenAll() {
+      super.unlistenAll(event, callback);
    }
 
    getDb(serviceName = 'default', server) {
-      var url = `${server.getUrl()}wa/istsos/services/${serviceName}/configsections/connection`
-      this.executeRequest(url, istsos.events.EventType.DATABASE, "GET");
+      var url = `${server.getUrl()}wa/istsos/services/${serviceName}/configsections/connection`;
+
+      return HttpAPI.get(url)
+         .then((result) => {
+            if (result.success) {
+               this.fireEvent('DATABASE', result);
+               return result;
+            } else {
+               throw result.message
+            }
+         }, (error_message) => {
+            throw error_message;
+         });
    }
 
    setDb(options) {
@@ -31,12 +57,40 @@ istsos.Database = class {
       this.port = options.port || this.port;
       var serviceName = (options.opt_service) ? options.opt_service.getServiceJSON()["service"] : "default";
       var url = `${server.getUrl()}wa/istsos/services/${serviceName}/configsections/connection`;
-      this.executeRequest(url, istsos.events.EventType.UPDATE_DATABASE, "PUT", JSON.stringify(this.getDbJSON()));
+
+      return HttpAPI.put(url, {
+            data: JSON.stringify(this.getDbJSON())
+         })
+         .then((result) => {
+            if (result.success) {
+               this.fireEvent('UPDATE_DATABASE', result);
+               return result;
+            } else {
+               throw result.message
+            }
+
+         }, (error_message) => {
+            throw error_message;
+         });
    }
 
    validateDb(server) {
       var url = `${server.getUrl()}wa/istsos/operations/validatedb`;
-      this.executeRequest(url, istsos.events.EventType.VALIDATE_DB, "POST", JSON.stringify(this.getDbJSON()));
+
+      return HttpAPI.post(url, {
+            data: JSON.stringify(this.getDbJSON())
+         })
+         .then((result) => {
+            if (result.success) {
+               this.fireEvent('VALIDATE_DB', result);
+               return result;
+            } else {
+               throw result.message
+            }
+
+         }, (error_message) => {
+            throw error_message;
+         });
    }
 
    getDbJSON() {
@@ -49,3 +103,4 @@ istsos.Database = class {
       };
    }
 }
+

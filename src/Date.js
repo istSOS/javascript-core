@@ -1,17 +1,12 @@
-goog.provide("istsos.Date");
-
-goog.require("istsos");
-
-
 /**
  * @class istsos.Date
  */
-istsos.Date = class {
+export var Date = class {
 
   /**
    * constructor - Instantiates istsos.Date
    *
-   * @param  {object} options Set of key-value pairs
+   * @param {Object} options Set of key-value pairs
    * @constructor
    */
   constructor(options) {
@@ -28,7 +23,7 @@ istsos.Date = class {
   /**
    * getDateString - Get date in ISO 8601 format
    *
-   * @return {string}  ISO 8601 date
+   * @return {String}  ISO 8601 date
    */
   getDateString () {
       return `${this.year}-${this.month}-${this.day}T${this.hours}:${this.minutes}:${this.seconds}+${this.gmt}:00`;
@@ -37,7 +32,7 @@ istsos.Date = class {
   /**
    * getDescription - Get description
    *
-   * @return {string}  Description   
+   * @return {String}  Description   
    */
   getDescription () {
       return this.description;
