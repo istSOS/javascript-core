@@ -30,7 +30,8 @@ module.exports = {
          UnitOfMeasure: path.resolve(__dirname, 'src/UnitOfMeasure.js'),
          DataQuality: path.resolve(__dirname, 'src/DataQuality.js'),
          Output: path.resolve(__dirname, 'src/Output.js'),
-         HttpAPI: path.resolve(__dirname, 'src/HttpAPI.js')
+         HttpAPI: path.resolve(__dirname, 'src/HttpAPI.js'),
+         IstsosHelper: path.resolve(__dirname, 'src/IstsosHelper.js')
       }
    },
    module: {
