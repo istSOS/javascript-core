@@ -1,7 +1,7 @@
-goog.require('goog.events');
-goog.require('goog.events.Event');
-goog.require('goog.events.EventTarget');
-goog.require('goog.net.XhrIo');
+import {EventEmitter} from 'EventEmitter';
+import {HttpAPI} from 'HttpAPI';
+import {Configuration} from 'Configuration';
+import {Offering} from 'Offering';
 
 /** istsos.Service class */
 /**
@@ -12,8 +12,9 @@ goog.require('goog.net.XhrIo');
  * @param {int} opt_epsg
  * @constructor
  */
-istsos.Service = class {
+export var Service = class Service extends EventEmitter {
    cosntructor(options) {
+      super();
       this.name = options.name;
       this.db = options.opt_db || server.getDefaultDbProperty();
       this.epsg = options.opt_epsg || null;
@@ -47,10 +48,25 @@ istsos.Service = class {
     * @param {String} method
     * @param {JSON} opt_data
     */
-   executeRequest(url, eventType, method, opt_data, opt_otherData) {
-      goog.net.XhrIo.send(url, function(e) {
-         istsos.fire(eventType, e.target, opt_otherData);
-      }, method, opt_data);
+   
+   fireEvent(eventType, response) {
+      super.fire(eventType, response)
+   }
+
+   on(event, callback) {
+      super.on(event, callback);
+   }
+
+   once(event, callback) {
+      super.once(event, callback);
+   }
+
+   off(event, callback) {
+      super.off(event, callback);
+   }
+
+   unlistenAll() {
+      super.unlistenAll(event, callback);
    }
 
    /**
@@ -128,7 +144,24 @@ istsos.Service = class {
     */
    registerOffering(offering) {
       var url = `${this.server.getUrl()}wa/istsos/services/${this.getServiceJSON()["service"]}/offerings`;
-      this.executeRequest(url, istsos.events.EventType.NEW_OFFERING, "POST", JSON.stringify(offering.getOfferingJSON()));
+   	 
+      let config = {};
+      if(this.server.getLoginConfig()) {
+         config['headers'] = this.server.getLoginConfig();
+      }
+      config['data'] = JSON.stringify(offering.getOfferingJSON());
+
+      return HttpAPI.post(url, config)
+         .then((result) => {
+            if (result.success) {
+               this.fireEvent('NEW_OFFERING', result);
+               return result;
+            } else {
+               throw result.message
+            }
+         }, (error_message) => {
+            throw error_message;
+         });
    }
 
    /**
@@ -136,7 +169,24 @@ istsos.Service = class {
     */
    getOfferingNames() {
       var url = `${this.server.getUrl()}wa/istsos/services/${this.getServiceJSON()["service"]}/offerings/operations/getlist`;
-      this.executeRequest(url, istsos.events.EventType.OFFERING_NAMES, "GET");
+   	   	 
+      let config = {};
+      if(this.server.getLoginConfig()) {
+         config['headers'] = this.server.getLoginConfig();
+      }
+
+      return HttpAPI.get(url, config)
+         .then((result) => {
+            if (result.success) {
+               this.fireEvent('OFFERING_NAMES', result);
+               return result;
+            } else {
+               throw result.message
+            }
+         }, (error_message) => {
+            throw error_message;
+         });
+
    }
 
    /**
@@ -144,7 +194,23 @@ istsos.Service = class {
     */
    getOfferings() {
       var url = `${this.server.getUrl()}wa/istsos/services/${this.getServiceJSON()["service"]}/offerings`;
-      this.executeRequest(url, istsos.events.EventType.OFFERING_LIST, "GET");
+		
+		let config = {};
+      if(this.server.getLoginConfig()) {
+         config['headers'] = this.server.getLoginConfig();
+      }
+
+      return HttpAPI.get(url, config)
+         .then((result) => {
+            if (result.success) {
+               this.fireEvent('OFFERING_LIST', result);
+               return result;
+            } else {
+               throw result.message
+            }
+         }, (error_message) => {
+            throw error_message;
+         });  
    }
 
    /**
@@ -160,7 +226,25 @@ istsos.Service = class {
     */
    registerProcedure(procedure) {
       var url = `${this.server.getUrl()}wa/istsos/services/${this.getServiceJSON()["service"]}/procedures`;
-      this.executeRequest(url, istsos.events.EventType.NEW_PROCEDURE, "POST", JSON.stringify(procedure.getProcedureJSON()));
+
+		let config = {};
+      if(this.server.getLoginConfig()) {
+         config['headers'] = this.server.getLoginConfig();
+      }
+      config['data'] = JSON.stringify(procedure.getProcedureJSON());
+
+      return HttpAPI.post(url, config)
+         .then((result) => {
+            if (result.success) {
+               this.fireEvent('NEW_PROCEDURE', result);
+               return result;
+            } else {
+               throw result.message
+            }
+         }, (error_message) => {
+            throw error_message;
+         });  
+
    }
 
    /**
@@ -169,7 +253,23 @@ istsos.Service = class {
     */
    getProcedure(procedure) {
       var url = `${this.server.getUrl()}wa/istsos/services/${this.getServiceJSON()["service"]}/procedures/${procedure.getProcedureJSON()["system"]}`;
-      this.executeRequest(url, istsos.events.EventType.PROCEDURE, "GET");
+   	
+		let config = {};
+      if(this.server.getLoginConfig()) {
+         config['headers'] = this.server.getLoginConfig();
+      }
+      
+      return HttpAPI.get(url, config)
+         .then((result) => {
+            if (result.success) {
+               this.fireEvent('PROCEDURE', result);
+               return result;
+            } else {
+               throw result.message
+            }
+         }, (error_message) => {
+            throw error_message;
+         });
    }
 
    /**
@@ -177,7 +277,23 @@ istsos.Service = class {
     */
    getProcedures() {
       var url = `${this.server.getUrl()}wa/istsos/services/${this.getServiceJSON()["service"]}/procedures/operations/getlist`;
-      this.executeRequest(url, istsos.events.EventType.PROCEDURES, "GET");
+
+		let config = {};
+      if(this.server.getLoginConfig()) {
+         config['headers'] = this.server.getLoginConfig();
+      }
+      
+      return HttpAPI.get(url, config)
+         .then((result) => {
+            if (result.success) {
+               this.fireEvent('PROCEDURES', result);
+               return result;
+            } else {
+               throw result.message
+            }
+         }, (error_message) => {
+            throw error_message;
+         });
    }
 
    /**
@@ -193,7 +309,24 @@ istsos.Service = class {
     */
    registerVirtualProcedure(v_procedure) {
       var url = `${this.server.getUrl()}wa/istsos/services/${this.getServiceJSON()["service"]}/procedures`;
-      this.executeRequest(url, istsos.events.EventType.NEW_VIRTUAL_PROCEDURE, "POST", JSON.stringify(v_procedure.getVirtualProcedureJSON()));
+
+		let config = {};
+      if(this.server.getLoginConfig()) {
+         config['headers'] = this.server.getLoginConfig();
+      }
+      config['data'] = JSON.stringify(v_procedure.getVirtualProcedureJSON());
+      
+      return HttpAPI.post(url, config)
+         .then((result) => {
+            if (result.success) {
+               this.fireEvent('NEW_VIRTUAL_PROCEDURE', result);
+               return result;
+            } else {
+               throw result.message
+            }
+         }, (error_message) => {
+            throw error_message;
+         });
    }
 
    /**
@@ -202,7 +335,23 @@ istsos.Service = class {
     */
    getVirtualProcedure(v_procedure) {
       var url = `${this.server.getUrl()}wa/istsos/services/${this.getServiceJSON()["service"]}/virtualprocedures`;
-      this.executeRequest(url, istsos.events.EventType.VIRTUAL_PROCEDURE, "GET");
+   	
+		let config = {};
+      if(this.server.getLoginConfig()) {
+         config['headers'] = this.server.getLoginConfig();
+      }
+      
+      return HttpAPI.get(url, config)
+         .then((result) => {
+            if (result.success) {
+               this.fireEvent('VIRTUAL_PROCEURE', result);
+               return result;
+            } else {
+               throw result.message
+            }
+         }, (error_message) => {
+            throw error_message;
+         });
    }
 
    /**
@@ -210,7 +359,23 @@ istsos.Service = class {
     */
    getVirtualProcedures() {
       var url = `${this.server.getUrl()}wa/istsos/services/${this.getServiceJSON()["service"]}/virtualprocedures/operations/getlist`;
-      this.executeRequest(url, istsos.events.EventType.VIRTUAL_PROCEDURES, "GET");
+   	
+		let config = {};
+      if(this.server.getLoginConfig()) {
+         config['headers'] = this.server.getLoginConfig();
+      }
+      
+      return HttpAPI.get(url, config)
+         .then((result) => {
+            if (result.success) {
+               this.fireEvent('VIRTUAL_PROCEDURES', result);
+               return result;
+            } else {
+               throw result.message
+            }
+         }, (error_message) => {
+            throw error_message;
+         });
    }
 
    /**
@@ -227,6 +392,24 @@ istsos.Service = class {
    registerObservedProperty(property) {
       var url = `${this.server.getUrl()}wa/istsos/services/${this.getServiceJSON()["service"]}/observedproperties`;
       this.executeRequest(url, istsos.events.EventType.NEW_OBSERVED_PROPERTY, "POST", JSON.stringify(property.getObservedPropertyJSON()));
+   	
+		let config = {};
+      if(this.server.getLoginConfig()) {
+         config['headers'] = this.server.getLoginConfig();
+      }
+      config['data'] = JSON.stringify(property.getObservedPropertyJSON());
+      
+      return HttpAPI.post(url, config)
+         .then((result) => {
+            if (result.success) {
+               this.fireEvent('NEW_OBSERVED_PROPERTY', result);
+               return result;
+            } else {
+               throw result.message
+            }
+         }, (error_message) => {
+            throw error_message;
+         });
    }
 
    /**
@@ -234,7 +417,23 @@ istsos.Service = class {
     */
    getObservedProperties() {
       var url = `${this.server.getUrl()}wa/istsos/services/${this.getServiceJSON()["service"]}/observedproperties`;
-      this.executeRequest(url, istsos.events.EventType.OBSERVED_PROPERTIES, "GET");
+   	
+		let config = {};
+      if(this.server.getLoginConfig()) {
+         config['headers'] = this.server.getLoginConfig();
+      }
+      
+      return HttpAPI.get(url, config)
+         .then((result) => {
+            if (result.success) {
+               this.fireEvent('OBSERVED_PROPERTIES', result);
+               return result;
+            } else {
+               throw result.message
+            }
+         }, (error_message) => {
+            throw error_message;
+         });
    }
 
    /**
@@ -243,7 +442,23 @@ istsos.Service = class {
     */
    getObservedProperty(property) {
       var url = `${this.server.getUrl()}wa/istsos/services/${this.getServiceJSON()["service"]}/observedproperties/${property.getObservedPropertyJSON()["definition"]}`;
-      this.executeRequest(url, istsos.events.EventType.OBSERVED_PROPERTY, "GET");
+   	
+		let config = {};
+      if(this.server.getLoginConfig()) {
+         config['headers'] = this.server.getLoginConfig();
+      }
+      
+      return HttpAPI.get(url, config)
+         .then((result) => {
+            if (result.success) {
+               this.fireEvent('OBSERVED_PROPERTY', result);
+               return result;
+            } else {
+               throw result.message
+            }
+         }, (error_message) => {
+            throw error_message;
+         });
    }
 
    /**
@@ -259,7 +474,24 @@ istsos.Service = class {
     */
    registerUom(uom) {
       var url = `${this.server.getUrl()}wa/istsos/services/${this.getServiceJSON()["service"]}/uoms`;
-      this.executeRequest(url, istsos.events.EventType.NEW_UOM, "POST", JSON.stringify(uom.getUomJSON()));
+  	
+		let config = {};
+      if(this.server.getLoginConfig()) {
+         config['headers'] = this.server.getLoginConfig();
+      }
+      config['data'] = JSON.stringify(property.getUomJSON());
+      
+      return HttpAPI.post(url, config)
+         .then((result) => {
+            if (result.success) {
+               this.fireEvent('NEW_UOM', result);
+               return result;
+            } else {
+               throw result.message
+            }
+         }, (error_message) => {
+            throw error_message;
+         });
    }
 
    /**
@@ -267,7 +499,23 @@ istsos.Service = class {
     */
    getUoms() {
       var url = `${this.server.getUrl()}wa/istsos/services/${this.getServiceJSON()["service"]}/uoms`;
-      this.executeRequest(url, istsos.events.EventType.UOMS, "GET");
+  		
+		let config = {};
+      if(this.server.getLoginConfig()) {
+         config['headers'] = this.server.getLoginConfig();
+      }
+      
+      return HttpAPI.get(url, config)
+         .then((result) => {
+            if (result.success) {
+               this.fireEvent('UOMS', result);
+               return result;
+            } else {
+               throw result.message
+            }
+         }, (error_message) => {
+            throw error_message;
+         });
    }
 
    /**
@@ -276,7 +524,23 @@ istsos.Service = class {
     */
    getUom(uom) {
       var url = `${this.server.getUrl()}wa/istsos/services/${this.getServiceJSON()["service"]}/uoms/${uom.getUomJSON()["name"]}`;
-      this.executeRequest(url, istsos.events.EventType.UOM, "GET");
+ 	
+		let config = {};
+      if(this.server.getLoginConfig()) {
+         config['headers'] = this.server.getLoginConfig();
+      }
+      
+      return HttpAPI.get(url, config)
+         .then((result) => {
+            if (result.success) {
+               this.fireEvent('UOM', result);
+               return result;
+            } else {
+               throw result.message
+            }
+         }, (error_message) => {
+            throw error_message;
+         });
    }
 
    /**
@@ -293,6 +557,24 @@ istsos.Service = class {
    registerDataQuality(dataQuality) {
       var url = `${this.server.getUrl()}wa/istsos/services/${this.getServiceJSON()["service"]}/dataqualities`;
       this.executeRequest(url, istsos.events.EventType.NEW_DATAQUALITY, "POST", JSON.stringify(dataQuality.getDataQualityJSON()));
+   	
+		let config = {};
+      if(this.server.getLoginConfig()) {
+         config['headers'] = this.server.getLoginConfig();
+      }
+      config['data'] = JSON.stringify(property.getDataQualityJSON());
+      
+      return HttpAPI.post(url, config)
+         .then((result) => {
+            if (result.success) {
+               this.fireEvent('NEW_DATAQUALITY', result);
+               return result;
+            } else {
+               throw result.message
+            }
+         }, (error_message) => {
+            throw error_message;
+         });
    }
 
    /**
@@ -300,7 +582,24 @@ istsos.Service = class {
     */
    getDataQualities() {
       var url = `${this.server.getUrl()}wa/istsos/services/${this.getServiceJSON()["service"]}/dataqualities`;
-      this.executeRequest(url, istsos.events.EventType.DATAQUALITIES, "GET");
+   	   	
+		let config = {};
+      if(this.server.getLoginConfig()) {
+         config['headers'] = this.server.getLoginConfig();
+      }
+      
+      return HttpAPI.get(url, config)
+         .then((result) => {
+            if (result.success) {
+               this.fireEvent('DATAQUALITIES', result);
+               return result;
+            } else {
+               throw result.message
+            }
+         }, (error_message) => {
+            throw error_message;
+         });
+
    }
 
    /**
@@ -309,7 +608,24 @@ istsos.Service = class {
     */
    getDataQuality(dataQuality) {
       var url = `${this.server.getUrl()}wa/istsos/services/${this.getServiceJSON()["service"]}/dataqualities/${dataQuality.getDataQualityJSON()["code"]}`;
-      this.executeRequest(url, istsos.events.EventType.DATAQUALITY, "GET");
+   	   	
+		let config = {};
+      if(this.server.getLoginConfig()) {
+         config['headers'] = this.server.getLoginConfig();
+      }
+      
+      return HttpAPI.get(url, config)
+         .then((result) => {
+            if (result.success) {
+               this.fireEvent('DATAQUALITY', result);
+               return result;
+            } else {
+               throw result.message
+            }
+         }, (error_message) => {
+            throw error_message;
+         });
+
    }
 
    /**
@@ -317,7 +633,23 @@ istsos.Service = class {
     */
    getSystemTypes() {
       var url = `${this.server.getUrl()}wa/istsos/services/${this.getServiceJSON()["service"]}/systemtypes`;
-      this.executeRequest(url, istsos.events.EventType.SYSTEM_TYPES, "GET");
+   		   	
+		let config = {};
+      if(this.server.getLoginConfig()) {
+         config['headers'] = this.server.getLoginConfig();
+      }
+      
+      return HttpAPI.get(url, config)
+         .then((result) => {
+            if (result.success) {
+               this.fireEvent('SYSTEM_TYPES', result);
+               return result;
+            } else {
+               throw result.message
+            }
+         }, (error_message) => {
+            throw error_message;
+         });
    }
 
    /**
@@ -331,7 +663,7 @@ istsos.Service = class {
     * @fires istsos.Database#istsos.events.EventType: DATABASE
     */
    getDatabase() {
-      this.db.getDb(this.getServiceJSON()["service"], this.server);
+      return this.db.getDb(this.getServiceJSON()["service"], this.server);
    }
 
    /**
@@ -498,7 +830,22 @@ istsos.Service = class {
             }
          }
       }
-      console.log(url);
-      this.executeRequest(url, istsos.events.EventType.GEOJSON, "GET");
+
+		let config = {};
+      if(this.server.getLoginConfig()) {
+         config['headers'] = this.server.getLoginConfig();
+      }
+      
+      return HttpAPI.get(url, config)
+         .then((result) => {
+            if (result.success) {
+               this.fireEvent('GEOJSON', result);
+               return result;
+            } else {
+               throw result.message
+            }
+         }, (error_message) => {
+            throw error_message;
+         });
    }
 }
