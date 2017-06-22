@@ -2,6 +2,7 @@ import {EventEmitter} from 'EventEmitter';
 import {HttpAPI} from 'HttpAPI';
 import {Configuration} from 'Configuration';
 import {Offering} from 'Offering';
+import {prepareForGetObservations, transformGetObservationResponse} from 'IstsosHelper';
 
 /** istsos.Service class */
 /**
@@ -685,26 +686,25 @@ export var Service = class Service extends EventEmitter {
    }
    */
    getObservations(options) {
-      var proc_names = [];
-      for (var p = 0; p < options.procedures.length; p++) {
-         if (options.procedures[p].systemType === "virtual") {
-            proc_names.push(options.procedures[p].getVirtualProcedureJSON()["system"]);
-         } else if (options.procedures[p].systemType === "insitu-fixed-point" || options.procedures[p].systemType === "insitu-mobile-point") {
-            proc_names.push(options.procedures[p].getProcedureJSON()["system"]);
-         } else {
-            console.log(options.procedures[p] + ": WRONG TYPE!");
-         }
-      }
+      var urlConfig = prepareForGetObservations(options);
+      var url = `${this.server.getUrl()}wa/istsos/services/${this.name}/operations/getobservation/offerings/${urlConfig.offering}/procedures/${urlConfig.procedureNames}/observedproperties/${urlConfig.observedPropertyUrns}/eventtime/${begin}/${end}`;
 
-      var urns = [];
-      for (var i = 0; i < options.observed_properties.length; i++) {
-         urns.push(options.observed_properties[i].getObservedPropertyJSON()["definition"]);
+      let config = {};
+      if(this.server.getLoginConfig()) {
+         config['headers'] = this.server.getLoginConfig();
       }
-      var begin = (options.begin_time instanceof istsos.Date) ? options.begin_time.getDateString() : options.begin_time;
-      var end = (options.end_time instanceof istsos.Date) ? options.end_time.getDateString() : options.end_time;
-      var url = `${this.server.getUrl()}wa/istsos/services/${this.name}/operations/getobservation/offerings/${options.offering.getOfferingJSON()["name"]}/procedures/${proc_names.toString()}/observedproperties/${urns.toString()}/eventtime/${begin}/${end}`;
-      console.log(url);
-      this.executeRequest(url, istsos.events.EventType.GETOBSERVATIONS, "GET");
+      
+      return HttpAPI.get(url, config)
+         .then((result) => {
+            if (result.success) {
+               this.fireEvent('GETOBSERVATIONS', result);
+               return result;
+            } else {
+               throw result.message
+            }
+         }, (error_message) => {
+            throw error_message;
+         });
    }
 
 
@@ -720,46 +720,26 @@ export var Service = class Service extends EventEmitter {
     * @param {int} aggNoData
     * @param {int} aggNoDataQI
     */
-   getObservationsWithAggregation(options, aggregation_config) {
-      var proc_names = [];
-      var aggTrue = ""
-      if (aggregation_config.aggFunc && aggregation_config.aggInterval) {
-         aggTrue = "?"
-      }
-      for (var p = 0; p < options.procedures.length; p++) {
-         if (options.procedures[p].systemType === "virtual") {
-            proc_names.push(options.procedures[p].getVirtualProcedureJSON()["system"]);
-         } else if (options.procedures[p].systemType === "insitu-fixed-point" || options.procedures[p].systemType === "insitu-mobile-point") {
-            proc_names.push(options.procedures[p].getProcedureJSON()["system"]);
-         } else {
-            console.log(options.procedures[p] + ": WRONG TYPE!");
-         }
-      }
+   getObservationsWithAggregation(options, aggregationConfig) {
+      var urlConfig = prepareForGetObservations(options, aggregationConfig);
+      var url = `${this.server.getUrl()}wa/istsos/services/${this.name}/operations/getobservation/offerings/${urlConfig.offering}/procedures/${urlConfig.procedureNames}/observedproperties/${urlConfig.observedPropertyUrns}/eventtime/${begin}/${end}/${urlConfig.aggregationUrl}`;
 
-      var urns = [];
-      for (var i = 0; i < options.observed_properties.length; i++) {
-         urns.push(options.observed_properties[i].getObservedPropertyJSON()["definition"]);
+      let config = {};
+      if(this.server.getLoginConfig()) {
+         config['headers'] = this.server.getLoginConfig();
       }
-      var begin = (options.begin_time instanceof istsos.Date) ? options.begin_time.getDateString() : options.begin_time;
-      var end = (options.end_time instanceof istsos.Date) ? options.end_time.getDateString() : options.end_time;
-      var url = `${this.server.getUrl()}wa/istsos/services/${this.name}/operations/getobservation/offerings/${options.offering.getOfferingJSON()["name"]}/procedures/${proc_names.toString()}/observedproperties/${urns.toString()}/eventtime/${begin}/${end}`;
-
-      if (aggregation_config.aggFunc && aggregation_config.aggInterval) {
-         url += "?"
-         if (aggregation_config.aggFunc === "SUM" || aggregation_config.aggFunc === "MAX" || aggregation_config.aggFunc === "MIN" || aggregation_config.aggFunc === "AVG") {
-            url += `aggregatefunction=${aggFunc}&aggregateinterval=${aggInterval}`;
-         } else {
-            console.log("Incorrect aggregate function!!!");
-         }
-      }
-
-      if (aggregation_config.aggNoData && aggregation_config.aggNoDataQI) {
-         url += `&aggregatenodata=${aggregation_config.aggNoData.toString()}&aggregatenodataqi=${aggregation_config.aggNoDataQI.toString()}`;
-      }
-
-
-      console.log(url);
-      this.executeRequest(url, istsos.events.EventType.GETOBSERVATIONS_AGG, "GET");
+      
+      return HttpAPI.get(url, config)
+         .then((result) => {
+            if (result.success) {
+               this.fireEvent('GETOBSERVATIONS_AGG', result);
+               return result;
+            } else {
+               throw result.message
+            }
+         }, (error_message) => {
+            throw error_message;
+         });
    }
 
 
@@ -771,43 +751,52 @@ export var Service = class Service extends EventEmitter {
     * @param {istsos.Date} begin_time
     * @param {istsos.Date} end_time
     */
-   getObservationsBySingleProperty(options) {
-      var proc_name;
-      if (options.procedure.systemType === "virtual") {
-         proc_name = options.procedure.getVirtualProcedureJSON()["system"];
-      } else if (options.procedure.systemType === "insitu-fixed-point" || options.procedure.systemType === "insitu-mobile-point") {
-         proc_name = options.procedure.getProcedureJSON()["system"]
-      } else {
-         console.log("WRONG TYPE");
+   getObservationsSimplified(options) {
+      var urlConfig = prepareForGetObservations(options);
+      var url = `${this.server.getUrl()}wa/istsos/services/${this.name}/operations/getobservation/offerings/${urlConfig.offering}/procedures/${urlConfig.procedureNames}/observedproperties/${urlConfig.observedPropertyUrns}/eventtime/${begin}/${end}`;
+
+      let config = {};
+      if(this.server.getLoginConfig()) {
+         config['headers'] = this.server.getLoginConfig();
       }
-      var begin = (options.begin_time instanceof istsos.Date) ? options.begin_time.getDateString() : options.begin_time;
-      var end = (options.end_time instanceof istsos.Date) ? options.end_time.getDateString() : options.end_time;
-      var url = `${this.server.getUrl()}wa/istsos/services/${this.name}/operations/getobservation/offerings/${options.offering.getOfferingJSON()["name"]}/procedures/${proc_name}/observedproperties/${urns.toString()}/eventtime/${begin}/${end}`;
-      console.log(url);
-      this.executeRequest(url, istsos.events.EventType.GETOBSERVATIONS_BY_PROPERTY, "GET");
+      
+      return HttpAPI.get(url, config)
+         .then((result) => {
+            if (result.success) {
+               let transformed = transformGetObservationResponse('simple', result);
+               this.fireEvent('GETOBSERVATIONS_BY_PROPERTY', transformed);
+               return result;
+            } else {
+               throw result.message
+            }
+         }, (error_message) => {
+            throw error_message;
+         });
    }
 
    //lessThan, lessThanAndEqual, equal, greaterThanAndEqual, greatherThan, between
-   getObservationsByQualityIndexConstraint(options, constraint_config) {
-      var proc_name;
-      if (options.procedure.systemType === "virtual") {
-         proc_name = options.procedure.getVirtualProcedureJSON()["system"];
-      } else if (options.procedure.systemType === "insitu-fixed-point" || options.procedure.systemType === "insitu-mobile-point") {
-         proc_name = options.procedure.getProcedureJSON()["system"]
-      } else {
-         console.log("WRONG TYPE");
-      }
-      var begin = (options.begin_time instanceof istsos.Date) ? options.begin_time.getDateString() : options.begin_time;
-      var end = (options.end_time instanceof istsos.Date) ? options.end_time.getDateString() : options.end_time;
-      var url = `${this.server.getUrl()}wa/istsos/services/${this.name}/operations/getobservation/offerings/${options.offering.getOfferingJSON()["name"]}/procedures/${proc_name}/observedproperties/${urns.toString()}/eventtime/${begin}/${end}`;
-      console.log(url);
-      this.executeRequest(url, istsos.events.EventType.GETOBSERVATIONS_BY_QUALITY, "GET", null, {
-         "QI_CONSTRAINT": "TRUE",
-         "type": constraint_config.constraintType,
-         "quality": constraint_config.qualityIndexNumber
-      });
-   }
+   getObservationsByQualityIndexConstraint(options, constraintConfig) {
+      var urlConfig = prepareForGetObservations(options);
+      var url = `${this.server.getUrl()}wa/istsos/services/${this.name}/operations/getobservation/offerings/${urlConfig.offering}/procedures/${urlConfig.procedureNames}/observedproperties/${urlConfig.observedPropertyUrns}/eventtime/${begin}/${end}`;
 
+      let config = {};
+      if(this.server.getLoginConfig()) {
+         config['headers'] = this.server.getLoginConfig();
+      }
+      
+      return HttpAPI.get(url, config)
+         .then((result) => {
+            if (result.success) {
+               let transformed = transformGetObservationResponse('constraint', result, constraintConfig);
+               this.fireEvent('GETOBSERVATIONS_BY_QUALITY', transformed);
+               return result;
+            } else {
+               throw result.message
+            }
+         }, (error_message) => {
+            throw error_message;
+         });
+   }
 
    /**
     * @fires istsos.Service#istsos.events.EventType: GEOJSON
