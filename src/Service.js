@@ -14,7 +14,7 @@ import {prepareForGetObservations, transformGetObservationResponse} from 'Istsos
  * @constructor
  */
 export var Service = class Service extends EventEmitter {
-   cosntructor(options) {
+   constructor(options) {
       super();
       this.name = options.name;
       this.db = options.opt_db || server.getDefaultDbProperty();
@@ -36,7 +36,7 @@ export var Service = class Service extends EventEmitter {
         offeringName : "temporary",
         offeringDescription : "temporary offering to hold self-registered procedures/sensors waiting for service adimistration acceptance",
         active : true,
-        expirationDate : ""
+        expirationDate : "",
         service : this
       }
 

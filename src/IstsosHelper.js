@@ -113,9 +113,9 @@ var prepareObservedPropertyUrns = (observedProperties) => {
 var transformGetObservationsResponse = (type, response, constraintFilter) => {
    switch (type) {
       case "simple":
-         let values = response.data[0].result.DataArray.values;
+         var values = response.data[0].result.DataArray.values;
 
-         let transformed = [];
+         var transformed = [];
          for (let i = 0; i < values.length; i++) {
             transformed.push({
                "date": values[i][0],
@@ -125,9 +125,9 @@ var transformGetObservationsResponse = (type, response, constraintFilter) => {
          return transformed;
          break;
       case "constraint":
-         let values = response.data[0].result.DataArray.values;
+         var values = response.data[0].result.DataArray.values;
 
-         let transformed = [];
+         var transformed = [];
          for (let i = 0; i < values.length; i++) {
             transformed.push(filterByConstraint(values[i], constraintFilter.type, constraintFilter.quiality));
          }
@@ -174,14 +174,9 @@ var filterByConstraint = (measurement, type, value) => {
          }
          break;
       default:
-         throw "WRONG CONSTRAINT TYPE FOR CHECKING QUALITY INDEX!!! SHOULD BE 'lessThan', 'lessThanAndEqual', 'equal', 'greaterThanAndEqual', 'greaterThan' or 'between'");
+         throw "WRONG CONSTRAINT TYPE FOR CHECKING QUALITY INDEX!!! SHOULD BE 'lessThan', 'lessThanAndEqual', 'equal', 'greaterThanAndEqual', 'greaterThan' or 'between'";
+   }
 }
-}
-
-getObservations(type, options, opt_config) {
-
-}
-
 
 export {
    validateConstraintInput,
