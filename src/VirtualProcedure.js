@@ -1,7 +1,5 @@
-goog.require('goog.events');
-goog.require('goog.events.Event');
-goog.require('goog.events.EventTarget');
-goog.require('goog.net.XhrIo');
+import {ProcedureBase} from 'ProcedureBase';
+import {HttpAPI} from 'HttpAPI';
 
 /** istsos.VirtualProcedure class */
 /**
@@ -21,7 +19,7 @@ goog.require('goog.net.XhrIo');
  * @param {JSON} ratingCurve
  * @constructor
  */
-istsos.VirtualProcedure = class VirtualProcedure extends istsos.ProcedureBase {
+export var VirtualProcedure = class VirtualProcedure extends ProcedureBase {
    constructor(options) {
       super({
          name: options.name,
@@ -45,10 +43,24 @@ istsos.VirtualProcedure = class VirtualProcedure extends istsos.ProcedureBase {
       service.getOfferingsProperty()[0].getMemberProceduresProperty().push(this);
    }
 
-   executeRequest(url, eventType, method, opt_data) {
-      goog.net.XhrIo.send(url, function(e) {
-         istsos.fire(eventType, e.target);
-      }, method, opt_data);
+   fireEvent(eventType, response) {
+      super.fire(eventType, response)
+   }
+
+   on(event, callback) {
+      super.on(event, callback);
+   }
+
+   once(event, callback) {
+      super.once(event, callback);
+   }
+
+   off(event, callback) {
+      super.off(event, callback);
+   }
+
+   unlistenAll() {
+      super.unlistenAll(event, callback);
    }
 
    /**
@@ -73,7 +85,23 @@ istsos.VirtualProcedure = class VirtualProcedure extends istsos.ProcedureBase {
     */
    getCode() {
       var url = `${this.service.server.getUrl()}wa/istsos/services/${this.service.getServiceJSON()["service"]}/virtualprocedures/${this.getVirtualProcedureJSON()["system"]}/code`;
-      this.executeRequest(url, istsos.events.EventType.GET_CODE, "GET");
+
+      let config = {};
+      if(this.service.server.getLoginConfig()) {
+         config['headers'] = this.service.server.getLoginConfig();
+      }
+
+      return HttpAPI.get(url, config)
+         .then((result) => {
+            if (result.success) {
+               this.fireEvent('GET_CODE', result);
+               return result;
+            } else {
+               throw result.message
+            }
+         }, (error_message) => {
+            throw error_message;
+         });
    }
 
    /**
@@ -82,6 +110,24 @@ istsos.VirtualProcedure = class VirtualProcedure extends istsos.ProcedureBase {
    registerCode() {
       var url = `${this.service.server.getUrl()}wa/istsos/services/${this.service.getServiceJSON()["service"]}/virtualprocedures/${this.getVirtualProcedureJSON()["system"]}/code`;
       this.executeRequest(url, istsos.events.EventType.NEW_CODE, "POST", JSON.stringify(this.getCodeProperty()));
+       
+      let config = {};
+      if(this.service.server.getLoginConfig()) {
+         config['headers'] = this.service.server.getLoginConfig();
+      }
+      config['data'] = JSON.stringify(this.getCodeProperty());
+
+      return HttpAPI.post(url, config)
+         .then((result) => {
+            if (result.success) {
+               this.fireEvent('NEW_CODE', result);
+               return result;
+            } else {
+               throw result.message
+            }
+         }, (error_message) => {
+            throw error_message;
+         });
    }
 
    /**
@@ -93,7 +139,24 @@ istsos.VirtualProcedure = class VirtualProcedure extends istsos.ProcedureBase {
          "code": newCode
       } || this.code;
       var url = `${this.service.server.getUrl()}wa/istsos/services/${this.service.getServiceJSON()["service"]}/virtualprocedures/${this.getVirtualProcedureJSON()["system"]}/code`;
-      this.executeRequest(url, istsos.events.EventType.UPDATE_CODE, "PUT", JSON.stringify(this.getCodeProperty()));
+      
+      let config = {};
+      if(this.service.server.getLoginConfig()) {
+         config['headers'] = this.service.server.getLoginConfig();
+      }
+      config['data'] = JSON.stringify(this.getCodeProperty());
+
+      return HttpAPI.put(url, config)
+         .then((result) => {
+            if (result.success) {
+               this.fireEvent('UPDATE_CODE', result);
+               return result;
+            } else {
+               throw result.message
+            }
+         }, (error_message) => {
+            throw error_message;
+         });
    }
 
    /**
@@ -102,7 +165,23 @@ istsos.VirtualProcedure = class VirtualProcedure extends istsos.ProcedureBase {
    deleteCode() {
       this.code = "";
       var url = `${this.service.server.getUrl()}wa/istsos/services/${this.service.getServiceJSON()["service"]}/virtualprocedures/${this.getVirtualProcedureJSON()["system"]}/code`;
-      this.executeRequest(url, istsos.events.EventType.DELETE_CODE, "DELETE");
+      
+      let config = {};
+      if(this.service.server.getLoginConfig()) {
+         config['headers'] = this.service.server.getLoginConfig();
+      }
+
+      return HttpAPI.delete(url, config)
+         .then((result) => {
+            if (result.success) {
+               this.fireEvent('DELETE_CODE', result);
+               return result;
+            } else {
+               throw result.message
+            }
+         }, (error_message) => {
+            throw error_message;
+         });
    }
 
    /**
@@ -117,7 +196,23 @@ istsos.VirtualProcedure = class VirtualProcedure extends istsos.ProcedureBase {
     */
    getRatingCurve() {
       var url = `${this.service.server.getUrl()}wa/istsos/services/${this.service.getServiceJSON()["service"]}/virtualprocedures/${this.getVirtualProcedureJSON()["system"]}/ratingcurve`;
-      this.executeRequest(url, istsos.events.EventType.RATING_CURVE, "GET");
+       
+      let config = {};
+      if(this.service.server.getLoginConfig()) {
+         config['headers'] = this.service.server.getLoginConfig();
+      }
+
+      return HttpAPI.get(url, config)
+         .then((result) => {
+            if (result.success) {
+               this.fireEvent('RATING_CURVE', result);
+               return result;
+            } else {
+               throw result.message
+            }
+         }, (error_message) => {
+            throw error_message;
+         });
    }
 
    /**
@@ -125,7 +220,24 @@ istsos.VirtualProcedure = class VirtualProcedure extends istsos.ProcedureBase {
     */
    registerRatingCurve() {
       var url = `${this.service.server.getUrl()}wa/istsos/services/${this.service.getServiceJSON()["service"]}/virtualprocedures/${this.getVirtualProcedureJSON()["system"]}/ratingcurve`;
-      this.executeRequest(url, istsos.events.EventType.NEW_RATING_CURVE, "POST", JSON.stringify(this.getRatingCurveProperty()));
+       
+      let config = {};
+      if(this.service.server.getLoginConfig()) {
+         config['headers'] = this.service.server.getLoginConfig();
+      }
+      config['data'] = JSON.stringify(this.getRatingCurveProperty());
+
+      return HttpAPI.post(url, config)
+         .then((result) => {
+            if (result.success) {
+               this.fireEvent('NEW_RATING_CURVE', result);
+               return result;
+            } else {
+               throw result.message
+            }
+         }, (error_message) => {
+            throw error_message;
+         });
    }
 
    /**
@@ -134,7 +246,23 @@ istsos.VirtualProcedure = class VirtualProcedure extends istsos.ProcedureBase {
    deleteRatingCurve() {
       this.ratingCurve = {};
       var url = `${this.service.server.getUrl()}wa/istsos/services/${this.service.getServiceJSON()["service"]}/virtualprocedures/${this.getVirtualProcedureJSON()["system"]}/ratingcurve`;
-      this.executeRequest(url, istsos.events.EventType.DELETE_RATING_CURVE, "DELETE");
+      
+      let config = {};
+      if(this.service.server.getLoginConfig()) {
+         config['headers'] = this.service.server.getLoginConfig();
+      }
+
+      return HttpAPI.delete(url, config)
+         .then((result) => {
+            if (result.success) {
+               this.fireEvent('DELETE_RATING_CURVE', result);
+               return result;
+            } else {
+               throw result.message
+            }
+         }, (error_message) => {
+            throw error_message;
+         });
    }
 
    /**
@@ -178,7 +306,24 @@ istsos.VirtualProcedure = class VirtualProcedure extends istsos.ProcedureBase {
       this.sensorType = options.sensorType || "";
 
       var url = `${this.service.server.getUrl()}wa/istsos/services/${this.service.getServiceJSON()["service"]}/virtualprocedures/${oldName}`;
-      this.executeRequest(url, istsos.events.EventType.UPDATE_V_PROCEDURE, "PUT", JSON.stringify(this.getVirtualProcedureJSON()));
+      
+      let config = {};
+      if(this.service.server.getLoginConfig()) {
+         config['headers'] = this.service.server.getLoginConfig();
+      }
+      config['data'] = JSON.stringify(this.getVirtualProcedureJSON());
+
+      return HttpAPI.put(url, config)
+         .then((result) => {
+            if (result.success) {
+               this.fireEvent('UPDATE_V_PROCEDURE', result);
+               return result;
+            } else {
+               throw result.message
+            }
+         }, (error_message) => {
+            throw error_message;
+         });
    }
 
    deleteVirtualProcedure() {
@@ -191,7 +336,23 @@ istsos.VirtualProcedure = class VirtualProcedure extends istsos.ProcedureBase {
       });
 
       var url = `${this.service.server.getUrl()}wa/istsos/services/${this.service.getServiceJSON()["service"]}/virtualprocedures/${this.name}`;
-      this.executeRequest(url, istsos.events.EventType.DELETE_V_PROCEDURE, "DELETE");
+      
+      let config = {};
+      if(this.service.server.getLoginConfig()) {
+         config['headers'] = this.service.server.getLoginConfig();
+      }
+
+      return HttpAPI.delete(url, config)
+         .then((result) => {
+            if (result.success) {
+               this.fireEvent('DELETE_V_PROCEDURE', result);
+               return result;
+            } else {
+               throw result.message
+            }
+         }, (error_message) => {
+            throw error_message;
+         });
    }
 
    /**
@@ -201,10 +362,29 @@ istsos.VirtualProcedure = class VirtualProcedure extends istsos.ProcedureBase {
    addMembershipToOffering(offering) {
       offering.getMemberProceduresProperty().push(this);
       var url = `${this.service.server.getUrl()}wa/istsos/services/${this.service.getServiceJSON()["service"]}/offerings/${offering.getOfferingJSON()["name"]}/procedures`;
-      this.executeRequest(url, istsos.events.EventType.ADD_TO_OFFERING, "POST", JSON.stringify([{
+
+      var data = [{
          "offering": offering.getOfferingJSON()["name"],
          "procedure": this.getVirtualProcedureJSON()["system"]
-      }]));
+      }];
+       
+      let config = {};
+      if(this.service.server.getLoginConfig()) {
+         config['headers'] = this.service.server.getLoginConfig();
+      }
+      config['data'] = JSON.stringify(data);
+
+      return HttpAPI.post(url, config)
+         .then((result) => {
+            if (result.success) {
+               this.fireEvent('ADD_TO_OFFERING', result);
+               return result;
+            } else {
+               throw result.message
+            }
+         }, (error_message) => {
+            throw error_message;
+         });
    }
 
    /**
@@ -220,10 +400,29 @@ istsos.VirtualProcedure = class VirtualProcedure extends istsos.ProcedureBase {
          }
       });
       var url = `${this.service.server.getUrl()}wa/istsos/services/${this.service.getServiceJSON()["service"]}/offerings/${offering.getOfferingJSON()["name"]}/procedures/${this.getVirtualProcedureJSON()["system"]}`;
-      this.executeRequest(url, istsos.events.EventType.REMOVE_FROM_OFFERING, "DELETE", JSON.stringify([{
+
+      var data = [{
          "offering": offering.getOfferingJSON()["name"],
          "procedure": this.getVirtualProcedureJSON()["system"]
-      }]));
+      }];
+       
+      let config = {};
+      if(this.service.server.getLoginConfig()) {
+         config['headers'] = this.service.server.getLoginConfig();
+      }
+      config['data'] = JSON.stringify(data);
+
+      return HttpAPI.delete(url, config)
+         .then((result) => {
+            if (result.success) {
+               this.fireEvent('REMOVE_FROM_OFFERING', result);
+               return result;
+            } else {
+               throw result.message
+            }
+         }, (error_message) => {
+            throw error_message;
+         });
    }
 
    /**

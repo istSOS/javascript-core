@@ -1,7 +1,6 @@
-goog.require('goog.events');
-goog.require('goog.events.Event');
-goog.require('goog.events.EventTarget');
-goog.require('goog.net.XhrIo');
+import {ProcedureBase} from 'ProcedureBase';
+import {HttpAPI} from 'HttpAPI';
+
 /** istsos.Procedure class */
 /**
  * @param {istsos.Service} service
@@ -19,7 +18,7 @@ goog.require('goog.net.XhrIo');
  * @constructor
  */
 
-istsos.Procedure = class Procedure extends istsos.ProcedureBase {
+export var Procedure = class Procedure extends ProcedureBase {
    constructor(options) {
       super({
          name: options.name,
@@ -35,14 +34,28 @@ istsos.Procedure = class Procedure extends istsos.ProcedureBase {
       this.systemType = (options.systemType === "insitu-fixed-point" || options.systemType === "insitu-mobile-point") ? options.systemType : null;
       this.sensorType = options.sensorType || "";
       this.service = options.service;
-      service.addProcedure(this);
-      service.getOfferingsProperty()[0].getMemberProceduresProperty().push(this);
+      this.service.addProcedure(this);
+      this.service.getOfferingsProperty()[0].getMemberProceduresProperty().push(this);
    }
 
-   executeRequest(url, eventType, method, opt_data) {
-      goog.net.XhrIo.send(url, function(e) {
-         istsos.fire(eventType, e.target);
-      }, method, opt_data);
+   fireEvent(eventType, response) {
+      super.fire(eventType, response)
+   }
+
+   on(event, callback) {
+      super.on(event, callback);
+   }
+
+   once(event, callback) {
+      super.once(event, callback);
+   }
+
+   off(event, callback) {
+      super.off(event, callback);
+   }
+
+   unlistenAll() {
+      super.unlistenAll(event, callback);
    }
 
    /**
@@ -96,7 +109,24 @@ istsos.Procedure = class Procedure extends istsos.ProcedureBase {
       this.sensorType = options.sensorType || "";
 
       var url = `${this.service.server.getUrl()}wa/istsos/services/${this.service.getServiceJSON()["service"]}/procedures/${oldName}`;
-      this.executeRequest(url, istsos.events.EventType.UPDATE_PROCEDURE, "PUT", JSON.stringify(this.getProcedureJSON()));
+      
+      let config = {};
+      if(this.service.server.getLoginConfig()) {
+         config['headers'] = this.service.server.getLoginConfig();
+      }
+      config['data'] = JSON.stringify(this.getProcedureJSON());
+
+      return HttpAPI.put(url, config)
+         .then((result) => {
+            if (result.success) {
+               this.fireEvent('UPDATE_PROCEDURE', result);
+               return result;
+            } else {
+               throw result.message
+            }
+         }, (error_message) => {
+            throw error_message;
+         });
    }
 
    /**
@@ -112,7 +142,23 @@ istsos.Procedure = class Procedure extends istsos.ProcedureBase {
       });
 
       var url = `${this.service.server.getUrl()}wa/istsos/services/${this.service.getServiceJSON()["service"]}/procedures/${this.name}`;
-      this.executeRequest(url, istsos.events.EventType.DELETE_PROCEDURE, "DELETE");
+       
+      let config = {};
+      if(this.service.server.getLoginConfig()) {
+         config['headers'] = this.service.server.getLoginConfig();
+      }
+
+      return HttpAPI.delete(url, config)
+         .then((result) => {
+            if (result.success) {
+               this.fireEvent('DELETE_PROCEDURE', result);
+               return result;
+            } else {
+               throw result.message
+            }
+         }, (error_message) => {
+            throw error_message;
+         });
    }
 
    /**
@@ -122,10 +168,29 @@ istsos.Procedure = class Procedure extends istsos.ProcedureBase {
    addMembershipToOffering(offering) {
       offering.getMemberProceduresProperty().push(this);
       var url = `${this.service.server.getUrl()}wa/istsos/services/${this.service.getServiceJSON()["service"]}/offerings/${offering.getOfferingJSON()["name"]}/procedures`;
-      this.executeRequest(url, istsos.events.EventType.ADD_TO_OFFERING, "POST", JSON.stringify([{
+
+      var data = [{
          "offering": offering.getOfferingJSON()["name"],
          "procedure": this.getProcedureJSON()["system"]
-      }]));
+      }];
+       
+      let config = {};
+      if(this.service.server.getLoginConfig()) {
+         config['headers'] = this.service.server.getLoginConfig();
+      }
+      config['data'] = JSON.stringify(data);
+
+      return HttpAPI.post(url, config)
+         .then((result) => {
+            if (result.success) {
+               this.fireEvent('ADD_TO_OFFERING', result);
+               return result;
+            } else {
+               throw result.message
+            }
+         }, (error_message) => {
+            throw error_message;
+         });
    }
 
    /**
@@ -140,11 +205,31 @@ istsos.Procedure = class Procedure extends istsos.ProcedureBase {
             procedures.splice(procedures.indexOf(p), 1);
          }
       });
+
       var url = `${this.service.server.getUrl()}wa/istsos/services/${this.service.getServiceJSON()["service"]}/offerings/${offering.getOfferingJSON()["name"]}/procedures/${this.getProcedureJSON()["system"]}`;
-      this.executeRequest(url, istsos.events.EventType.REMOVE_FROM_OFFERING, "DELETE", JSON.stringify([{
+   
+      var data = [{
          "offering": offering.getOfferingJSON()["name"],
          "procedure": this.getProcedureJSON()["system"]
-      }]));
+      }];
+       
+      let config = {};
+      if(this.service.server.getLoginConfig()) {
+         config['headers'] = this.service.server.getLoginConfig();
+      }
+      config['data'] = JSON.stringify(data);
+
+      return HttpAPI.delete(url, config)
+         .then((result) => {
+            if (result.success) {
+               this.fireEvent('REMOVE_FROM_OFFERING', result);
+               return result;
+            } else {
+               throw result.message
+            }
+         }, (error_message) => {
+            throw error_message;
+         });
    }
 
    /**
