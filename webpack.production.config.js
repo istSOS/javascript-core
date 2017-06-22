@@ -1,5 +1,6 @@
 const path = require('path');
 const webpack = require('webpack');
+const ClosureCompilerPlugin = require('webpack-closure-compiler');
 module.exports = {
    context: path.resolve(__dirname, './src'),
    entry: {
@@ -7,7 +8,7 @@ module.exports = {
    },
    output: {
       path: path.resolve(__dirname, './dist'),
-      filename: 'istsos.js',
+      filename: 'istsos.min.js',
       library: 'istsos',
       libraryTarget: 'var'
    },
@@ -34,16 +35,28 @@ module.exports = {
       }
    },
    module: {
-      rules: [{
-         test: /\.js$/,
-         exclude: [/node_modules/],
-         use: [{
-            loader: 'babel-loader',
-            options: {
-               presets: ['es2015']
-            },
-         }],
-      }],
+      rules: [
+         {
+            test: /\.js$/,
+            exclude: [/node_modules/],
+            use: [{
+               loader: 'babel-loader',
+               options: {
+                  presets: ['es2015']
+               },
+            }],
+         }
+      ],
 
-   }
+   },
+   plugins: [
+      new ClosureCompilerPlugin({
+         compiler: {
+            language_in: 'ECMASCRIPT6',
+            language_out: 'ECMASCRIPT5',
+            compilation_level: 'SIMPLE'
+         },
+         concurrency: 3,
+      })
+   ]
 };
