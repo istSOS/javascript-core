@@ -1,7 +1,4 @@
-goog.require('goog.events');
-goog.require('goog.events.Event');
-goog.require('goog.events.EventTarget');
-goog.require('goog.net.XhrIo');
+import {EventEmitter } from 'EventEmitter';
 /** istsos.ProcedureBase class - ABSTRACT */
 /**
  * @param {String} name
@@ -15,8 +12,9 @@ goog.require('goog.net.XhrIo');
  * @param {Array<istsos.Output>} outputs
  * @constructor
  */
-istsos.ProcedureBase = class {
+export var ProcedureBase = class ProcedureBase extends EventEmitter {
    constructor(options) {
+      super();
       this.name = options.name;
       this.description = options.description || "";
       this.keywords = options.keywords || "";
@@ -24,6 +22,26 @@ istsos.ProcedureBase = class {
       this.epsg = options.epsg;
       this.coordinates = [options.x, options.y, options.z];
       this.outputs = options.outputs || [];
+   }
+
+   fireEvent(eventType, response) {
+      super.fire(eventType, response)
+   }
+
+   on(event, callback) {
+      super.on(event, callback);
+   }
+
+   once(event, callback) {
+      super.once(event, callback);
+   }
+
+   off(event, callback) {
+      super.off(event, callback);
+   }
+
+   unlistenAll() {
+      super.unlistenAll(event, callback);
    }
 
    /**

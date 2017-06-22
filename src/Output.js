@@ -1,7 +1,5 @@
-goog.require('goog.events');
-goog.require('goog.events.Event');
-goog.require('goog.events.EventTarget');
-goog.require('goog.net.XhrIo');
+import {validateConstraintInput} from 'IstsosHelper';
+
 /** istsos.Output clas */
 /**
  * @param {istsos.ObservedProperty} property
@@ -11,13 +9,13 @@ goog.require('goog.net.XhrIo');
  * @param {Array|int} opt_constraintValue
  * @constructor
  */
-istsos.Output = class {
+export var Output = class {
    constructor(options) {
       this.observedProperty = options.property;
       this.uom = options.uom;
       this.description = options.description || "";
       this.constraint = {};
-      var check = this.validateConstraintInput(options.opt_constraintType, options.opt_constraintValue);
+      var check = validateConstraintInput(options.opt_constraintType, options.opt_constraintValue);
       if (check === true) {
          this.constraint["role"] = "urn:ogc:def:classifiers:x-istsos:1.0:qualityIndex:check:reasonable";
          this.constraint[istsos.observedProperty.ConstraintInputs[opt_constraintType]] = (opt_constraintValue.constructor === Array) ?
@@ -26,44 +24,6 @@ istsos.Output = class {
          console.log("Input constraintType and constraintValue are incorrect or intentionally null/undefined!!! ");
       }
    }
-
-   /**
-    * @param {String} constraintType
-    * @param {Array<int>|int}constraintValue
-    * @returns {boolean}
-    */
-   validateConstraintInput(constraintType, constraintValue) {
-      switch (constraintType) {
-         case 'between':
-            if (constraintValue.constructor !== Array) {
-               return false;
-            } else {
-               return true;
-            }
-         case 'lessThan':
-            if (constraintValue !== parseInt(constraintValue, 10)) {
-               return false;
-            } else {
-               return true;
-            }
-         case 'greaterThan':
-            if (constraintValue !== parseInt(constraintValue, 10)) {
-               return false;
-            } else {
-               return true;
-            }
-         case 'valueList':
-            if (constraintValue.constructor !== Array) {
-               return false;
-            } else {
-               return true;
-            }
-         default:
-            console.log('Constraint type must be "between", "lessThan", "greaterThan" or "valueList"');
-            return false;
-      }
-   }
-
    /**
     * @returns {JSON}
     */

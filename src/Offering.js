@@ -1,7 +1,5 @@
-goog.require('goog.events');
-goog.require('goog.events.Event');
-goog.require('goog.events.EventTarget');
-goog.require('goog.net.XhrIo');
+import {HttpAPI } from 'HttpAPI'; 
+import {EventEmitter } from 'EventEmitter';
 /** istsos.Offering class */
 /**
  * @param {String} offeringName
@@ -12,8 +10,9 @@ goog.require('goog.net.XhrIo');
  * @constructor
  */
 
-istsos.Offering = class {
+export var Offering = class Offering extends EventEmitter {
    constructor(options) {
+   	super();
       this.offeringName = options.offeringName;
       this.offeringDescription = options.offeringDescription || "";
       this.active = options.active || false;
@@ -29,10 +28,25 @@ istsos.Offering = class {
     * @param {String} method
     * @param {JSON} opt_data
     */
-   executeRequest(url, eventType, method, opt_data) {
-      goog.net.XhrIo.send(url, function(e) {
-         istsos.fire(eventType, e.target);
-      }, method, opt_data);
+
+   fireEvent(eventType, response) {
+      super.fire(eventType, response)
+   }
+
+   on(event, callback) {
+      super.on(event, callback);
+   }
+
+   once(event, callback) {
+      super.once(event, callback);
+   }
+
+   off(event, callback) {
+      super.off(event, callback);
+   }
+
+   unlistenAll() {
+      super.unlistenAll(event, callback);
    }
 
    /**
@@ -57,7 +71,24 @@ istsos.Offering = class {
       this.expirationDate = options.newExpirationDate || this.expirationDate;
 
       var url = `${this.service.server.getUrl()}wa/istsos/services/${this.service.getServiceJSON()["service"]}/offerings/${oldOfferingName}`
-      this.executeRequest(url, istsos.events.EventType.UPDATE_OFFERING, "PUT", JSON.stringify(this.getOfferingJSON()));
+   	
+      let config = {};
+      if(this.service.server.getLoginConfig()) {
+         config['headers'] = this.service.server.getLoginConfig();
+      }
+      config['data'] = JSON.stringify(this.getUomJSON());
+
+      return HttpAPI.put(url, config)
+         .then((result) => {
+            if (result.success) {
+               this.fireEvent('UPDATE_OFFERING', result);
+               return result;
+            } else {
+               throw result.message
+            }
+         }, (error_message) => {
+            throw error_message;
+         });
    }
 
    /**
@@ -75,7 +106,24 @@ istsos.Offering = class {
          "name": this.getOfferingJSON()["name"],
          "description": this.getOfferingJSON()["description"]
       };
-      this.executeRequest(url, istsos.events.EventType.DELETE_OFFERING, "DELETE", JSON.stringify(data));
+
+      let config = {};
+      if(this.service.server.getLoginConfig()) {
+         config['headers'] = this.service.server.getLoginConfig();
+      }
+      config['data'] = JSON.stringify(data);
+
+      return HttpAPI.delete(url, config)
+         .then((result) => {
+            if (result.success) {
+               this.fireEvent('DELETE_OFFERING', result);
+               return result;
+            } else {
+               throw result.message
+            }
+         }, (error_message) => {
+            throw error_message;
+         });
    }
 
    /**
@@ -90,7 +138,23 @@ istsos.Offering = class {
     */
    getMemberProcedures() {
       var url = `${this.service.server.getUrl()}wa/istsos/services/${this.service.getServiceJSON()["service"]}/offerings/${this.getOfferingJSON()["name"]}/procedures/operations/memberslist`;
-      this.executeRequest(url, istsos.events.EventType.MEMBERLIST, "GET");
+      
+      let config = {};
+      if(this.service.server.getLoginConfig()) {
+         config['headers'] = this.service.server.getLoginConfig();
+      }
+
+      return HttpAPI.get(url, config)
+         .then((result) => {
+            if (result.success) {
+               this.fireEvent('MEMBERLIST', result);
+               return result;
+            } else {
+               throw result.message
+            }
+         }, (error_message) => {
+            throw error_message;
+         });
    }
 
    /**
@@ -98,7 +162,23 @@ istsos.Offering = class {
     */
    getNonMemberProcedures() {
       var url = `${this.service.server.getUrl()}wa/istsos/services/${this.service.getServiceJSON()["service"]}/offerings/${this.getOfferingJSON()["name"]}/procedures/operations/nonmemberslist`;
-      this.executeRequest(url, istsos.events.EventType.NONMEMBERLIST, "GET");
+               
+      let config = {};
+      if(this.service.server.getLoginConfig()) {
+         config['headers'] = this.service.server.getLoginConfig();
+      }
+
+      return HttpAPI.get(url, config)
+         .then((result) => {
+            if (result.success) {
+               this.fireEvent('NONMEMBERLIST', result);
+               return result;
+            } else {
+               throw result.message
+            }
+         }, (error_message) => {
+            throw error_message;
+         });
    }
 
    /**
