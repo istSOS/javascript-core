@@ -472,11 +472,20 @@ function _possibleConstructorReturn(self, call) { if (!self) { throw new Referen
 function _inherits(subClass, superClass) { if (typeof superClass !== "function" && superClass !== null) { throw new TypeError("Super expression must either be null or a function, not " + typeof superClass); } subClass.prototype = Object.create(superClass && superClass.prototype, { constructor: { value: subClass, enumerable: false, writable: true, configurable: true } }); if (superClass) Object.setPrototypeOf ? Object.setPrototypeOf(subClass, superClass) : subClass.__proto__ = superClass; }
 
 /**
- * @class istsos.Configuration
+ * istsos.Configuration
+ * 
+ * @class
+ * @extends istsos.EventEmitter
  */
 var Configuration = exports.Configuration = function (_EventEmitter) {
    _inherits(Configuration, _EventEmitter);
 
+   /**
+    * constructor - instantiates istsos.Configuration
+    * 
+    * @param  {Object} options Set of key-value pairs
+    * @constructor
+    */
    function Configuration(options) {
       _classCallCheck(this, Configuration);
 
@@ -487,31 +496,79 @@ var Configuration = exports.Configuration = function (_EventEmitter) {
       return _this;
    }
 
+   /**
+    * Fire event with data - event must match one of the supported event types from istsos.EventTypes
+    * 
+    * @param  {String} eventType Type of event from istsos.EventTypes
+    * @param  {Object|*} response  Data to be passed to a handler
+    */
+
+
    _createClass(Configuration, [{
       key: 'fireEvent',
       value: function fireEvent(eventType, response) {
          _get(Configuration.prototype.__proto__ || Object.getPrototypeOf(Configuration.prototype), 'fire', this).call(this, eventType, response);
       }
+
+      /**
+       * Add event listener
+       * 
+       * @param  {String}   event    Event must match one of the supported event types from istsos.EventTypes
+       * @param  {Function} callback Handler function
+       */
+
    }, {
       key: 'on',
       value: function on(event, callback) {
          _get(Configuration.prototype.__proto__ || Object.getPrototypeOf(Configuration.prototype), 'on', this).call(this, event, callback);
       }
+
+      /**
+       * Add event listener, that will listen only once.
+       * 
+       * @param  {String}   event    Event must match one of the supported event types from istsos.EventTypes
+       * @param  {Function} callback Handler function
+       */
+
    }, {
       key: 'once',
       value: function once(event, callback) {
          _get(Configuration.prototype.__proto__ || Object.getPrototypeOf(Configuration.prototype), 'once', this).call(this, event, callback);
       }
+
+      /**
+       * Remove event listener
+       * 
+       * @param  {String}   event    Event must match one of the supported event types from istsos.EventTypes
+       * @param  {Function} callback Handler function
+       */
+
    }, {
       key: 'off',
       value: function off(event, callback) {
          _get(Configuration.prototype.__proto__ || Object.getPrototypeOf(Configuration.prototype), 'off', this).call(this, event, callback);
       }
+
+      /**
+       * Remove all event listeners
+       * 
+       * @param  {String}   event    Event must match one of the supported event types from istsos.EventTypes
+       * @param  {Function} callback Handler function
+       */
+
    }, {
       key: 'unlistenAll',
       value: function unlistenAll() {
-         _get(Configuration.prototype.__proto__ || Object.getPrototypeOf(Configuration.prototype), 'unlistenAll', this).call(this, event, callback);
+         _get(Configuration.prototype.__proto__ || Object.getPrototypeOf(Configuration.prototype), 'unlistenAll', this).call(this);
       }
+
+      /**
+       * Get configuration information from the server
+       * 
+       * @return {Promise} 
+       * @fires  istsos.Configuration#CONFIGSECTIONS            
+       */
+
    }, {
       key: 'getConf',
       value: function getConf() {
@@ -535,6 +592,14 @@ var Configuration = exports.Configuration = function (_EventEmitter) {
             throw error_message;
          });
       }
+
+      /**
+       * Get provider information from the server
+       * 
+       * @return {Promise} 
+       * @fires  istsos.Configuration#PROVIDER            
+       */
+
    }, {
       key: 'getProvider',
       value: function getProvider() {
@@ -558,6 +623,15 @@ var Configuration = exports.Configuration = function (_EventEmitter) {
             throw error_message;
          });
       }
+
+      /**
+       * Update provider information on the server
+       *
+       * @param {object} options Set of key-value pairs
+       * @return {Promise} 
+       * @fires  istsos.Configuration#UPDATE_PROVIDER            
+       */
+
    }, {
       key: 'updateProvider',
       value: function updateProvider() {
@@ -565,20 +639,6 @@ var Configuration = exports.Configuration = function (_EventEmitter) {
 
          var options = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : {};
 
-         // var data = {
-         //    "providername": options.providerName || "",
-         //    "providersite": options.providerSite || "",
-         //    "contactname": options.contactName || "",
-         //    "contactposition": options.contactPosition || "",
-         //    "contactvoice": options.contactVoice || "",
-         //    "contactfax": options.contactFax || "",
-         //    "contactemail": options.contactEmail || "",
-         //    "contactdeliverypoint": options.contactDeliveryPoint || "",
-         //    "contactpostalcode": options.contactPostalCode || "",
-         //    "contactcity": options.contactCity || "",
-         //    "contactadminarea": options.contactAdminArea || "",
-         //    "contactcountry": options.contactCountry || ""
-         // };
          var url = this.server.getUrl() + 'wa/istsos/services/' + this.serviceName + '/configsections/provider';
 
          var config = {};
@@ -598,6 +658,14 @@ var Configuration = exports.Configuration = function (_EventEmitter) {
             throw error_message;
          });
       }
+
+      /**
+       * Get identification information from the server
+       * 
+       * @return {Promise} 
+       * @fires  istsos.Configuration#IDENTIFICATION            
+       */
+
    }, {
       key: 'getIdentification',
       value: function getIdentification() {
@@ -621,6 +689,15 @@ var Configuration = exports.Configuration = function (_EventEmitter) {
             throw error_message;
          });
       }
+
+      /**
+       * Update identification information on the server
+       *
+       * @param {object} options Set of key-value pairs
+       * @return {Promise} 
+       * @fires  istsos.Configuration#UPDATE_IDENTIFICATION            
+       */
+
    }, {
       key: 'updateIdentification',
       value: function updateIdentification() {
@@ -628,15 +705,6 @@ var Configuration = exports.Configuration = function (_EventEmitter) {
 
          var options = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : {};
 
-         // var data = {
-         //    "title": title || "",
-         //    "abstract": abstract || "",
-         //    "urnversion": urnVersion || "",
-         //    "authority": authority || "",
-         //    "fees": fees || "",
-         //    "keywords": keywords || "",
-         //    "accessconstrains": accessConstrains || ""
-         // };
          var url = this.server.getUrl() + 'wa/istsos/services/' + this.serviceName + '/configsections/identification';
 
          var config = {};
@@ -656,6 +724,14 @@ var Configuration = exports.Configuration = function (_EventEmitter) {
             throw error_message;
          });
       }
+
+      /**
+       * Get MQTT information from the server
+       * 
+       * @return {Promise} 
+       * @fires  istsos.Configuration#MQTT            
+       */
+
    }, {
       key: 'getMqtt',
       value: function getMqtt() {
@@ -679,6 +755,15 @@ var Configuration = exports.Configuration = function (_EventEmitter) {
             throw error_message;
          });
       }
+
+      /**
+       * Update MQTT information on the server
+       *
+       * @param {object} options Set of key-value pairs
+       * @return {Promise} 
+       * @fires  istsos.Configuration#UPDATE_MQTT            
+       */
+
    }, {
       key: 'updateMqtt',
       value: function updateMqtt() {
@@ -686,13 +771,6 @@ var Configuration = exports.Configuration = function (_EventEmitter) {
 
          var options = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : {};
 
-         // var data = {
-         //    "broker_password": brokerPassword || "",
-         //    "broker_user": brokerUser || "",
-         //    "broker_topic": brokerTopic || "",
-         //    "broker_url": brokerUrl || "",
-         //    "broker_port": brokerPort || ""
-         // };
          var url = this.server.getUrl() + 'wa/istsos/services/' + this.serviceName + '/configsections/mqtt';
 
          var config = {};
@@ -712,6 +790,14 @@ var Configuration = exports.Configuration = function (_EventEmitter) {
             throw error_message;
          });
       }
+
+      /**
+       * Get coordinate reference system information from the server
+       * 
+       * @return {Promise} 
+       * @fires  istsos.Configuration#CRS            
+       */
+
    }, {
       key: 'getCrs',
       value: function getCrs() {
@@ -735,6 +821,15 @@ var Configuration = exports.Configuration = function (_EventEmitter) {
             throw error_message;
          });
       }
+
+      /**
+       * Update CRS information on the server
+       *
+       * @param {object} options Set of key-value pairs
+       * @return {Promise} 
+       * @fires  istsos.Configuration#UPDATE_CRS            
+       */
+
    }, {
       key: 'updateCrs',
       value: function updateCrs() {
@@ -742,13 +837,6 @@ var Configuration = exports.Configuration = function (_EventEmitter) {
 
          var options = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : {};
 
-         // var data = {
-         //    "zaxisname": z_axis_name || "",
-         //    "xaxisname": x_axis_name || "",
-         //    "yaxisname": y_axis_name || "",
-         //    "allowedepsg": allowedEpsg.toString() || "",
-         //    "istsosepsg": istsosEpsg.toString() || ""
-         // };
          var url = this.server.getUrl() + 'wa/istsos/services/' + this.serviceName + '/configsections/geo';
 
          var config = {};
@@ -768,6 +856,14 @@ var Configuration = exports.Configuration = function (_EventEmitter) {
             throw error_message;
          });
       }
+
+      /**
+       * Get observation configuration information from the server
+       * 
+       * @return {Promise} 
+       * @fires  istsos.Configuration#OBSERVATION_CONF            
+       */
+
    }, {
       key: 'getObservationConf',
       value: function getObservationConf() {
@@ -791,6 +887,15 @@ var Configuration = exports.Configuration = function (_EventEmitter) {
             throw error_message;
          });
       }
+
+      /**
+       * Update observation configuration information on the server
+       *
+       * @param {object} options Set of key-value pairs
+       * @return {Promise} 
+       * @fires  istsos.Configuration#UPDATE_OBSERVATION_CONF            
+       */
+
    }, {
       key: 'updateObservationConf',
       value: function updateObservationConf() {
@@ -798,15 +903,6 @@ var Configuration = exports.Configuration = function (_EventEmitter) {
 
          var options = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : {};
 
-         // var data = {
-         //    "correct_qi": correctQi || "",
-         //    "stat_qi": statQi || "",
-         //    "defaultqi": defaultQi || "",
-         //    "aggregatenodataqi": aggregateNoDataQi || "",
-         //    "maxgoperiod": maxGoPeriod || "",
-         //    "transactional_log": transactionalLog || "",
-         //    "aggregatenodata": aggregateNoData || ""
-         // };
          var url = this.server.getUrl() + 'wa/istsos/services/' + this.serviceName + '/configsections/getobservation';
 
          var config = {};
@@ -826,6 +922,14 @@ var Configuration = exports.Configuration = function (_EventEmitter) {
             throw error_message;
          });
       }
+
+      /**
+       * Get proxy information from the server
+       * 
+       * @return {Promise} 
+       * @fires  istsos.Configuration#PROXY            
+       */
+
    }, {
       key: 'getProxy',
       value: function getProxy() {
@@ -849,6 +953,15 @@ var Configuration = exports.Configuration = function (_EventEmitter) {
             throw error_message;
          });
       }
+
+      /**
+       * Update proxy information on the server
+       *
+       * @param {string} newUrl New proxy URL
+       * @return {Promise} 
+       * @fires  istsos.Configuration#UPDATE_PROXY            
+       */
+
    }, {
       key: 'updateProxy',
       value: function updateProxy() {
@@ -878,6 +991,14 @@ var Configuration = exports.Configuration = function (_EventEmitter) {
             throw error_message;
          });
       }
+
+      /**
+       * Get EPSG codes from the server
+       * 
+       * @return {Promise} 
+       * @fires  istsos.Configuration#EPSG_CODES            
+       */
+
    }, {
       key: 'getEpsgCodes',
       value: function getEpsgCodes() {
@@ -1684,11 +1805,20 @@ function _possibleConstructorReturn(self, call) { if (!self) { throw new Referen
 function _inherits(subClass, superClass) { if (typeof superClass !== "function" && superClass !== null) { throw new TypeError("Super expression must either be null or a function, not " + typeof superClass); } subClass.prototype = Object.create(superClass && superClass.prototype, { constructor: { value: subClass, enumerable: false, writable: true, configurable: true } }); if (superClass) Object.setPrototypeOf ? Object.setPrototypeOf(subClass, superClass) : subClass.__proto__ = superClass; }
 
 /**
- * @class istsos.Database
+ * istsos.Database
+ * 
+ * @class
+ * @extends istsos.EventEmitter
  */
 var Database = exports.Database = function (_EventEmitter) {
    _inherits(Database, _EventEmitter);
 
+   /**
+    * constructor - instantiates istsos.Database
+    * 
+    * @param  {Object} options Set of key-value pairs
+    * @constructor
+    */
    function Database(options) {
       _classCallCheck(this, Database);
 
@@ -1702,31 +1832,81 @@ var Database = exports.Database = function (_EventEmitter) {
       return _this;
    }
 
+   /**
+    * Fire event with data - event must match one of the supported event types from istsos.EventTypes
+    * 
+    * @param  {String} eventType Type of event from istsos.EventTypes
+    * @param  {Object|*} response  Data to be passed to a handler
+    */
+
+
    _createClass(Database, [{
       key: 'fireEvent',
       value: function fireEvent(eventType, response) {
          _get(Database.prototype.__proto__ || Object.getPrototypeOf(Database.prototype), 'fire', this).call(this, eventType, response);
       }
+
+      /**
+       * Add event listener
+       * 
+       * @param  {String}   event    Event must match one of the supported event types from istsos.EventTypes
+       * @param  {Function} callback Handler function
+       */
+
    }, {
       key: 'on',
       value: function on(event, callback) {
          _get(Database.prototype.__proto__ || Object.getPrototypeOf(Database.prototype), 'on', this).call(this, event, callback);
       }
+
+      /**
+       * Add event listener, that will listen only once.
+       * 
+       * @param  {String}   event    Event must match one of the supported event types from istsos.EventTypes
+       * @param  {Function} callback Handler function
+       */
+
    }, {
       key: 'once',
       value: function once(event, callback) {
          _get(Database.prototype.__proto__ || Object.getPrototypeOf(Database.prototype), 'once', this).call(this, event, callback);
       }
+
+      /**
+       * Remove event listener
+       * 
+       * @param  {String}   event    Event must match one of the supported event types from istsos.EventTypes
+       * @param  {Function} callback Handler function
+       */
+
    }, {
       key: 'off',
       value: function off(event, callback) {
          _get(Database.prototype.__proto__ || Object.getPrototypeOf(Database.prototype), 'off', this).call(this, event, callback);
       }
+
+      /**
+       * Remove all event listeners
+       * 
+       * @param  {String}   event    Event must match one of the supported event types from istsos.EventTypes
+       * @param  {Function} callback Handler function
+       */
+
    }, {
       key: 'unlistenAll',
       value: function unlistenAll() {
-         _get(Database.prototype.__proto__ || Object.getPrototypeOf(Database.prototype), 'unlistenAll', this).call(this, event, callback);
+         _get(Database.prototype.__proto__ || Object.getPrototypeOf(Database.prototype), 'unlistenAll', this).call(this);
       }
+
+      /**
+       * Get database information from the server
+       * 
+       * @param  {String} serviceName   Name of the service
+       * @param  {istsos.Server} server Instance of istsos.Server class
+       * @return {Promise} 
+       * @fires  istsos.Database#DATABASE            
+       */
+
    }, {
       key: 'getDb',
       value: function getDb() {
@@ -1753,6 +1933,17 @@ var Database = exports.Database = function (_EventEmitter) {
             throw error_message;
          });
       }
+
+      /**
+       * Set database connection parameters
+       * 
+       * @param {istsos.Server} server  istsos.Server instance
+       * @param {istsos.Service} service istsos.Service instance
+       * @param {Object} options Set of key-value pairs
+       * @return {Promise}
+       * @fires istsos.Database#UPDATE_DATABASE
+       */
+
    }, {
       key: 'setDb',
       value: function setDb(server, service, options) {
@@ -1783,6 +1974,15 @@ var Database = exports.Database = function (_EventEmitter) {
             throw error_message;
          });
       }
+
+      /**
+       * Validate database status
+       * 
+       * @param  {istsos.Server} server istsos.Server instance
+       * @return {Promise}
+       * @fires istsos.Database#VALIDATE_DB
+       */
+
    }, {
       key: 'validateDb',
       value: function validateDb(server) {
@@ -1807,6 +2007,13 @@ var Database = exports.Database = function (_EventEmitter) {
             throw error_message;
          });
       }
+
+      /**
+       * Get JSON configuration prepared for sending via HTTP request payload
+       * 
+       * @return {Object}
+       */
+
    }, {
       key: 'getDbJSON',
       value: function getDbJSON() {
@@ -1839,7 +2046,9 @@ var _createClass = function () { function defineProperties(target, props) { for 
 function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
 
 /**
- * @class istsos.Date
+ * istsos.ServerContainer
+ * 
+ * @class
  */
 var Date = exports.Date = function () {
 
@@ -2522,17 +2731,21 @@ function _possibleConstructorReturn(self, call) { if (!self) { throw new Referen
 
 function _inherits(subClass, superClass) { if (typeof superClass !== "function" && superClass !== null) { throw new TypeError("Super expression must either be null or a function, not " + typeof superClass); } subClass.prototype = Object.create(superClass && superClass.prototype, { constructor: { value: subClass, enumerable: false, writable: true, configurable: true } }); if (superClass) Object.setPrototypeOf ? Object.setPrototypeOf(subClass, superClass) : subClass.__proto__ = superClass; }
 
-/** istsos.Server class */
 /**
- * @param {String} serverName
- * @param {String} url
- * @param {istsos.Database} defaultDb
- * @param {istsos.Configuration} opt_config
- * @constructor
+ * istsos.Server
+ * 
+ * @class
+ * @extends istsos.EventEmitter
  */
 var Server = exports.Server = function (_EventEmitter) {
    _inherits(Server, _EventEmitter);
 
+   /**
+      * constructor - instantiates istsos.Server
+      * 
+      * @param  {Object} options Set of key-value pairs
+      * @constructor
+      */
    function Server(options) {
       _classCallCheck(this, Server);
 
@@ -2550,31 +2763,79 @@ var Server = exports.Server = function (_EventEmitter) {
       return _this;
    }
 
+   /**
+    * Fire event with data - event must match one of the supported event types from istsos.EventTypes
+    * 
+    * @param  {String} eventType Type of event from istsos.EventTypes
+    * @param  {Object|*} response  Data to be passed to a handler
+    */
+
+
    _createClass(Server, [{
       key: 'fireEvent',
       value: function fireEvent(eventType, response) {
          _get(Server.prototype.__proto__ || Object.getPrototypeOf(Server.prototype), 'fire', this).call(this, eventType, response);
       }
+
+      /**
+       * Add event listener
+       * 
+       * @param  {String}   event    Event must match one of the supported event types from istsos.EventTypes
+       * @param  {Function} callback Handler function
+       */
+
    }, {
       key: 'on',
       value: function on(event, callback) {
          _get(Server.prototype.__proto__ || Object.getPrototypeOf(Server.prototype), 'on', this).call(this, event, callback);
       }
+
+      /**
+       * Add event listener, that will listen only once.
+       * 
+       * @param  {String}   event    Event must match one of the supported event types from istsos.EventTypes
+       * @param  {Function} callback Handler function
+       */
+
    }, {
       key: 'once',
       value: function once(event, callback) {
          _get(Server.prototype.__proto__ || Object.getPrototypeOf(Server.prototype), 'once', this).call(this, event, callback);
       }
+
+      /**
+       * Remove event listener
+       * 
+       * @param  {String}   event    Event must match one of the supported event types from istsos.EventTypes
+       * @param  {Function} callback Handler function
+       */
+
    }, {
       key: 'off',
       value: function off(event, callback) {
          _get(Server.prototype.__proto__ || Object.getPrototypeOf(Server.prototype), 'off', this).call(this, event, callback);
       }
+
+      /**
+       * Remove all event listeners
+       * 
+       * @param  {String}   event    Event must match one of the supported event types from istsos.EventTypes
+       * @param  {Function} callback Handler function
+       */
+
    }, {
       key: 'unlistenAll',
       value: function unlistenAll() {
-         _get(Server.prototype.__proto__ || Object.getPrototypeOf(Server.prototype), 'unlistenAll', this).call(this, event, callback);
+         _get(Server.prototype.__proto__ || Object.getPrototypeOf(Server.prototype), 'unlistenAll', this).call(this);
       }
+
+      /**
+       * Set login connection parameters
+       * 
+       * @param {String} username Username
+       * @param {String} password Password
+       */
+
    }, {
       key: 'setLoginConfig',
       value: function setLoginConfig(username, password) {
@@ -2583,11 +2844,23 @@ var Server = exports.Server = function (_EventEmitter) {
             Authorization: 'Basic ' + btoa(loginStr)
          };
       }
+
+      /**
+       * Remove login configuration
+       */
+
    }, {
       key: 'removeLoginConfig',
       value: function removeLoginConfig() {
          this.loginConfig = null;
       }
+
+      /**
+       * Get login configuration object
+       * 
+       * @return {Object}
+       */
+
    }, {
       key: 'getLoginConfig',
       value: function getLoginConfig() {
@@ -2595,16 +2868,19 @@ var Server = exports.Server = function (_EventEmitter) {
       }
 
       /**
-       * @fires istsos.Server#istsos.events.EventType: SERVICE
-       * @param {istsos.Service} service
+       *	Get service information from the server
+       * 
+       * @param {String} serviceName Name of the service
+       * @return {Promise}
+       * @fires istsos.Server#SERVICE
        */
 
    }, {
       key: 'getService',
-      value: function getService(service) {
+      value: function getService(serviceName) {
          var _this2 = this;
 
-         var url = this.url + 'wa/istsos/services/' + service.name;
+         var url = this.url + 'wa/istsos/services/' + serviceName;
 
          var config = {};
          if (this.getLoginConfig()) {
@@ -2624,7 +2900,9 @@ var Server = exports.Server = function (_EventEmitter) {
       }
 
       /**
-       * @param {istsos.Service} service
+       * Add istsos.Service instance to the list of services
+       * 
+       * @param {istsos.Service} service istsos.Service instance
        */
 
    }, {
@@ -2634,8 +2912,11 @@ var Server = exports.Server = function (_EventEmitter) {
       }
 
       /**
-       * @fires istsos.Service#istsos.events.EventType: NEW_SERVICE
-       * @param {istsos.Service} service
+       * Register new service on the server
+       * 
+       * @param {istsos.Service} service istsos.Service instance
+       * @return {Promise}
+       * @fires istsos.Server#NEW_SERVICE
        */
 
    }, {
@@ -2664,8 +2945,11 @@ var Server = exports.Server = function (_EventEmitter) {
       }
 
       /**
-       * @fires istsos.Service#istsos.events.EventType: DELETE_SERVICE
-       * @param {istsos.Service} service
+       * Remove service from the server
+       * 
+       * @param {istsos.Service} service istsos.Service instance
+       * @return {Promise}
+       * @fires istsos.Server#DELETE_SERVICE
        */
 
    }, {
@@ -2699,7 +2983,10 @@ var Server = exports.Server = function (_EventEmitter) {
       }
 
       /**
-       * @fires istsos.Service#istsos.events.EventType: STATUS
+       * Get server status
+       * 
+       * @return {Promise}
+       * @fires istsos.Server#STATUS
        */
 
    }, {
@@ -2728,7 +3015,10 @@ var Server = exports.Server = function (_EventEmitter) {
       }
 
       /**
-       * @fires istsos.Service#istsos.events.EventType: ABOUT
+       * Get information about the server
+       * 
+       * @return {Promise}
+       * @fires istsos.Server#ABOUT
        */
 
    }, {
@@ -2756,7 +3046,10 @@ var Server = exports.Server = function (_EventEmitter) {
       }
 
       /**
-       * @fires istsos.Configuration#istsos.events.EventType: CONFIGURATION
+       * Get configuration information from the server
+       * 
+       * @return {Promise}
+       * @fires istsos.Configuration#CONFIGURATION
        */
 
    }, {
@@ -2766,7 +3059,9 @@ var Server = exports.Server = function (_EventEmitter) {
       }
 
       /**
-       * @returns {istsos.Configuration}
+       * Get configuration property
+       * 
+       * @return {istsos.Configuration}
        */
 
    }, {
@@ -2776,7 +3071,9 @@ var Server = exports.Server = function (_EventEmitter) {
       }
 
       /**
-       * @returns {Array<istsos.Service>}
+       *	Get list of services
+       * 
+       * @return{Array<istsos.Service>}
        */
 
    }, {
@@ -2786,7 +3083,10 @@ var Server = exports.Server = function (_EventEmitter) {
       }
 
       /**
-       * @fires istsos.Service#istsos.events.EventType: SERVICES
+       * Get services from the server
+       * 
+       * @return {Promise}
+       * @fires istsos.Server#SERVICES
        */
 
    }, {
@@ -2815,7 +3115,10 @@ var Server = exports.Server = function (_EventEmitter) {
       }
 
       /**
-       * @fires istsos.Database#istsos.events.EventType: DATABASE
+       * Get default database information from the server
+       * 
+       * @return {Promise}
+       * @fires istsos.Database#DATABASE
        */
 
    }, {
@@ -2825,7 +3128,9 @@ var Server = exports.Server = function (_EventEmitter) {
       }
 
       /**
-       * @returns {istsos.Database}
+       *	Get default database property
+       * 
+       * @return {istsos.Database}
        */
 
    }, {
@@ -2835,7 +3140,9 @@ var Server = exports.Server = function (_EventEmitter) {
       }
 
       /**
-       * @returns {String}
+       *	Get URL of the server
+       * 
+       * @return {String}
        */
 
    }, {
@@ -2866,7 +3173,9 @@ var _createClass = function () { function defineProperties(target, props) { for 
 function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
 
 /**
- * @class istsos.ServerContainer
+ * istsos.ServerContainer
+ * 
+ * @class
  */
 var ServerContainer = exports.ServerContainer = function () {
 
@@ -2884,7 +3193,7 @@ var ServerContainer = exports.ServerContainer = function () {
    /**
     * getServer - Get the istsos.Server instance from the list by providing the name of the server
     *
-    * @param  {string} name     Name of the server
+    * @param  {String} name     Name of the server
     * @return {istsos.Server}   istsos.Server instance
     */
 
@@ -2945,7 +3254,7 @@ var ServerContainer = exports.ServerContainer = function () {
    }, {
       key: "addServer",
       value: function addServer(server) {
-         if (!server || (typeof server === "undefined" ? "undefined" : _typeof(server)) != "object") {
+         if (!server || _typeof(server.constructor) != istsos.Server) {
             throw "Parameter must be an instance of istsos.Server class!";
          }
          this.servers.push(server);
@@ -2954,7 +3263,7 @@ var ServerContainer = exports.ServerContainer = function () {
       /**
        * removeServer - Remove istsos.Server instance from the list by providing name of the server or istsos.Server instance
        *
-       * @param  {istsos.Server|string} server istsos.Server instance or name of the server
+       * @param  {istsos.Server|String} server istsos.Server instance or name of the server
        */
 
    }, {
@@ -2988,7 +3297,7 @@ var ServerContainer = exports.ServerContainer = function () {
                   }
                }
             }
-         } else if ((typeof server === "undefined" ? "undefined" : _typeof(server)) == "object") {
+         } else if (server.constructor == istsos.Server) {
             this.servers.splice(this.servers.indexOf(server), 1);
          } else {
             throw "Parameter must be a string representing the name of the server or an instance of istsos.Server class!";

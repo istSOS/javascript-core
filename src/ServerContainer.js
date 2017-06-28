@@ -47,7 +47,7 @@ export var ServerContainer = class {
     * @param  {istsos.Server} server istsos.Server instance
     */
    addServer(server) {
-     if (!server || typeof server.constructor != istsos.Server) {
+     if (!server || server.constructor != istsos.Server) {
         throw "Parameter must be an instance of istsos.Server class!"
      }
       this.servers.push(server);
