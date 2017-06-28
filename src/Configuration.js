@@ -2,35 +2,80 @@ import {HttpAPI } from 'HttpAPI';
 import {EventEmitter } from 'EventEmitter';
 
 /**
- * @class istsos.Configuration
+ * istsos.Configuration
+ * 
+ * @class
+ * @extends istsos.EventEmitter
  */
 export var Configuration = class Configuration extends EventEmitter {
+   /**
+    * constructor - instantiates istsos.Configuration
+    * 
+    * @param  {Object} options Set of key-value pairs
+    * @constructor
+    */
    constructor(options) {
       super();
       this.serviceName = (options.serviceName) ? options.serviceName : "default";
       this.server = options.server;
    }
 
+   /**
+    * Fire event with data - event must match one of the supported event types from istsos.EventTypes
+    * 
+    * @param  {String} eventType Type of event from istsos.EventTypes
+    * @param  {Object|*} response  Data to be passed to a handler
+    */
    fireEvent(eventType, response) {
       super.fire(eventType, response)
    }
 
+   /**
+    * Add event listener
+    * 
+    * @param  {String}   event    Event must match one of the supported event types from istsos.EventTypes
+    * @param  {Function} callback Handler function
+    */
    on(event, callback) {
       super.on(event, callback);
    }
 
+   /**
+    * Add event listener, that will listen only once.
+    * 
+    * @param  {String}   event    Event must match one of the supported event types from istsos.EventTypes
+    * @param  {Function} callback Handler function
+    */
    once(event, callback) {
       super.once(event, callback);
    }
 
+   /**
+    * Remove event listener
+    * 
+    * @param  {String}   event    Event must match one of the supported event types from istsos.EventTypes
+    * @param  {Function} callback Handler function
+    */
    off(event, callback) {
       super.off(event, callback);
    }
 
+   /**
+    * Remove all event listeners
+    * 
+    * @param  {String}   event    Event must match one of the supported event types from istsos.EventTypes
+    * @param  {Function} callback Handler function
+    */
    unlistenAll() {
-      super.unlistenAll(event, callback);
+      super.unlistenAll();
    }
 
+   /**
+    * Get configuration information from the server
+    * 
+    * @return {Promise} 
+    * @fires  istsos.Configuration#CONFIGSECTIONS            
+    */
    getConf() {
       var url = `${this.server.getUrl()}wa/istsos/services/${this.serviceName}/configsections`;
       
@@ -52,6 +97,12 @@ export var Configuration = class Configuration extends EventEmitter {
          });
    }
 
+   /**
+    * Get provider information from the server
+    * 
+    * @return {Promise} 
+    * @fires  istsos.Configuration#PROVIDER            
+    */
    getProvider() {
       var url = `${this.server.getUrl()}wa/istsos/services/${this.serviceName}/configsections/provider`;
        
@@ -74,21 +125,14 @@ export var Configuration = class Configuration extends EventEmitter {
          });
    }
 
+   /**
+    * Update provider information on the server
+    *
+    * @param {object} options Set of key-value pairs
+    * @return {Promise} 
+    * @fires  istsos.Configuration#UPDATE_PROVIDER            
+    */
    updateProvider(options = {}) {
-      // var data = {
-      //    "providername": options.providerName || "",
-      //    "providersite": options.providerSite || "",
-      //    "contactname": options.contactName || "",
-      //    "contactposition": options.contactPosition || "",
-      //    "contactvoice": options.contactVoice || "",
-      //    "contactfax": options.contactFax || "",
-      //    "contactemail": options.contactEmail || "",
-      //    "contactdeliverypoint": options.contactDeliveryPoint || "",
-      //    "contactpostalcode": options.contactPostalCode || "",
-      //    "contactcity": options.contactCity || "",
-      //    "contactadminarea": options.contactAdminArea || "",
-      //    "contactcountry": options.contactCountry || ""
-      // };
       var url = `${this.server.getUrl()}wa/istsos/services/${this.serviceName}/configsections/provider`;
       
       let config = {}
@@ -111,6 +155,12 @@ export var Configuration = class Configuration extends EventEmitter {
          });
    }
 
+   /**
+    * Get identification information from the server
+    * 
+    * @return {Promise} 
+    * @fires  istsos.Configuration#IDENTIFICATION            
+    */
    getIdentification() {
       var url = `${this.server.getUrl()}wa/istsos/services/${this.serviceName}/configsections/identification`;
 
@@ -133,16 +183,14 @@ export var Configuration = class Configuration extends EventEmitter {
          });
    }
 
+   /**
+    * Update identification information on the server
+    *
+    * @param {object} options Set of key-value pairs
+    * @return {Promise} 
+    * @fires  istsos.Configuration#UPDATE_IDENTIFICATION            
+    */
    updateIdentification(options = {}) {
-      // var data = {
-      //    "title": title || "",
-      //    "abstract": abstract || "",
-      //    "urnversion": urnVersion || "",
-      //    "authority": authority || "",
-      //    "fees": fees || "",
-      //    "keywords": keywords || "",
-      //    "accessconstrains": accessConstrains || ""
-      // };
       var url = `${this.server.getUrl()}wa/istsos/services/${this.serviceName}/configsections/identification`;
 
       let config = {}
@@ -165,6 +213,12 @@ export var Configuration = class Configuration extends EventEmitter {
          });
    }
 
+   /**
+    * Get MQTT information from the server
+    * 
+    * @return {Promise} 
+    * @fires  istsos.Configuration#MQTT            
+    */
    getMqtt() {
       var url = `${this.server.getUrl()}wa/istsos/services/${this.serviceName}/configsections/mqtt`;
        
@@ -187,14 +241,14 @@ export var Configuration = class Configuration extends EventEmitter {
          });
    }
 
+   /**
+    * Update MQTT information on the server
+    *
+    * @param {object} options Set of key-value pairs
+    * @return {Promise} 
+    * @fires  istsos.Configuration#UPDATE_MQTT            
+    */
    updateMqtt(options = {}) {
-      // var data = {
-      //    "broker_password": brokerPassword || "",
-      //    "broker_user": brokerUser || "",
-      //    "broker_topic": brokerTopic || "",
-      //    "broker_url": brokerUrl || "",
-      //    "broker_port": brokerPort || ""
-      // };
       var url = `${this.server.getUrl()}wa/istsos/services/${this.serviceName}/configsections/mqtt`;
      
       let config = {}
@@ -217,6 +271,12 @@ export var Configuration = class Configuration extends EventEmitter {
          });
    }
 
+   /**
+    * Get coordinate reference system information from the server
+    * 
+    * @return {Promise} 
+    * @fires  istsos.Configuration#CRS            
+    */
    getCrs() {
       var url = `${this.server.getUrl()}wa/istsos/services/${this.serviceName}/configsections/geo`;
  
@@ -239,14 +299,14 @@ export var Configuration = class Configuration extends EventEmitter {
          });
    }
 
+   /**
+    * Update CRS information on the server
+    *
+    * @param {object} options Set of key-value pairs
+    * @return {Promise} 
+    * @fires  istsos.Configuration#UPDATE_CRS            
+    */
    updateCrs(options = {}) {
-      // var data = {
-      //    "zaxisname": z_axis_name || "",
-      //    "xaxisname": x_axis_name || "",
-      //    "yaxisname": y_axis_name || "",
-      //    "allowedepsg": allowedEpsg.toString() || "",
-      //    "istsosepsg": istsosEpsg.toString() || ""
-      // };
       var url = `${this.server.getUrl()}wa/istsos/services/${this.serviceName}/configsections/geo`;
       
       let config = {}
@@ -269,6 +329,12 @@ export var Configuration = class Configuration extends EventEmitter {
          });
    }
 
+   /**
+    * Get observation configuration information from the server
+    * 
+    * @return {Promise} 
+    * @fires  istsos.Configuration#OBSERVATION_CONF            
+    */
    getObservationConf() {
       var url = `${this.server.getUrl()}wa/istsos/services/${this.serviceName}/configsections/getobservation`;
 
@@ -291,16 +357,14 @@ export var Configuration = class Configuration extends EventEmitter {
          });
    }
 
+   /**
+    * Update observation configuration information on the server
+    *
+    * @param {object} options Set of key-value pairs
+    * @return {Promise} 
+    * @fires  istsos.Configuration#UPDATE_OBSERVATION_CONF            
+    */
    updateObservationConf(options = {}) {
-      // var data = {
-      //    "correct_qi": correctQi || "",
-      //    "stat_qi": statQi || "",
-      //    "defaultqi": defaultQi || "",
-      //    "aggregatenodataqi": aggregateNoDataQi || "",
-      //    "maxgoperiod": maxGoPeriod || "",
-      //    "transactional_log": transactionalLog || "",
-      //    "aggregatenodata": aggregateNoData || ""
-      // };
       var url = `${this.server.getUrl()}wa/istsos/services/${this.serviceName}/configsections/getobservation`;
       
       let config = {}
@@ -323,6 +387,12 @@ export var Configuration = class Configuration extends EventEmitter {
          });
    }
 
+   /**
+    * Get proxy information from the server
+    * 
+    * @return {Promise} 
+    * @fires  istsos.Configuration#PROXY            
+    */
    getProxy() {
       var url = `${this.server.getUrl()}wa/istsos/services/${this.serviceName}/configsections/serviceurl`;
 
@@ -345,6 +415,13 @@ export var Configuration = class Configuration extends EventEmitter {
          });
    }
 
+   /**
+    * Update proxy information on the server
+    *
+    * @param {string} newUrl New proxy URL
+    * @return {Promise} 
+    * @fires  istsos.Configuration#UPDATE_PROXY            
+    */
    updateProxy(newUrl = "") {
       var data = {
          "url": newUrl || ""
@@ -371,6 +448,12 @@ export var Configuration = class Configuration extends EventEmitter {
          });
    }
 
+   /**
+    * Get EPSG codes from the server
+    * 
+    * @return {Promise} 
+    * @fires  istsos.Configuration#EPSG_CODES            
+    */
    getEpsgCodes() {
       var url = `${this.server.getUrl()}wa/istsos/services/${this.serviceName}/epsgs`;
        
