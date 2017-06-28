@@ -2,15 +2,19 @@ import {Configuration} from 'Configuration';
 import {HttpAPI } from 'HttpAPI'; 
 import {EventEmitter } from 'EventEmitter';
 
-/** istsos.Server class */
 /**
- * @param {String} serverName
- * @param {String} url
- * @param {istsos.Database} defaultDb
- * @param {istsos.Configuration} opt_config
- * @constructor
+ * istsos.Server
+ * 
+ * @class
+ * @extends istsos.EventEmitter
  */
 export var Server = class Server extends EventEmitter {
+	/**
+    * constructor - instantiates istsos.Server
+    * 
+    * @param  {Object} options Set of key-value pairs
+    * @constructor
+    */
 	constructor(options) {
 		super()
 		this.name = options.name;
@@ -24,26 +28,62 @@ export var Server = class Server extends EventEmitter {
 		this.services = [];
 	}
 
-	fireEvent(eventType, response) {
+   /**
+    * Fire event with data - event must match one of the supported event types from istsos.EventTypes
+    * 
+    * @param  {String} eventType Type of event from istsos.EventTypes
+    * @param  {Object|*} response  Data to be passed to a handler
+    */
+   fireEvent(eventType, response) {
       super.fire(eventType, response)
    }
 
+   /**
+    * Add event listener
+    * 
+    * @param  {String}   event    Event must match one of the supported event types from istsos.EventTypes
+    * @param  {Function} callback Handler function
+    */
    on(event, callback) {
       super.on(event, callback);
    }
 
+   /**
+    * Add event listener, that will listen only once.
+    * 
+    * @param  {String}   event    Event must match one of the supported event types from istsos.EventTypes
+    * @param  {Function} callback Handler function
+    */
    once(event, callback) {
       super.once(event, callback);
    }
 
+   /**
+    * Remove event listener
+    * 
+    * @param  {String}   event    Event must match one of the supported event types from istsos.EventTypes
+    * @param  {Function} callback Handler function
+    */
    off(event, callback) {
       super.off(event, callback);
    }
 
+   /**
+    * Remove all event listeners
+    * 
+    * @param  {String}   event    Event must match one of the supported event types from istsos.EventTypes
+    * @param  {Function} callback Handler function
+    */
    unlistenAll() {
-      super.unlistenAll(event, callback);
+      super.unlistenAll();
    }
 
+   /**
+    * Set login connection parameters
+    * 
+    * @param {String} username Username
+    * @param {String} password Password
+    */
    setLoginConfig(username, password) {
       let loginStr = `${username}:${password}`
       this.loginConfig = {
@@ -51,20 +91,31 @@ export var Server = class Server extends EventEmitter {
       }
    }
 
+   /**
+    * Remove login configuration
+    */
 	removeLoginConfig() {
 		this.loginConfig = null;
 	}
 
+	/**
+	 * Get login configuration object
+	 * 
+	 * @return {Object}
+	 */
 	getLoginConfig() {
 		return this.loginConfig;
 	}
 
 	/**
-	 * @fires istsos.Server#istsos.events.EventType: SERVICE
-	 * @param {istsos.Service} service
+	 *	Get service information from the server
+	 * 
+	 * @param {String} serviceName Name of the service
+	 * @return {Promise}
+	 * @fires istsos.Server#SERVICE
 	 */
-	getService(service) {
-		var url = `${this.url}wa/istsos/services/${service.name}`;
+	getService(serviceName) {
+		var url = `${this.url}wa/istsos/services/${serviceName}`;
 
       let config = {};
       if(this.getLoginConfig()) {
@@ -85,15 +136,20 @@ export var Server = class Server extends EventEmitter {
 	}
 
 	/**
-	 * @param {istsos.Service} service
+	 * Add istsos.Service instance to the list of services
+	 * 
+	 * @param {istsos.Service} service istsos.Service instance
 	 */
 	addService(service) {
 		this.services.push(service);
 	}
 
 	/**
-	 * @fires istsos.Service#istsos.events.EventType: NEW_SERVICE
-	 * @param {istsos.Service} service
+	 * Register new service on the server
+	 * 
+	 * @param {istsos.Service} service istsos.Service instance
+	 * @return {Promise}
+	 * @fires istsos.Server#NEW_SERVICE
 	 */
 	registerService(service) {
 		var url = `${this.getUrl()}wa/istsos/services`;
@@ -118,8 +174,11 @@ export var Server = class Server extends EventEmitter {
 	}
 
 	/**
-	 * @fires istsos.Service#istsos.events.EventType: DELETE_SERVICE
-	 * @param {istsos.Service} service
+	 * Remove service from the server
+	 * 
+	 * @param {istsos.Service} service istsos.Service instance
+	 * @return {Promise}
+	 * @fires istsos.Server#DELETE_SERVICE
 	 */
 	deleteService(service) {
 		for (var i = 0; i < this.services.length; i++) {
@@ -149,7 +208,10 @@ export var Server = class Server extends EventEmitter {
 	}
 
 	/**
-	 * @fires istsos.Service#istsos.events.EventType: STATUS
+	 * Get server status
+	 * 
+	 * @return {Promise}
+	 * @fires istsos.Server#STATUS
 	 */
 	getStatus() {
 		var url = `${this.url}wa/istsos/operations/status`;
@@ -174,7 +236,10 @@ export var Server = class Server extends EventEmitter {
 	}
 
 	/**
-	 * @fires istsos.Service#istsos.events.EventType: ABOUT
+	 * Get information about the server
+	 * 
+	 * @return {Promise}
+	 * @fires istsos.Server#ABOUT
 	 */
 	getAboutInfo() {
 		var url = `${this.url}wa/istsos/operations/about`;
@@ -198,28 +263,38 @@ export var Server = class Server extends EventEmitter {
 	}
 
 	/**
-	 * @fires istsos.Configuration#istsos.events.EventType: CONFIGURATION
+	 * Get configuration information from the server
+	 * 
+	 * @return {Promise}
+	 * @fires istsos.Configuration#CONFIGURATION
 	 */
 	getConfig() {
 		return this.config.getConf();
 	}
 
 	/**
-	 * @returns {istsos.Configuration}
+	 * Get configuration property
+	 * 
+	 * @return {istsos.Configuration}
 	 */
 	getConfigProperty() {
 		return this.config;
 	}
 
 	/**
-	 * @returns {Array<istsos.Service>}
+	 *	Get list of services
+	 * 
+	 * @return{Array<istsos.Service>}
 	 */
 	getServicesProperty() {
 		return this.services
 	}
 
 	/**
-	 * @fires istsos.Service#istsos.events.EventType: SERVICES
+	 * Get services from the server
+	 * 
+	 * @return {Promise}
+	 * @fires istsos.Server#SERVICES
 	 */
 	getServices() {
 		var url = `${this.url}wa/istsos/services`;
@@ -244,21 +319,28 @@ export var Server = class Server extends EventEmitter {
 	}
 
 	/**
-	 * @fires istsos.Database#istsos.events.EventType: DATABASE
+	 * Get default database information from the server
+	 * 
+	 * @return {Promise}
+	 * @fires istsos.Database#DATABASE
 	 */
 	getDefaultDb() {
 		return this.defaultDb.getDb("default", this);
 	}
 
 	/**
-	 * @returns {istsos.Database}
+	 *	Get default database property
+	 * 
+	 * @return {istsos.Database}
 	 */
 	getDefaultDbProperty() {
 		return this.defaultDb;
 	}
 
 	/**
-	 * @returns {String}
+	 *	Get URL of the server
+	 * 
+	 * @return {String}
 	 */
 	getUrl() {
 		return this.url;
