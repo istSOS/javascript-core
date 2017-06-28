@@ -1,5 +1,7 @@
 /**
- * @class istsos.ServerContainer
+ * istsos.ServerContainer
+ * 
+ * @class
  */
 export var ServerContainer = class {
 
@@ -15,7 +17,7 @@ export var ServerContainer = class {
    /**
     * getServer - Get the istsos.Server instance from the list by providing the name of the server
     *
-    * @param  {string} name     Name of the server
+    * @param  {String} name     Name of the server
     * @return {istsos.Server}   istsos.Server instance
     */
    getServer(name) {
@@ -45,7 +47,7 @@ export var ServerContainer = class {
     * @param  {istsos.Server} server istsos.Server instance
     */
    addServer(server) {
-     if (!server || typeof server != "object") {
+     if (!server || typeof server.constructor != istsos.Server) {
         throw "Parameter must be an instance of istsos.Server class!"
      }
       this.servers.push(server);
@@ -54,7 +56,7 @@ export var ServerContainer = class {
    /**
     * removeServer - Remove istsos.Server instance from the list by providing name of the server or istsos.Server instance
     *
-    * @param  {istsos.Server|string} server istsos.Server instance or name of the server
+    * @param  {istsos.Server|String} server istsos.Server instance or name of the server
     */
    removeServer(server) {
       if (typeof server == "string") {
@@ -64,7 +66,7 @@ export var ServerContainer = class {
             break;
           }
         }
-      } else if (typeof server == "object"){
+      } else if (server.constructor == istsos.Server){
         this.servers.splice(this.servers.indexOf(server), 1);
       } else {
         throw "Parameter must be a string representing the name of the server or an instance of istsos.Server class!"
