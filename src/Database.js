@@ -81,7 +81,8 @@ export var Database = class Database extends EventEmitter {
     * @return {Promise} 
     * @fires  istsos.Database#DATABASE            
     */
-   getDb(serviceName = 'default', server) {
+   getDb(serviceName, server) {
+      var serviceName = (serviceName) ? serviceName : "default";
       var url = `${server.getUrl()}wa/istsos/services/${serviceName}/configsections/connection`;
       
       let config = {};

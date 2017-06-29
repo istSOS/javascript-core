@@ -1909,12 +1909,10 @@ var Database = exports.Database = function (_EventEmitter) {
 
    }, {
       key: 'getDb',
-      value: function getDb() {
+      value: function getDb(serviceName, server) {
          var _this2 = this;
 
-         var serviceName = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : 'default';
-         var server = arguments[1];
-
+         var serviceName = serviceName ? serviceName : "default";
          var url = server.getUrl() + 'wa/istsos/services/' + serviceName + '/configsections/connection';
 
          var config = {};
@@ -3166,8 +3164,6 @@ Object.defineProperty(exports, "__esModule", {
    value: true
 });
 
-var _typeof = typeof Symbol === "function" && typeof Symbol.iterator === "symbol" ? function (obj) { return typeof obj; } : function (obj) { return obj && typeof Symbol === "function" && obj.constructor === Symbol && obj !== Symbol.prototype ? "symbol" : typeof obj; };
-
 var _createClass = function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; }();
 
 function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
@@ -3254,7 +3250,7 @@ var ServerContainer = exports.ServerContainer = function () {
    }, {
       key: "addServer",
       value: function addServer(server) {
-         if (!server || _typeof(server.constructor) != istsos.Server) {
+         if (!server || server.constructor != istsos.Server) {
             throw "Parameter must be an instance of istsos.Server class!";
          }
          this.servers.push(server);
