@@ -1,4 +1,4 @@
-var istsos =
+module.exports =
 /******/ (function(modules) { // webpackBootstrap
 /******/ 	// The module cache
 /******/ 	var installedModules = {};
@@ -551,9 +551,6 @@ var Configuration = exports.Configuration = function (_EventEmitter) {
 
       /**
        * Remove all event listeners
-       * 
-       * @param  {String}   event    Event must match one of the supported event types from istsos.EventTypes
-       * @param  {Function} callback Handler function
        */
 
    }, {
@@ -2813,9 +2810,6 @@ var Server = exports.Server = function (_EventEmitter) {
 
       /**
        * Remove all event listeners
-       * 
-       * @param  {String}   event    Event must match one of the supported event types from istsos.EventTypes
-       * @param  {Function} callback Handler function
        */
 
    }, {

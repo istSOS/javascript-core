@@ -1,10 +1,10 @@
 {
-  "name": "istsos-js",
+  "name": "istsos-javascript-core",
   "version": "1.0.0",
   "description": "IstSOS JavaScript Core Library for communication with IstSOS WA REST API",
-  "main": "index.js",
+  "main": "./dist/istsos.min.js",
   "scripts": {
-    "start": "",
+    "dev": "rimraf dist/istsos.js && webpack -w --config ./webpack.config.js ",
     "build": "rimraf dist && webpack --config ./webpack.config.js && webpack -p --config ./webpack.production.config.js",
     "test": ""
   },

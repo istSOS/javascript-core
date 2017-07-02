@@ -9,7 +9,7 @@ module.exports = {
       path: path.resolve(__dirname, './dist'),
       filename: 'istsos.js',
       library: 'istsos',
-      libraryTarget: 'var'
+      libraryTarget: 'commonjs2'
    },
    resolve: {
       alias: {
