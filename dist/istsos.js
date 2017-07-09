@@ -103,7 +103,12 @@ var HttpAPI = exports.HttpAPI = {
          }
          xhr.onload = function () {
             if (xhr.status >= 200 && xhr.status < 300) {
-               resolve(JSON.parse(xhr.response));
+
+               if (JSON.parse(xhr.response).success) {
+                  resolve(JSON.parse(xhr.response));
+               } else {
+                  reject(JSON.parse(xhr.response).message);
+               }
             } else {
                reject(xhr.statusText);
             }
@@ -1403,7 +1408,7 @@ var Offering = exports.Offering = function (_EventEmitter) {
       _this.expirationDate = options.expirationDate && options.expirationDate.constructor === istsos.Date ? options.expirationDate.getDateString() : "";
       _this.service = options.service;
       _this.memberProcedures = [];
-      service.addOffering(_this);
+      options.service.addOffering(_this);
       return _this;
    }
 
@@ -2994,14 +2999,13 @@ var Server = exports.Server = function (_EventEmitter) {
          var _this5 = this;
 
          var url = this.url + 'wa/istsos/operations/status';
-         this.executeRequest(url, 'STATUS', "GET");
 
          var config = {};
          if (this.getLoginConfig()) {
             config['headers'] = this.getLoginConfig();
          }
 
-         return _HttpAPI.HttpAPI.delete(url, config).then(function (result) {
+         return _HttpAPI.HttpAPI.get(url, config).then(function (result) {
             if (result.success) {
                _this5.fireEvent('STATUS', result);
                return result;
@@ -3032,7 +3036,7 @@ var Server = exports.Server = function (_EventEmitter) {
             config['headers'] = this.getLoginConfig();
          }
 
-         return _HttpAPI.HttpAPI.delete(url, config).then(function (result) {
+         return _HttpAPI.HttpAPI.get(url, config).then(function (result) {
             if (result.success) {
                _this6.fireEvent('ABOUT', result);
                return result;
@@ -3094,14 +3098,13 @@ var Server = exports.Server = function (_EventEmitter) {
          var _this7 = this;
 
          var url = this.url + 'wa/istsos/services';
-         this.executeRequest(url, 'SERVICES', "GET");
 
          var config = {};
          if (this.getLoginConfig()) {
             config['headers'] = this.getLoginConfig();
          }
 
-         return _HttpAPI.HttpAPI.delete(url, config).then(function (result) {
+         return _HttpAPI.HttpAPI.get(url, config).then(function (result) {
             if (result.success) {
                _this7.fireEvent('SERVICES', result);
                return result;
@@ -3356,7 +3359,7 @@ var Service = exports.Service = function (_EventEmitter) {
       var _this = _possibleConstructorReturn(this, (Service.__proto__ || Object.getPrototypeOf(Service)).call(this));
 
       _this.name = options.name;
-      _this.db = options.opt_db || server.getDefaultDbProperty();
+      _this.db = options.opt_db || options.server.getDefaultDbProperty();
       _this.epsg = options.opt_epsg || null;
       _this.config = options.opt_config || new istsos.Configuration({
          serviceName: options.name,
@@ -3369,7 +3372,7 @@ var Service = exports.Service = function (_EventEmitter) {
       _this.observedProperties = [];
       _this.uoms = [];
       _this.dataQualities = [];
-      server.addService(_this);
+      options.server.addService(_this);
 
       var offering_config = {
          offeringName: "temporary",

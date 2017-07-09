@@ -213,14 +213,13 @@ export var Server = class Server extends EventEmitter {
 	 */
 	getStatus() {
 		var url = `${this.url}wa/istsos/operations/status`;
-		this.executeRequest(url, 'STATUS', "GET");
 
 		let config = {};
       if(this.getLoginConfig()) {
          config['headers'] = this.getLoginConfig();
       }
 
-      return HttpAPI.delete(url, config)
+      return HttpAPI.get(url, config)
          .then((result) => {
             if (result.success) {
                this.fireEvent('STATUS', result);
@@ -247,7 +246,7 @@ export var Server = class Server extends EventEmitter {
          config['headers'] = this.getLoginConfig();
       }
 
-      return HttpAPI.delete(url, config)
+      return HttpAPI.get(url, config)
          .then((result) => {
             if (result.success) {
                this.fireEvent('ABOUT', result);
@@ -296,14 +295,13 @@ export var Server = class Server extends EventEmitter {
 	 */
 	getServices() {
 		var url = `${this.url}wa/istsos/services`;
-		this.executeRequest(url, 'SERVICES', "GET");
 
 		let config = {};
       if(this.getLoginConfig()) {
          config['headers'] = this.getLoginConfig();
       }
 
-      return HttpAPI.delete(url, config)
+      return HttpAPI.get(url, config)
          .then((result) => {
             if (result.success) {
                this.fireEvent('SERVICES', result);

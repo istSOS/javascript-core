@@ -32,7 +32,7 @@ module.exports = {
          HttpAPI: path.resolve(__dirname, 'src/HttpAPI.js'),
          IstsosHelper: path.resolve(__dirname, 'src/IstsosHelper.js')
       }
-   },
+   }
    module: {
       rules: [{
          test: /\.js$/,
