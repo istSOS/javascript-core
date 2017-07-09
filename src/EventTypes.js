@@ -73,6 +73,6 @@ export var EventTypes = {
    GEOJSON: 'geojsonReceived',
    GETOBSERVATIONS: 'getobservationsReceived',
    GETOBSERVATIONS_AGG: 'getobservationsAggregationReceived',
-   GETOBSERVATIONS_BY_PROPERTY: 'getobservationsDataReceived',
+   GETOBSERVATIONS_SIMPLIFIED: 'getobservationsDataReceived',
    GETOBSERVATIONS_BY_QUALITY: 'getObservationsByQualityIndexReceived'
 };
