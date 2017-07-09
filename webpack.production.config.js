@@ -10,7 +10,7 @@ module.exports = {
       path: path.resolve(__dirname, './dist'),
       filename: 'istsos.min.js',
       library: 'istsos',
-      libraryTarget: 'commonjs2'
+      libraryTarget: 'umd'
    },
    resolve: {
       alias: {
@@ -47,7 +47,6 @@ module.exports = {
             }],
          }
       ],
-
    },
    plugins: [
       new ClosureCompilerPlugin({
