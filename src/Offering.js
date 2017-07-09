@@ -1,55 +1,79 @@
 import {HttpAPI } from 'HttpAPI'; 
 import {EventEmitter } from 'EventEmitter';
-/** istsos.Offering class */
 /**
- * @param {String} offeringName
- * @param {String} offeringDescription
- * @param {boolean} active
- * @param {istsos.Date} expirationDate
- * @param {istsos.Service} service
- * @constructor
+ * istsos.Offering
+ * 
+ * @class
+ * @extends istsos.EventEmitter
  */
-
 export var Offering = class Offering extends EventEmitter {
+   /**
+    * constructor - instantiates istsos.Offering
+    * 
+    * @param  {Object} options Set of key-value pairs
+    * @constructor
+    */
    constructor(options) {
-   	super();
+      super();
       this.offeringName = options.offeringName;
       this.offeringDescription = options.offeringDescription || "";
       this.active = options.active || false;
       this.expirationDate = (options.expirationDate && options.expirationDate.constructor === istsos.Date) ? options.expirationDate.getDateString() : "";
       this.service = options.service;
       this.memberProcedures = [];
-      service.addOffering(this);
+      options.service.addOffering(this);
    }
 
    /**
-    * @param {String} url
-    * @param {istsos.events.EventType} eventType
-    * @param {String} method
-    * @param {JSON} opt_data
+    * Fire event with data - event must match one of the supported event types from istsos.EventTypes
+    * 
+    * @param  {String} eventType Type of event from istsos.EventTypes
+    * @param  {Object|*} response  Data to be passed to a handler
     */
-
    fireEvent(eventType, response) {
       super.fire(eventType, response)
    }
 
+   /**
+    * Add event listener
+    * 
+    * @param  {String}   event    Event must match one of the supported event types from istsos.EventTypes
+    * @param  {Function} callback Handler function
+    */
    on(event, callback) {
       super.on(event, callback);
    }
 
+   /**
+    * Add event listener, that will listen only once.
+    * 
+    * @param  {String}   event    Event must match one of the supported event types from istsos.EventTypes
+    * @param  {Function} callback Handler function
+    */
    once(event, callback) {
       super.once(event, callback);
    }
 
+   /**
+    * Remove event listener
+    * 
+    * @param  {String}   event    Event must match one of the supported event types from istsos.EventTypes
+    * @param  {Function} callback Handler function
+    */
    off(event, callback) {
       super.off(event, callback);
    }
 
+   /**
+    * Remove all event listeners
+    */
    unlistenAll() {
-      super.unlistenAll(event, callback);
+      super.unlistenAll();
    }
 
    /**
+    * Add instance of istsos.Procedure or istsos.VirtualProcedure to the list of members
+    * 
     * @param {istsos.Procedure|istsos.VirtualProcedure} procedure
     */
    addProcedure(procedure) {
@@ -57,11 +81,11 @@ export var Offering = class Offering extends EventEmitter {
    }
 
    /**
-    * @fires istsos.Offering#istsos.events.EventType: UPDATE_OFFFERING
-    * @param {String} newName
-    * @param {String} newDescription
-    * @param {boolean} newActive
-    * @param {istsos.Date} newExpirationDate
+    * Update provider information on the server
+    *
+    * @param {object} options Set of key-value pairs
+    * @return {Promise} 
+    * @fires  istsos.Offering#UPDATE_OFFERING            
     */
    updateOffering(options) {
       const oldOfferingName = this.offeringName;
@@ -71,9 +95,9 @@ export var Offering = class Offering extends EventEmitter {
       this.expirationDate = options.newExpirationDate || this.expirationDate;
 
       var url = `${this.service.server.getUrl()}wa/istsos/services/${this.service.getServiceJSON()["service"]}/offerings/${oldOfferingName}`
-   	
+
       let config = {};
-      if(this.service.server.getLoginConfig()) {
+      if (this.service.server.getLoginConfig()) {
          config['headers'] = this.service.server.getLoginConfig();
       }
       config['data'] = JSON.stringify(this.getUomJSON());
@@ -92,6 +116,9 @@ export var Offering = class Offering extends EventEmitter {
    }
 
    /**
+    * Delete offering from the server
+    *
+    * @return {Promise} 
     * @fires istsos.Offering#istsos.events.EventType: DELETE_OFFERING
     */
    deleteOffering() {
@@ -108,7 +135,7 @@ export var Offering = class Offering extends EventEmitter {
       };
 
       let config = {};
-      if(this.service.server.getLoginConfig()) {
+      if (this.service.server.getLoginConfig()) {
          config['headers'] = this.service.server.getLoginConfig();
       }
       config['data'] = JSON.stringify(data);
@@ -127,20 +154,24 @@ export var Offering = class Offering extends EventEmitter {
    }
 
    /**
-    * @returns {Array<istsos.Procedure|istsos.VirtualProcedure>}
+    * Get list of member procedures or/and virtual procedures
+    * 
+    * @return {Array<istsos.Procedure|istsos.VirtualProcedure>}
     */
    getMemberProceduresProperty() {
       return this.memberProcedures;
    }
 
    /**
+    * Get member procedures or/and virtual procedures from the server.
+    * 
     * @fires istsos.Offering#istsos.events.EventType: MEMBERLIST
     */
    getMemberProcedures() {
       var url = `${this.service.server.getUrl()}wa/istsos/services/${this.service.getServiceJSON()["service"]}/offerings/${this.getOfferingJSON()["name"]}/procedures/operations/memberslist`;
-      
+
       let config = {};
-      if(this.service.server.getLoginConfig()) {
+      if (this.service.server.getLoginConfig()) {
          config['headers'] = this.service.server.getLoginConfig();
       }
 
@@ -158,13 +189,15 @@ export var Offering = class Offering extends EventEmitter {
    }
 
    /**
+    * Get non-member procedures or/and virtual procedures from the server.
+    * 
     * @fires istsos.Offering#istsos.events.EventType: NONMEMBERLIST
     */
    getNonMemberProcedures() {
       var url = `${this.service.server.getUrl()}wa/istsos/services/${this.service.getServiceJSON()["service"]}/offerings/${this.getOfferingJSON()["name"]}/procedures/operations/nonmemberslist`;
-               
+
       let config = {};
-      if(this.service.server.getLoginConfig()) {
+      if (this.service.server.getLoginConfig()) {
          config['headers'] = this.service.server.getLoginConfig();
       }
 
@@ -182,7 +215,9 @@ export var Offering = class Offering extends EventEmitter {
    }
 
    /**
-    * @returns {JSON}
+    * Get JSON configuration prepared for sending as a HTTP request payload
+    * 
+    * @returns {Object}
     */
    getOfferingJSON() {
       var offeringJSON = {
