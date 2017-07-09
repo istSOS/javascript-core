@@ -1354,7 +1354,7 @@ var EventTypes = exports.EventTypes = {
    GEOJSON: 'geojsonReceived',
    GETOBSERVATIONS: 'getobservationsReceived',
    GETOBSERVATIONS_AGG: 'getobservationsAggregationReceived',
-   GETOBSERVATIONS_BY_PROPERTY: 'getobservationsDataReceived',
+   GETOBSERVATIONS_SIMPLIFIED: 'getobservationsDataReceived',
    GETOBSERVATIONS_BY_QUALITY: 'getObservationsByQualityIndexReceived'
 };
 
@@ -1384,19 +1384,21 @@ function _possibleConstructorReturn(self, call) { if (!self) { throw new Referen
 
 function _inherits(subClass, superClass) { if (typeof superClass !== "function" && superClass !== null) { throw new TypeError("Super expression must either be null or a function, not " + typeof superClass); } subClass.prototype = Object.create(superClass && superClass.prototype, { constructor: { value: subClass, enumerable: false, writable: true, configurable: true } }); if (superClass) Object.setPrototypeOf ? Object.setPrototypeOf(subClass, superClass) : subClass.__proto__ = superClass; }
 
-/** istsos.Offering class */
 /**
- * @param {String} offeringName
- * @param {String} offeringDescription
- * @param {boolean} active
- * @param {istsos.Date} expirationDate
- * @param {istsos.Service} service
- * @constructor
+ * istsos.Offering
+ * 
+ * @class
+ * @extends istsos.EventEmitter
  */
-
 var Offering = exports.Offering = function (_EventEmitter) {
    _inherits(Offering, _EventEmitter);
 
+   /**
+    * constructor - instantiates istsos.Offering
+    * 
+    * @param  {Object} options Set of key-value pairs
+    * @constructor
+    */
    function Offering(options) {
       _classCallCheck(this, Offering);
 
@@ -1413,39 +1415,71 @@ var Offering = exports.Offering = function (_EventEmitter) {
    }
 
    /**
-    * @param {String} url
-    * @param {istsos.events.EventType} eventType
-    * @param {String} method
-    * @param {JSON} opt_data
+    * Fire event with data - event must match one of the supported event types from istsos.EventTypes
+    * 
+    * @param  {String} eventType Type of event from istsos.EventTypes
+    * @param  {Object|*} response  Data to be passed to a handler
     */
+
 
    _createClass(Offering, [{
       key: 'fireEvent',
       value: function fireEvent(eventType, response) {
          _get(Offering.prototype.__proto__ || Object.getPrototypeOf(Offering.prototype), 'fire', this).call(this, eventType, response);
       }
+
+      /**
+       * Add event listener
+       * 
+       * @param  {String}   event    Event must match one of the supported event types from istsos.EventTypes
+       * @param  {Function} callback Handler function
+       */
+
    }, {
       key: 'on',
       value: function on(event, callback) {
          _get(Offering.prototype.__proto__ || Object.getPrototypeOf(Offering.prototype), 'on', this).call(this, event, callback);
       }
+
+      /**
+       * Add event listener, that will listen only once.
+       * 
+       * @param  {String}   event    Event must match one of the supported event types from istsos.EventTypes
+       * @param  {Function} callback Handler function
+       */
+
    }, {
       key: 'once',
       value: function once(event, callback) {
          _get(Offering.prototype.__proto__ || Object.getPrototypeOf(Offering.prototype), 'once', this).call(this, event, callback);
       }
+
+      /**
+       * Remove event listener
+       * 
+       * @param  {String}   event    Event must match one of the supported event types from istsos.EventTypes
+       * @param  {Function} callback Handler function
+       */
+
    }, {
       key: 'off',
       value: function off(event, callback) {
          _get(Offering.prototype.__proto__ || Object.getPrototypeOf(Offering.prototype), 'off', this).call(this, event, callback);
       }
+
+      /**
+       * Remove all event listeners
+       */
+
    }, {
       key: 'unlistenAll',
       value: function unlistenAll() {
-         _get(Offering.prototype.__proto__ || Object.getPrototypeOf(Offering.prototype), 'unlistenAll', this).call(this, event, callback);
+         _get(Offering.prototype.__proto__ || Object.getPrototypeOf(Offering.prototype), 'unlistenAll', this).call(this);
       }
 
       /**
+       * Add instance of istsos.Procedure or istsos.VirtualProcedure to the list of members
+       * 
        * @param {istsos.Procedure|istsos.VirtualProcedure} procedure
        */
 
@@ -1456,11 +1490,11 @@ var Offering = exports.Offering = function (_EventEmitter) {
       }
 
       /**
-       * @fires istsos.Offering#istsos.events.EventType: UPDATE_OFFFERING
-       * @param {String} newName
-       * @param {String} newDescription
-       * @param {boolean} newActive
-       * @param {istsos.Date} newExpirationDate
+       * Update provider information on the server
+       *
+       * @param {object} options Set of key-value pairs
+       * @return {Promise} 
+       * @fires  istsos.Offering#UPDATE_OFFERING            
        */
 
    }, {
@@ -1495,6 +1529,9 @@ var Offering = exports.Offering = function (_EventEmitter) {
       }
 
       /**
+       * Delete offering from the server
+       *
+       * @return {Promise} 
        * @fires istsos.Offering#istsos.events.EventType: DELETE_OFFERING
        */
 
@@ -1534,7 +1571,9 @@ var Offering = exports.Offering = function (_EventEmitter) {
       }
 
       /**
-       * @returns {Array<istsos.Procedure|istsos.VirtualProcedure>}
+       * Get list of member procedures or/and virtual procedures
+       * 
+       * @return {Array<istsos.Procedure|istsos.VirtualProcedure>}
        */
 
    }, {
@@ -1544,6 +1583,8 @@ var Offering = exports.Offering = function (_EventEmitter) {
       }
 
       /**
+       * Get member procedures or/and virtual procedures from the server.
+       * 
        * @fires istsos.Offering#istsos.events.EventType: MEMBERLIST
        */
 
@@ -1572,6 +1613,8 @@ var Offering = exports.Offering = function (_EventEmitter) {
       }
 
       /**
+       * Get non-member procedures or/and virtual procedures from the server.
+       * 
        * @fires istsos.Offering#istsos.events.EventType: NONMEMBERLIST
        */
 
@@ -1600,7 +1643,9 @@ var Offering = exports.Offering = function (_EventEmitter) {
       }
 
       /**
-       * @returns {JSON}
+       * Get JSON configuration prepared for sending as a HTTP request payload
+       * 
+       * @returns {Object}
        */
 
    }, {
@@ -3317,7 +3362,7 @@ var ServerContainer = exports.ServerContainer = function () {
 
 
 Object.defineProperty(exports, "__esModule", {
-   value: true
+	value: true
 });
 exports.Service = undefined;
 
@@ -3341,989 +3386,1098 @@ function _possibleConstructorReturn(self, call) { if (!self) { throw new Referen
 
 function _inherits(subClass, superClass) { if (typeof superClass !== "function" && superClass !== null) { throw new TypeError("Super expression must either be null or a function, not " + typeof superClass); } subClass.prototype = Object.create(superClass && superClass.prototype, { constructor: { value: subClass, enumerable: false, writable: true, configurable: true } }); if (superClass) Object.setPrototypeOf ? Object.setPrototypeOf(subClass, superClass) : subClass.__proto__ = superClass; }
 
-/** istsos.Service class */
 /**
- * @param {istsos.Server} server
- * @param {String} name
- * @param {istsos.Database} opt_db
- * @param {istsos.Configuration} opt_config
- * @param {int} opt_epsg
- * @constructor
+ * istsos.Service
+ * 
+ * @class
+ * @extends istsos.EventEmitter
  */
 var Service = exports.Service = function (_EventEmitter) {
-   _inherits(Service, _EventEmitter);
-
-   function Service(options) {
-      _classCallCheck(this, Service);
-
-      var _this = _possibleConstructorReturn(this, (Service.__proto__ || Object.getPrototypeOf(Service)).call(this));
-
-      _this.name = options.name;
-      _this.db = options.opt_db || options.server.getDefaultDbProperty();
-      _this.epsg = options.opt_epsg || null;
-      _this.config = options.opt_config || new istsos.Configuration({
-         serviceName: options.name,
-         server: options.server
-      });
-      _this.server = options.server;
-      _this.offerings = [];
-      _this.procedures = [];
-      _this.virtualProcedures = [];
-      _this.observedProperties = [];
-      _this.uoms = [];
-      _this.dataQualities = [];
-      options.server.addService(_this);
-
-      var offering_config = {
-         offeringName: "temporary",
-         offeringDescription: "temporary offering to hold self-registered procedures/sensors waiting for service adimistration acceptance",
-         active: true,
-         expirationDate: "",
-         service: _this
-      };
-
-      var temporary_offering = new istsos.Offering(offering_config);
-      return _this;
-   }
-
-   /**
-    * @param {String} url
-    * @param {istsos.events.EventType} eventType
-    * @param {String} method
-    * @param {JSON} opt_data
-    */
-
-   _createClass(Service, [{
-      key: 'fireEvent',
-      value: function fireEvent(eventType, response) {
-         _get(Service.prototype.__proto__ || Object.getPrototypeOf(Service.prototype), 'fire', this).call(this, eventType, response);
-      }
-   }, {
-      key: 'on',
-      value: function on(event, callback) {
-         _get(Service.prototype.__proto__ || Object.getPrototypeOf(Service.prototype), 'on', this).call(this, event, callback);
-      }
-   }, {
-      key: 'once',
-      value: function once(event, callback) {
-         _get(Service.prototype.__proto__ || Object.getPrototypeOf(Service.prototype), 'once', this).call(this, event, callback);
-      }
-   }, {
-      key: 'off',
-      value: function off(event, callback) {
-         _get(Service.prototype.__proto__ || Object.getPrototypeOf(Service.prototype), 'off', this).call(this, event, callback);
-      }
-   }, {
-      key: 'unlistenAll',
-      value: function unlistenAll() {
-         _get(Service.prototype.__proto__ || Object.getPrototypeOf(Service.prototype), 'unlistenAll', this).call(this, event, callback);
-      }
-
-      /**
-       * @returns {JSON}
-       */
-
-   }, {
-      key: 'getServiceJSON',
-      value: function getServiceJSON() {
-         var serviceJSON = {
-            "service": this.name
-         };
-         if (this.epsg) {
-            serviceJSON["epsg"] = this.epsg.toString();
-         }
-         if (this.db !== this.server.getDefaultDbProperty()) {
-            serviceJSON["dbname"] = this.db["dbname"];
-            serviceJSON["host"] = this.db["host"];
-            serviceJSON["user"] = this.db["user"];
-            serviceJSON["password"] = this.db["password"];
-            serviceJSON["port"] = this.db["port"].toString();
-         }
-         return serviceJSON;
-      }
-
-      /**
-       * @returns {Array<istsos.Offering>}
-       */
-
-   }, {
-      key: 'getOfferingsProperty',
-      value: function getOfferingsProperty() {
-         return this.offerings;
-      }
-
-      /**
-       * @returns {Array<istsos.Procedure>}
-       */
-
-   }, {
-      key: 'getProceduresProperty',
-      value: function getProceduresProperty() {
-         return this.procedures;
-      }
-
-      /**
-       * @returns {Array<istsos.VirtualProcedure>}
-       */
-
-   }, {
-      key: 'getVirtualProceduresProperty',
-      value: function getVirtualProceduresProperty() {
-         return this.virtualProcedures;
-      }
-
-      /**
-       * @returns {Array<istsos.ObservedProperty>}
-       */
-
-   }, {
-      key: 'getObservedPropertiesProperty',
-      value: function getObservedPropertiesProperty() {
-         return this.observedProperties;
-      }
-
-      /**
-       * @returns {Array<istsos.UnitOfMeasure>}
-       */
-
-   }, {
-      key: 'getUomsProperty',
-      value: function getUomsProperty() {
-         return this.uoms;
-      }
-
-      /**
-       * @returns {Array<istsos.DataQuality>}
-       */
-
-   }, {
-      key: 'getDataQualitiesProperty',
-      value: function getDataQualitiesProperty() {
-         return this.dataQualities;
-      }
-
-      /**
-       * @param {istsos.Offering} offering
-       */
-
-   }, {
-      key: 'addOffering',
-      value: function addOffering(offering) {
-         this.getOfferingsProperty().push(offering);
-      }
-
-      /**
-       * @fires istsos.Service#istsos.events.EventType: NEW_OFFERING
-       * @param {istsos.Offering} offering
-       */
-
-   }, {
-      key: 'registerOffering',
-      value: function registerOffering(offering) {
-         var _this2 = this;
-
-         var url = this.server.getUrl() + 'wa/istsos/services/' + this.getServiceJSON()["service"] + '/offerings';
-
-         var config = {};
-         if (this.server.getLoginConfig()) {
-            config['headers'] = this.server.getLoginConfig();
-         }
-         config['data'] = JSON.stringify(offering.getOfferingJSON());
-
-         return _HttpAPI.HttpAPI.post(url, config).then(function (result) {
-            if (result.success) {
-               _this2.fireEvent('NEW_OFFERING', result);
-               return result;
-            } else {
-               throw result.message;
-            }
-         }, function (error_message) {
-            throw error_message;
-         });
-      }
-
-      /**
-       * @fires istsos.Service#istsos.events.EventType: OFFERING_NAMES
-       */
-
-   }, {
-      key: 'getOfferingNames',
-      value: function getOfferingNames() {
-         var _this3 = this;
-
-         var url = this.server.getUrl() + 'wa/istsos/services/' + this.getServiceJSON()["service"] + '/offerings/operations/getlist';
-
-         var config = {};
-         if (this.server.getLoginConfig()) {
-            config['headers'] = this.server.getLoginConfig();
-         }
-
-         return _HttpAPI.HttpAPI.get(url, config).then(function (result) {
-            if (result.success) {
-               _this3.fireEvent('OFFERING_NAMES', result);
-               return result;
-            } else {
-               throw result.message;
-            }
-         }, function (error_message) {
-            throw error_message;
-         });
-      }
-
-      /**
-       * @fires istsos.Service#istsos.events.EventType: OFFERING_LIST
-       */
-
-   }, {
-      key: 'getOfferings',
-      value: function getOfferings() {
-         var _this4 = this;
-
-         var url = this.server.getUrl() + 'wa/istsos/services/' + this.getServiceJSON()["service"] + '/offerings';
-
-         var config = {};
-         if (this.server.getLoginConfig()) {
-            config['headers'] = this.server.getLoginConfig();
-         }
-
-         return _HttpAPI.HttpAPI.get(url, config).then(function (result) {
-            if (result.success) {
-               _this4.fireEvent('OFFERING_LIST', result);
-               return result;
-            } else {
-               throw result.message;
-            }
-         }, function (error_message) {
-            throw error_message;
-         });
-      }
-
-      /**
-       * @param {istsos.Procedure} procedure
-       */
-
-   }, {
-      key: 'addProcedure',
-      value: function addProcedure(procedure) {
-         this.getProceduresProperty().push(procedure);
-      }
-
-      /**
-       * @fires istsos.Service#istsos.events.EventType: NEW_PROCEDURE
-       * @param {istsos.Procedure} procedure
-       */
-
-   }, {
-      key: 'registerProcedure',
-      value: function registerProcedure(procedure) {
-         var _this5 = this;
-
-         var url = this.server.getUrl() + 'wa/istsos/services/' + this.getServiceJSON()["service"] + '/procedures';
-
-         var config = {};
-         if (this.server.getLoginConfig()) {
-            config['headers'] = this.server.getLoginConfig();
-         }
-         config['data'] = JSON.stringify(procedure.getProcedureJSON());
-
-         return _HttpAPI.HttpAPI.post(url, config).then(function (result) {
-            if (result.success) {
-               _this5.fireEvent('NEW_PROCEDURE', result);
-               return result;
-            } else {
-               throw result.message;
-            }
-         }, function (error_message) {
-            throw error_message;
-         });
-      }
-
-      /**
-       * @fires istsos.Service#istsos.events.EventType: PROCEDURE
-       * @param {istsos.Procedure} procedure
-       */
-
-   }, {
-      key: 'getProcedure',
-      value: function getProcedure(procedure) {
-         var _this6 = this;
-
-         var url = this.server.getUrl() + 'wa/istsos/services/' + this.getServiceJSON()["service"] + '/procedures/' + procedure.getProcedureJSON()["system"];
-
-         var config = {};
-         if (this.server.getLoginConfig()) {
-            config['headers'] = this.server.getLoginConfig();
-         }
-
-         return _HttpAPI.HttpAPI.get(url, config).then(function (result) {
-            if (result.success) {
-               _this6.fireEvent('PROCEDURE', result);
-               return result;
-            } else {
-               throw result.message;
-            }
-         }, function (error_message) {
-            throw error_message;
-         });
-      }
-
-      /**
-       * @fires istsos.Service#istsos.events.EventType: PROCEDURES
-       */
-
-   }, {
-      key: 'getProcedures',
-      value: function getProcedures() {
-         var _this7 = this;
-
-         var url = this.server.getUrl() + 'wa/istsos/services/' + this.getServiceJSON()["service"] + '/procedures/operations/getlist';
-
-         var config = {};
-         if (this.server.getLoginConfig()) {
-            config['headers'] = this.server.getLoginConfig();
-         }
-
-         return _HttpAPI.HttpAPI.get(url, config).then(function (result) {
-            if (result.success) {
-               _this7.fireEvent('PROCEDURES', result);
-               return result;
-            } else {
-               throw result.message;
-            }
-         }, function (error_message) {
-            throw error_message;
-         });
-      }
-
-      /**
-       * @param {istsos.VirtualProcedure} v_procedure
-       */
-
-   }, {
-      key: 'addVirtualProcedure',
-      value: function addVirtualProcedure(v_procedure) {
-         this.getVirtualProceduresProperty().push(v_procedure);
-      }
-
-      /**
-       * @fires istsos.Service#istsos.events.EventType: NEW_VIRTUAL_PROCEDURE
-       * @param {istsos.VirtualProcedure} v_procedure
-       */
-
-   }, {
-      key: 'registerVirtualProcedure',
-      value: function registerVirtualProcedure(v_procedure) {
-         var _this8 = this;
-
-         var url = this.server.getUrl() + 'wa/istsos/services/' + this.getServiceJSON()["service"] + '/procedures';
-
-         var config = {};
-         if (this.server.getLoginConfig()) {
-            config['headers'] = this.server.getLoginConfig();
-         }
-         config['data'] = JSON.stringify(v_procedure.getVirtualProcedureJSON());
-
-         return _HttpAPI.HttpAPI.post(url, config).then(function (result) {
-            if (result.success) {
-               _this8.fireEvent('NEW_VIRTUAL_PROCEDURE', result);
-               return result;
-            } else {
-               throw result.message;
-            }
-         }, function (error_message) {
-            throw error_message;
-         });
-      }
-
-      /**
-       * @fires istsos.Service#istsos.events.EventType: VIRTUAL_PROCEDURE
-       * @param {istsos.VirtualProcedure} v_procedure
-       */
-
-   }, {
-      key: 'getVirtualProcedure',
-      value: function getVirtualProcedure(v_procedure) {
-         var _this9 = this;
-
-         var url = this.server.getUrl() + 'wa/istsos/services/' + this.getServiceJSON()["service"] + '/virtualprocedures';
-
-         var config = {};
-         if (this.server.getLoginConfig()) {
-            config['headers'] = this.server.getLoginConfig();
-         }
-
-         return _HttpAPI.HttpAPI.get(url, config).then(function (result) {
-            if (result.success) {
-               _this9.fireEvent('VIRTUAL_PROCEURE', result);
-               return result;
-            } else {
-               throw result.message;
-            }
-         }, function (error_message) {
-            throw error_message;
-         });
-      }
-
-      /**
-       * @fires istsos.Service#istsos.events.EventType: VIRTUAL_PROCEDURES
-       */
-
-   }, {
-      key: 'getVirtualProcedures',
-      value: function getVirtualProcedures() {
-         var _this10 = this;
-
-         var url = this.server.getUrl() + 'wa/istsos/services/' + this.getServiceJSON()["service"] + '/virtualprocedures/operations/getlist';
-
-         var config = {};
-         if (this.server.getLoginConfig()) {
-            config['headers'] = this.server.getLoginConfig();
-         }
-
-         return _HttpAPI.HttpAPI.get(url, config).then(function (result) {
-            if (result.success) {
-               _this10.fireEvent('VIRTUAL_PROCEDURES', result);
-               return result;
-            } else {
-               throw result.message;
-            }
-         }, function (error_message) {
-            throw error_message;
-         });
-      }
-
-      /**
-       * @param {istsos.ObservedProperty} property
-       */
-
-   }, {
-      key: 'addObservedProperty',
-      value: function addObservedProperty(property) {
-         this.getObservedPropertiesProperty().push(property);
-      }
-
-      /**
-       * @fires istsos.Service#istsos.events.EventType: NEW_OBSERVED_PROPERTY
-       * @param {istsos.ObservedProperty} property
-       */
-
-   }, {
-      key: 'registerObservedProperty',
-      value: function registerObservedProperty(property) {
-         var _this11 = this;
-
-         var url = this.server.getUrl() + 'wa/istsos/services/' + this.getServiceJSON()["service"] + '/observedproperties';
-         this.executeRequest(url, istsos.events.EventType.NEW_OBSERVED_PROPERTY, "POST", JSON.stringify(property.getObservedPropertyJSON()));
-
-         var config = {};
-         if (this.server.getLoginConfig()) {
-            config['headers'] = this.server.getLoginConfig();
-         }
-         config['data'] = JSON.stringify(property.getObservedPropertyJSON());
-
-         return _HttpAPI.HttpAPI.post(url, config).then(function (result) {
-            if (result.success) {
-               _this11.fireEvent('NEW_OBSERVED_PROPERTY', result);
-               return result;
-            } else {
-               throw result.message;
-            }
-         }, function (error_message) {
-            throw error_message;
-         });
-      }
-
-      /**
-       * @fires istsos.Service#istsos.events.EventType: OBSERVED_PROPERTIES
-       */
-
-   }, {
-      key: 'getObservedProperties',
-      value: function getObservedProperties() {
-         var _this12 = this;
-
-         var url = this.server.getUrl() + 'wa/istsos/services/' + this.getServiceJSON()["service"] + '/observedproperties';
-
-         var config = {};
-         if (this.server.getLoginConfig()) {
-            config['headers'] = this.server.getLoginConfig();
-         }
-
-         return _HttpAPI.HttpAPI.get(url, config).then(function (result) {
-            if (result.success) {
-               _this12.fireEvent('OBSERVED_PROPERTIES', result);
-               return result;
-            } else {
-               throw result.message;
-            }
-         }, function (error_message) {
-            throw error_message;
-         });
-      }
-
-      /**
-       * @fires istsos.Service#istsos.events.EventType: OBSERVED_PROPERTY
-       * @param {istsos.ObservedProperty} property
-       */
-
-   }, {
-      key: 'getObservedProperty',
-      value: function getObservedProperty(property) {
-         var _this13 = this;
-
-         var url = this.server.getUrl() + 'wa/istsos/services/' + this.getServiceJSON()["service"] + '/observedproperties/' + property.getObservedPropertyJSON()["definition"];
-
-         var config = {};
-         if (this.server.getLoginConfig()) {
-            config['headers'] = this.server.getLoginConfig();
-         }
-
-         return _HttpAPI.HttpAPI.get(url, config).then(function (result) {
-            if (result.success) {
-               _this13.fireEvent('OBSERVED_PROPERTY', result);
-               return result;
-            } else {
-               throw result.message;
-            }
-         }, function (error_message) {
-            throw error_message;
-         });
-      }
-
-      /**
-       * @param {istsos.UnitOfMeasure} uom
-       */
-
-   }, {
-      key: 'addUom',
-      value: function addUom(uom) {
-         this.getUomsProperty().push(uom);
-      }
-
-      /**
-       * @fires istsos.Service#istsos.events.EventType: NEW_UOM
-       * @param {istsos.UnitOfMeasure} uom
-       */
-
-   }, {
-      key: 'registerUom',
-      value: function registerUom(uom) {
-         var _this14 = this;
-
-         var url = this.server.getUrl() + 'wa/istsos/services/' + this.getServiceJSON()["service"] + '/uoms';
-
-         var config = {};
-         if (this.server.getLoginConfig()) {
-            config['headers'] = this.server.getLoginConfig();
-         }
-         config['data'] = JSON.stringify(property.getUomJSON());
-
-         return _HttpAPI.HttpAPI.post(url, config).then(function (result) {
-            if (result.success) {
-               _this14.fireEvent('NEW_UOM', result);
-               return result;
-            } else {
-               throw result.message;
-            }
-         }, function (error_message) {
-            throw error_message;
-         });
-      }
-
-      /**
-       * @fires istsos.Service#istsos.events.EventType: UOMS
-       */
-
-   }, {
-      key: 'getUoms',
-      value: function getUoms() {
-         var _this15 = this;
-
-         var url = this.server.getUrl() + 'wa/istsos/services/' + this.getServiceJSON()["service"] + '/uoms';
-
-         var config = {};
-         if (this.server.getLoginConfig()) {
-            config['headers'] = this.server.getLoginConfig();
-         }
-
-         return _HttpAPI.HttpAPI.get(url, config).then(function (result) {
-            if (result.success) {
-               _this15.fireEvent('UOMS', result);
-               return result;
-            } else {
-               throw result.message;
-            }
-         }, function (error_message) {
-            throw error_message;
-         });
-      }
-
-      /**
-       * @fires istsos.Service#istsos.events.EventType: UOM
-       * @param {istsos.UnitOfMeasure} uom
-       */
-
-   }, {
-      key: 'getUom',
-      value: function getUom(uom) {
-         var _this16 = this;
-
-         var url = this.server.getUrl() + 'wa/istsos/services/' + this.getServiceJSON()["service"] + '/uoms/' + uom.getUomJSON()["name"];
-
-         var config = {};
-         if (this.server.getLoginConfig()) {
-            config['headers'] = this.server.getLoginConfig();
-         }
-
-         return _HttpAPI.HttpAPI.get(url, config).then(function (result) {
-            if (result.success) {
-               _this16.fireEvent('UOM', result);
-               return result;
-            } else {
-               throw result.message;
-            }
-         }, function (error_message) {
-            throw error_message;
-         });
-      }
-
-      /**
-       * @param {istsos.DataQuality} dataQuality
-       */
-
-   }, {
-      key: 'addDataQuality',
-      value: function addDataQuality(dataQuality) {
-         this.getDataQualitiesProperty().push(dataQuality);
-      }
-
-      /**
-       * @fires istsos.Service#istsos.events.EventType: NEW_DATAQUALITY
-       * @param {istsos.DataQuality} dataQuality
-       */
-
-   }, {
-      key: 'registerDataQuality',
-      value: function registerDataQuality(dataQuality) {
-         var _this17 = this;
-
-         var url = this.server.getUrl() + 'wa/istsos/services/' + this.getServiceJSON()["service"] + '/dataqualities';
-         this.executeRequest(url, istsos.events.EventType.NEW_DATAQUALITY, "POST", JSON.stringify(dataQuality.getDataQualityJSON()));
-
-         var config = {};
-         if (this.server.getLoginConfig()) {
-            config['headers'] = this.server.getLoginConfig();
-         }
-         config['data'] = JSON.stringify(property.getDataQualityJSON());
-
-         return _HttpAPI.HttpAPI.post(url, config).then(function (result) {
-            if (result.success) {
-               _this17.fireEvent('NEW_DATAQUALITY', result);
-               return result;
-            } else {
-               throw result.message;
-            }
-         }, function (error_message) {
-            throw error_message;
-         });
-      }
-
-      /**
-       * @fires istsos.Service#istsos.events.EventType: DATAQUALITIES
-       */
-
-   }, {
-      key: 'getDataQualities',
-      value: function getDataQualities() {
-         var _this18 = this;
-
-         var url = this.server.getUrl() + 'wa/istsos/services/' + this.getServiceJSON()["service"] + '/dataqualities';
-
-         var config = {};
-         if (this.server.getLoginConfig()) {
-            config['headers'] = this.server.getLoginConfig();
-         }
-
-         return _HttpAPI.HttpAPI.get(url, config).then(function (result) {
-            if (result.success) {
-               _this18.fireEvent('DATAQUALITIES', result);
-               return result;
-            } else {
-               throw result.message;
-            }
-         }, function (error_message) {
-            throw error_message;
-         });
-      }
-
-      /**
-       * @fires istsos.Service#istsos.events.EventType: DATA_QUALITY
-       * @param {istsos.DataQuality} dataQuality
-       */
-
-   }, {
-      key: 'getDataQuality',
-      value: function getDataQuality(dataQuality) {
-         var _this19 = this;
-
-         var url = this.server.getUrl() + 'wa/istsos/services/' + this.getServiceJSON()["service"] + '/dataqualities/' + dataQuality.getDataQualityJSON()["code"];
-
-         var config = {};
-         if (this.server.getLoginConfig()) {
-            config['headers'] = this.server.getLoginConfig();
-         }
-
-         return _HttpAPI.HttpAPI.get(url, config).then(function (result) {
-            if (result.success) {
-               _this19.fireEvent('DATAQUALITY', result);
-               return result;
-            } else {
-               throw result.message;
-            }
-         }, function (error_message) {
-            throw error_message;
-         });
-      }
-
-      /**
-       * @fires istsos.Service#istsos.events.EventType: SYSTEM_TYPES
-       */
-
-   }, {
-      key: 'getSystemTypes',
-      value: function getSystemTypes() {
-         var _this20 = this;
-
-         var url = this.server.getUrl() + 'wa/istsos/services/' + this.getServiceJSON()["service"] + '/systemtypes';
-
-         var config = {};
-         if (this.server.getLoginConfig()) {
-            config['headers'] = this.server.getLoginConfig();
-         }
-
-         return _HttpAPI.HttpAPI.get(url, config).then(function (result) {
-            if (result.success) {
-               _this20.fireEvent('SYSTEM_TYPES', result);
-               return result;
-            } else {
-               throw result.message;
-            }
-         }, function (error_message) {
-            throw error_message;
-         });
-      }
-
-      /**
-       * @returns {istsos.Database}
-       */
-
-   }, {
-      key: 'getDatabaseProperty',
-      value: function getDatabaseProperty() {
-         return this.db;
-      }
-
-      /**
-       * @fires istsos.Database#istsos.events.EventType: DATABASE
-       */
-
-   }, {
-      key: 'getDatabase',
-      value: function getDatabase() {
-         return this.db.getDb(this.getServiceJSON()["service"], this.server);
-      }
-
-      /**
-       * @fires istsos.Service#istsos.events.EventType: GETOBSERVATIONS
-       * @param {istsos.Offering} offering
-       * @param {Array<istsos.Procedure|istsos.VirtualProcedure>} procedures
-       * @param {Array<istsos.ObservedProperty>} observed_properties
-       * @param {istsos.Date} begin_time
-       * @param {istsos.Date} end_time
-       * @param {JSON} opt_aggregationConf
-       */
-      /*
-      << HOW TO CREATE AGGREGATION CONF JSON >>
-      {
-         "function": "SUM", "MAX", "MIN" OR "AVG",
-         "interval": example - "P1DT" is (1 day), "PT24H" is (24 hours),
-         "noData": optional
-         "noDataQi": optional
-      }
+	_inherits(Service, _EventEmitter);
+
+	/**
+  * constructor - instantiates istsos.Service
+  * 
+  * @param  {Object} options Set of key-value pairs
+  * @constructor
+  */
+	function Service(options) {
+		_classCallCheck(this, Service);
+
+		var _this = _possibleConstructorReturn(this, (Service.__proto__ || Object.getPrototypeOf(Service)).call(this));
+
+		_this.name = options.name;
+		_this.db = options.opt_db || options.server.getDefaultDbProperty();
+		_this.epsg = options.opt_epsg || null;
+		_this.config = options.opt_config || new istsos.Configuration({
+			serviceName: options.name,
+			server: options.server
+		});
+		_this.server = options.server;
+		_this.offerings = [];
+		_this.procedures = [];
+		_this.virtualProcedures = [];
+		_this.observedProperties = [];
+		_this.uoms = [];
+		_this.dataQualities = [];
+		options.server.addService(_this);
+
+		var offering_config = {
+			offeringName: "temporary",
+			offeringDescription: "temporary offering to hold self-registered procedures/sensors waiting for service adimistration acceptance",
+			active: true,
+			expirationDate: "",
+			service: _this
+		};
+
+		var temporary_offering = new istsos.Offering(offering_config);
+		return _this;
+	}
+
+	/**
+  * Fire event with data - event must match one of the supported event types from istsos.EventTypes
+  * 
+  * @param  {String} eventType Type of event from istsos.EventTypes
+  * @param  {Object|*} response  Data to be passed to a handler
+  */
+
+
+	_createClass(Service, [{
+		key: 'fireEvent',
+		value: function fireEvent(eventType, response) {
+			_get(Service.prototype.__proto__ || Object.getPrototypeOf(Service.prototype), 'fire', this).call(this, eventType, response);
+		}
+
+		/**
+   * Add event listener
+   * 
+   * @param  {String}   event    Event must match one of the supported event types from istsos.EventTypes
+   * @param  {Function} callback Handler function
+   */
+
+	}, {
+		key: 'on',
+		value: function on(event, callback) {
+			_get(Service.prototype.__proto__ || Object.getPrototypeOf(Service.prototype), 'on', this).call(this, event, callback);
+		}
+
+		/**
+   * Add event listener, that will listen only once.
+   * 
+   * @param  {String}   event    Event must match one of the supported event types from istsos.EventTypes
+   * @param  {Function} callback Handler function
+   */
+
+	}, {
+		key: 'once',
+		value: function once(event, callback) {
+			_get(Service.prototype.__proto__ || Object.getPrototypeOf(Service.prototype), 'once', this).call(this, event, callback);
+		}
+
+		/**
+   * Remove event listener
+   * 
+   * @param  {String}   event    Event must match one of the supported event types from istsos.EventTypes
+   * @param  {Function} callback Handler function
+   */
+
+	}, {
+		key: 'off',
+		value: function off(event, callback) {
+			_get(Service.prototype.__proto__ || Object.getPrototypeOf(Service.prototype), 'off', this).call(this, event, callback);
+		}
+
+		/**
+   * Remove all event listeners
+   */
+
+	}, {
+		key: 'unlistenAll',
+		value: function unlistenAll() {
+			_get(Service.prototype.__proto__ || Object.getPrototypeOf(Service.prototype), 'unlistenAll', this).call(this);
+		}
+
+		/**
+     * Get JSON configuration prepared for sending as a HTTP request payload
+     * 
+     * @return {Object}
+     */
+
+	}, {
+		key: 'getServiceJSON',
+		value: function getServiceJSON() {
+			var serviceJSON = {
+				"service": this.name
+			};
+			if (this.epsg) {
+				serviceJSON["epsg"] = this.epsg.toString();
+			}
+			if (this.db !== this.server.getDefaultDbProperty()) {
+				serviceJSON["dbname"] = this.db["dbname"];
+				serviceJSON["host"] = this.db["host"];
+				serviceJSON["user"] = this.db["user"];
+				serviceJSON["password"] = this.db["password"];
+				serviceJSON["port"] = this.db["port"].toString();
+			}
+			return serviceJSON;
+		}
+
+		/**
+   * Return list of istsos.Offering instances, that belong to this service
+   * 
+   * @return {Array<istsos.Offering>}
+   */
+
+	}, {
+		key: 'getOfferingsProperty',
+		value: function getOfferingsProperty() {
+			return this.offerings;
+		}
+
+		/**
+   *	Return list of istsos.Procedure instances, that belong to this service
+   * 
+   * @returns {Array<istsos.Procedure>}
+   */
+
+	}, {
+		key: 'getProceduresProperty',
+		value: function getProceduresProperty() {
+			return this.procedures;
+		}
+
+		/**
+   * Return list of istsos.VirtualProcedure instances, that belong to this service
+   * 
+   * @returns {Array<istsos.VirtualProcedure>}
+   */
+
+	}, {
+		key: 'getVirtualProceduresProperty',
+		value: function getVirtualProceduresProperty() {
+			return this.virtualProcedures;
+		}
+
+		/**
+   *	Return list of istsos.ObservedProperty instances, that belong to this service
+   * 
+   * @returns {Array<istsos.ObservedProperty>}
+   */
+
+	}, {
+		key: 'getObservedPropertiesProperty',
+		value: function getObservedPropertiesProperty() {
+			return this.observedProperties;
+		}
+
+		/**
+   *	Return list of istsos.UnitOfMeasure instances, that belong to this service
+   * 
+   * @returns {Array<istsos.UnitOfMeasure>}
+   */
+
+	}, {
+		key: 'getUomsProperty',
+		value: function getUomsProperty() {
+			return this.uoms;
+		}
+
+		/**
+   *	Return list of istsos.DataQuality instances, that belong to this service
+   * 
+   * @returns {Array<istsos.DataQuality>}
+   */
+
+	}, {
+		key: 'getDataQualitiesProperty',
+		value: function getDataQualitiesProperty() {
+			return this.dataQualities;
+		}
+
+		/**
+   * Add offering to the offering list
+   * 
+   * @param {istsos.Offering} offering
+   */
+
+	}, {
+		key: 'addOffering',
+		value: function addOffering(offering) {
+			this.getOfferingsProperty().push(offering);
+		}
+
+		/**
+     * Register new offering on the server
+     * 
+     * @param  {istsos.Server} server istsos.Server instance
+     * @return {Promise}
+     * @fires istsos.Service#NEW_OFFERING
+     */
+
+	}, {
+		key: 'registerOffering',
+		value: function registerOffering(offering) {
+			var _this2 = this;
+
+			var url = this.server.getUrl() + 'wa/istsos/services/' + this.getServiceJSON()["service"] + '/offerings';
+
+			var config = {};
+			if (this.server.getLoginConfig()) {
+				config['headers'] = this.server.getLoginConfig();
+			}
+			config['data'] = JSON.stringify(offering.getOfferingJSON());
+
+			return _HttpAPI.HttpAPI.post(url, config).then(function (result) {
+				if (result.success) {
+					_this2.fireEvent('NEW_OFFERING', result);
+					return result;
+				} else {
+					throw result.message;
+				}
+			}, function (error_message) {
+				throw error_message;
+			});
+		}
+
+		/**
+     * Get offering names from the server
+     * 
+     * @return {Promise}
+     * @fires istsos.Service#OFFERING_NAMES
+     */
+
+	}, {
+		key: 'getOfferingNames',
+		value: function getOfferingNames() {
+			var _this3 = this;
+
+			var url = this.server.getUrl() + 'wa/istsos/services/' + this.getServiceJSON()["service"] + '/offerings/operations/getlist';
+
+			var config = {};
+			if (this.server.getLoginConfig()) {
+				config['headers'] = this.server.getLoginConfig();
+			}
+
+			return _HttpAPI.HttpAPI.get(url, config).then(function (result) {
+				if (result.success) {
+					_this3.fireEvent('OFFERING_NAMES', result);
+					return result;
+				} else {
+					throw result.message;
+				}
+			}, function (error_message) {
+				throw error_message;
+			});
+		}
+
+		/**
+     * Get list of offerings from the server
+     * 
+     * @return {Promise}
+     * @fires istsos.Service#OFFERING_LIST
+     */
+
+	}, {
+		key: 'getOfferings',
+		value: function getOfferings() {
+			var _this4 = this;
+
+			var url = this.server.getUrl() + 'wa/istsos/services/' + this.getServiceJSON()["service"] + '/offerings';
+
+			var config = {};
+			if (this.server.getLoginConfig()) {
+				config['headers'] = this.server.getLoginConfig();
+			}
+
+			return _HttpAPI.HttpAPI.get(url, config).then(function (result) {
+				if (result.success) {
+					_this4.fireEvent('OFFERING_LIST', result);
+					return result;
+				} else {
+					throw result.message;
+				}
+			}, function (error_message) {
+				throw error_message;
+			});
+		}
+
+		/**
+   * Add istsos.Procedure instance to procedure list
+   * 
+   * @param {istsos.Procedure} procedure
+   */
+
+	}, {
+		key: 'addProcedure',
+		value: function addProcedure(procedure) {
+			this.getProceduresProperty().push(procedure);
+		}
+
+		/**
+     * Register new procedure on the server.
+     *
+     * @param {istsos.Procedure} procedure istsos.Procedure instance
+     * @return {Promise}
+     * @fires istsos.Service#NEW_PROCEDURE
+     */
+
+	}, {
+		key: 'registerProcedure',
+		value: function registerProcedure(procedure) {
+			var _this5 = this;
+
+			var url = this.server.getUrl() + 'wa/istsos/services/' + this.getServiceJSON()["service"] + '/procedures';
+
+			var config = {};
+			if (this.server.getLoginConfig()) {
+				config['headers'] = this.server.getLoginConfig();
+			}
+			config['data'] = JSON.stringify(procedure.getProcedureJSON());
+
+			return _HttpAPI.HttpAPI.post(url, config).then(function (result) {
+				if (result.success) {
+					_this5.fireEvent('NEW_PROCEDURE', result);
+					return result;
+				} else {
+					throw result.message;
+				}
+			}, function (error_message) {
+				throw error_message;
+			});
+		}
+
+		/**
+     * Get procedure from the server.
+     *
+     * @param {istsos.Procedure} procedure istsos.Procedure instance
+     * @return {Promise}
+     * @fires istsos.Service#PROCEDURE
+     */
+
+	}, {
+		key: 'getProcedure',
+		value: function getProcedure(procedure) {
+			var _this6 = this;
+
+			var url = this.server.getUrl() + 'wa/istsos/services/' + this.getServiceJSON()["service"] + '/procedures/' + procedure.getProcedureJSON()["system"];
+
+			var config = {};
+			if (this.server.getLoginConfig()) {
+				config['headers'] = this.server.getLoginConfig();
+			}
+
+			return _HttpAPI.HttpAPI.get(url, config).then(function (result) {
+				if (result.success) {
+					_this6.fireEvent('PROCEDURE', result);
+					return result;
+				} else {
+					throw result.message;
+				}
+			}, function (error_message) {
+				throw error_message;
+			});
+		}
+
+		/**
+     * Get procedures from the server.
+     *
+     * @return {Promise}
+     * @fires istsos.Service#PROCEDURES
+     */
+
+	}, {
+		key: 'getProcedures',
+		value: function getProcedures() {
+			var _this7 = this;
+
+			var url = this.server.getUrl() + 'wa/istsos/services/' + this.getServiceJSON()["service"] + '/procedures/operations/getlist';
+
+			var config = {};
+			if (this.server.getLoginConfig()) {
+				config['headers'] = this.server.getLoginConfig();
+			}
+
+			return _HttpAPI.HttpAPI.get(url, config).then(function (result) {
+				if (result.success) {
+					_this7.fireEvent('PROCEDURES', result);
+					return result;
+				} else {
+					throw result.message;
+				}
+			}, function (error_message) {
+				throw error_message;
+			});
+		}
+
+		/**
+   * Add istsos.VirtualProcedure instance to virtual procedure list
+   * 
+   * @param {istsos.VirtualProcedure} procedure
+   */
+
+	}, {
+		key: 'addVirtualProcedure',
+		value: function addVirtualProcedure(v_procedure) {
+			this.getVirtualProceduresProperty().push(v_procedure);
+		}
+
+		/**
+     * Register virtual procedure on the server.
+     *
+     * @return {Promise}
+     * @fires istsos.Service#NEW_VIRTUAL_PROCEDURE
+     */
+
+	}, {
+		key: 'registerVirtualProcedure',
+		value: function registerVirtualProcedure(v_procedure) {
+			var _this8 = this;
+
+			var url = this.server.getUrl() + 'wa/istsos/services/' + this.getServiceJSON()["service"] + '/procedures';
+
+			var config = {};
+			if (this.server.getLoginConfig()) {
+				config['headers'] = this.server.getLoginConfig();
+			}
+			config['data'] = JSON.stringify(v_procedure.getVirtualProcedureJSON());
+
+			return _HttpAPI.HttpAPI.post(url, config).then(function (result) {
+				if (result.success) {
+					_this8.fireEvent('NEW_VIRTUAL_PROCEDURE', result);
+					return result;
+				} else {
+					throw result.message;
+				}
+			}, function (error_message) {
+				throw error_message;
+			});
+		}
+
+		/**
+     * Get virtual procedure from the server.
+     *
+     * @param {istsos.VirtualProcedure} v_procedure istsos.VirtualProcedure instance
+     * @return {Promise}
+     * @fires istsos.Service#VIRTUAL_PROCEDURE;
       */
 
-   }, {
-      key: 'getObservations',
-      value: function getObservations(options) {
-         var _this21 = this;
+	}, {
+		key: 'getVirtualProcedure',
+		value: function getVirtualProcedure(v_procedure) {
+			var _this9 = this;
 
-         var urlConfig = (0, _IstsosHelper.prepareForGetObservations)(options);
-         var url = this.server.getUrl() + 'wa/istsos/services/' + this.name + '/operations/getobservation/offerings/' + urlConfig.offering + '/procedures/' + urlConfig.procedureNames + '/observedproperties/' + urlConfig.observedPropertyUrns + '/eventtime/' + begin + '/' + end;
+			var url = this.server.getUrl() + 'wa/istsos/services/' + this.getServiceJSON()["service"] + '/virtualprocedures';
 
-         var config = {};
-         if (this.server.getLoginConfig()) {
-            config['headers'] = this.server.getLoginConfig();
-         }
+			var config = {};
+			if (this.server.getLoginConfig()) {
+				config['headers'] = this.server.getLoginConfig();
+			}
 
-         return _HttpAPI.HttpAPI.get(url, config).then(function (result) {
-            if (result.success) {
-               _this21.fireEvent('GETOBSERVATIONS', result);
-               return result;
-            } else {
-               throw result.message;
-            }
-         }, function (error_message) {
-            throw error_message;
-         });
-      }
+			return _HttpAPI.HttpAPI.get(url, config).then(function (result) {
+				if (result.success) {
+					_this9.fireEvent('VIRTUAL_PROCEDURE', result);
+					return result;
+				} else {
+					throw result.message;
+				}
+			}, function (error_message) {
+				throw error_message;
+			});
+		}
 
-      /**
-       * @fires istsos.Service#istsos.events.EventType: GETOBSERVATIONS_AGG
-       * @param {istsos.Offering} offering
-       * @param {Array<istsos.Procedure|istsos.VirtualProcedure>} procedures
-       * @param {Array<istsos.ObservedProperty>} observed_properties
-       * @param {istsos.Date} begin_time
-       * @param {istsos.Date} end_time
-       * @param {String} aggFunc allowed - "SUM", "MAX", "MIN" OR "AVG"
-       * @param {String} aggInterval example - "P1DT" is 1 day or "PT24H" is 24H...
-       * @param {int} aggNoData
-       * @param {int} aggNoDataQI
-       */
+		/**
+     * Get virtual procedures from the server.
+     *
+     * @return {Promise}
+     * @fires istsos.Service#VIRTUAL_PROCEDURES
+     */
 
-   }, {
-      key: 'getObservationsWithAggregation',
-      value: function getObservationsWithAggregation(options, aggregationConfig) {
-         var _this22 = this;
+	}, {
+		key: 'getVirtualProcedures',
+		value: function getVirtualProcedures() {
+			var _this10 = this;
 
-         var urlConfig = (0, _IstsosHelper.prepareForGetObservations)(options, aggregationConfig);
-         var url = this.server.getUrl() + 'wa/istsos/services/' + this.name + '/operations/getobservation/offerings/' + urlConfig.offering + '/procedures/' + urlConfig.procedureNames + '/observedproperties/' + urlConfig.observedPropertyUrns + '/eventtime/' + begin + '/' + end + '/' + urlConfig.aggregationUrl;
+			var url = this.server.getUrl() + 'wa/istsos/services/' + this.getServiceJSON()["service"] + '/virtualprocedures/operations/getlist';
 
-         var config = {};
-         if (this.server.getLoginConfig()) {
-            config['headers'] = this.server.getLoginConfig();
-         }
+			var config = {};
+			if (this.server.getLoginConfig()) {
+				config['headers'] = this.server.getLoginConfig();
+			}
 
-         return _HttpAPI.HttpAPI.get(url, config).then(function (result) {
-            if (result.success) {
-               _this22.fireEvent('GETOBSERVATIONS_AGG', result);
-               return result;
-            } else {
-               throw result.message;
-            }
-         }, function (error_message) {
-            throw error_message;
-         });
-      }
+			return _HttpAPI.HttpAPI.get(url, config).then(function (result) {
+				if (result.success) {
+					_this10.fireEvent('VIRTUAL_PROCEDURES', result);
+					return result;
+				} else {
+					throw result.message;
+				}
+			}, function (error_message) {
+				throw error_message;
+			});
+		}
 
-      /**
-       * @fires istsos.Service#istsos.events.EventType: GETOBSERVATIONS_BY_PROPERTY
-       * @param {istsos.Offering} offering
-       * @param {istsos.Procedure|istsos.VirtualProcedure} procedure
-       * @param {istsos.ObservedProperty} observed_property
-       * @param {istsos.Date} begin_time
-       * @param {istsos.Date} end_time
-       */
+		/**
+   * Add istsos.ObservedProperty to the list of observed properties
+   * 
+   * @param {istsos.ObservedProperty} property
+   */
 
-   }, {
-      key: 'getObservationsSimplified',
-      value: function getObservationsSimplified(options) {
-         var _this23 = this;
+	}, {
+		key: 'addObservedProperty',
+		value: function addObservedProperty(property) {
+			this.getObservedPropertiesProperty().push(property);
+		}
 
-         var urlConfig = (0, _IstsosHelper.prepareForGetObservations)(options);
-         var url = this.server.getUrl() + 'wa/istsos/services/' + this.name + '/operations/getobservation/offerings/' + urlConfig.offering + '/procedures/' + urlConfig.procedureNames + '/observedproperties/' + urlConfig.observedPropertyUrns + '/eventtime/' + begin + '/' + end;
+		/**
+     * Register observed property on the server.
+     *
+     * @return {Promise}
+     * @fires istsos.Service#NEW_OBSERVED_PROPERTY
+     */
 
-         var config = {};
-         if (this.server.getLoginConfig()) {
-            config['headers'] = this.server.getLoginConfig();
-         }
+	}, {
+		key: 'registerObservedProperty',
+		value: function registerObservedProperty(property) {
+			var _this11 = this;
 
-         return _HttpAPI.HttpAPI.get(url, config).then(function (result) {
-            if (result.success) {
-               var transformed = (0, _IstsosHelper.transformGetObservationResponse)('simple', result);
-               _this23.fireEvent('GETOBSERVATIONS_BY_PROPERTY', transformed);
-               return result;
-            } else {
-               throw result.message;
-            }
-         }, function (error_message) {
-            throw error_message;
-         });
-      }
+			var url = this.server.getUrl() + 'wa/istsos/services/' + this.getServiceJSON()["service"] + '/observedproperties';
+			this.executeRequest(url, istsos.events.EventType.NEW_OBSERVED_PROPERTY, "POST", JSON.stringify(property.getObservedPropertyJSON()));
 
-      //lessThan, lessThanAndEqual, equal, greaterThanAndEqual, greatherThan, between
+			var config = {};
+			if (this.server.getLoginConfig()) {
+				config['headers'] = this.server.getLoginConfig();
+			}
+			config['data'] = JSON.stringify(property.getObservedPropertyJSON());
 
-   }, {
-      key: 'getObservationsByQualityIndexConstraint',
-      value: function getObservationsByQualityIndexConstraint(options, constraintConfig) {
-         var _this24 = this;
+			return _HttpAPI.HttpAPI.post(url, config).then(function (result) {
+				if (result.success) {
+					_this11.fireEvent('NEW_OBSERVED_PROPERTY', result);
+					return result;
+				} else {
+					throw result.message;
+				}
+			}, function (error_message) {
+				throw error_message;
+			});
+		}
 
-         var urlConfig = (0, _IstsosHelper.prepareForGetObservations)(options);
-         var url = this.server.getUrl() + 'wa/istsos/services/' + this.name + '/operations/getobservation/offerings/' + urlConfig.offering + '/procedures/' + urlConfig.procedureNames + '/observedproperties/' + urlConfig.observedPropertyUrns + '/eventtime/' + begin + '/' + end;
+		/**
+     * Get observed properties from the server.
+     *
+     * @return {Promise}
+     * @fires istsos.Service#OBSERVED_PROPERTIES
+     */
 
-         var config = {};
-         if (this.server.getLoginConfig()) {
-            config['headers'] = this.server.getLoginConfig();
-         }
+	}, {
+		key: 'getObservedProperties',
+		value: function getObservedProperties() {
+			var _this12 = this;
 
-         return _HttpAPI.HttpAPI.get(url, config).then(function (result) {
-            if (result.success) {
-               var transformed = (0, _IstsosHelper.transformGetObservationResponse)('constraint', result, constraintConfig);
-               _this24.fireEvent('GETOBSERVATIONS_BY_QUALITY', transformed);
-               return result;
-            } else {
-               throw result.message;
-            }
-         }, function (error_message) {
-            throw error_message;
-         });
-      }
+			var url = this.server.getUrl() + 'wa/istsos/services/' + this.getServiceJSON()["service"] + '/observedproperties';
 
-      /**
-       * @fires istsos.Service#istsos.events.EventType: GEOJSON
-       * @param {int} opt_epsg
-       * @param {istsos.Offering} opt_offering
-       * @param {istsos.Procedure|istsos.VirtualProcedure} opt_procedure
-       */
+			var config = {};
+			if (this.server.getLoginConfig()) {
+				config['headers'] = this.server.getLoginConfig();
+			}
 
-   }, {
-      key: 'getFeatureCollection',
-      value: function getFeatureCollection(opt_options) {
-         var _this25 = this;
+			return _HttpAPI.HttpAPI.get(url, config).then(function (result) {
+				if (result.success) {
+					_this12.fireEvent('OBSERVED_PROPERTIES', result);
+					return result;
+				} else {
+					throw result.message;
+				}
+			}, function (error_message) {
+				throw error_message;
+			});
+		}
 
-         var url = this.server.getUrl() + 'wa/istsos/services/' + this.nane + '/procedures/operations/geojson';
-         if (opt_options.opt_epsg) {
-            url += "?epsg=" + opt_options.opt_epsg.toString();
-            if (opt_options.opt_offering || opt_options.opt_procedure) {
-               if (opt_options.opt_offering) {
-                  url += "&offering=" + opt_options.opt_offering.getOfferingJSON()["name"];
-               }
-               if (opt_options.opt_procedure && opt_options.opt_procedure instanceof istsos.Procedure) {
-                  url += "&procedure=" + opt_options.opt_procedure.getProcedureJSON()["system"];
-               } else if (opt_options.opt_procedure && opt_options.opt_procedure instanceof istsos.VirtualProcedure) {
-                  url += "&procedure=" + opt_options.opt_procedure.getVirtualProcedureJSON()["system"];
-               }
-            }
-         }
+		/**
+     * Get observed property from the server
+     * 
+     * @param {istsos.ObservedProperty} property istsos.ObservedProperty instance
+     * @return {Promise}
+     * @fires istsos.Service#OBSERVED_PROPERTIES
+     */
 
-         var config = {};
-         if (this.server.getLoginConfig()) {
-            config['headers'] = this.server.getLoginConfig();
-         }
+	}, {
+		key: 'getObservedProperty',
+		value: function getObservedProperty(property) {
+			var _this13 = this;
 
-         return _HttpAPI.HttpAPI.get(url, config).then(function (result) {
-            if (result.success) {
-               _this25.fireEvent('GEOJSON', result);
-               return result;
-            } else {
-               throw result.message;
-            }
-         }, function (error_message) {
-            throw error_message;
-         });
-      }
-   }]);
+			var url = this.server.getUrl() + 'wa/istsos/services/' + this.getServiceJSON()["service"] + '/observedproperties/' + property.getObservedPropertyJSON()["definition"];
 
-   return Service;
+			var config = {};
+			if (this.server.getLoginConfig()) {
+				config['headers'] = this.server.getLoginConfig();
+			}
+
+			return _HttpAPI.HttpAPI.get(url, config).then(function (result) {
+				if (result.success) {
+					_this13.fireEvent('OBSERVED_PROPERTY', result);
+					return result;
+				} else {
+					throw result.message;
+				}
+			}, function (error_message) {
+				throw error_message;
+			});
+		}
+
+		/**
+   * Add instance of istsos.UnitOfMeasure to the unit of measure list
+   * 
+   * @param {istsos.UnitOfMeasure} uom
+   */
+
+	}, {
+		key: 'addUom',
+		value: function addUom(uom) {
+			this.getUomsProperty().push(uom);
+		}
+
+		/**
+     * Register unit of measure on the server.
+     *
+     * @return {Promise}
+     * @fires istsos.Service#NEW_UOM
+     */
+
+	}, {
+		key: 'registerUom',
+		value: function registerUom(uom) {
+			var _this14 = this;
+
+			var url = this.server.getUrl() + 'wa/istsos/services/' + this.getServiceJSON()["service"] + '/uoms';
+
+			var config = {};
+			if (this.server.getLoginConfig()) {
+				config['headers'] = this.server.getLoginConfig();
+			}
+			config['data'] = JSON.stringify(property.getUomJSON());
+
+			return _HttpAPI.HttpAPI.post(url, config).then(function (result) {
+				if (result.success) {
+					_this14.fireEvent('NEW_UOM', result);
+					return result;
+				} else {
+					throw result.message;
+				}
+			}, function (error_message) {
+				throw error_message;
+			});
+		}
+
+		/**
+     * Get units of measure from the server.
+     *
+     * @return {Promise}
+     * @fires istsos.Service#UOMS
+     */
+
+	}, {
+		key: 'getUoms',
+		value: function getUoms() {
+			var _this15 = this;
+
+			var url = this.server.getUrl() + 'wa/istsos/services/' + this.getServiceJSON()["service"] + '/uoms';
+
+			var config = {};
+			if (this.server.getLoginConfig()) {
+				config['headers'] = this.server.getLoginConfig();
+			}
+
+			return _HttpAPI.HttpAPI.get(url, config).then(function (result) {
+				if (result.success) {
+					_this15.fireEvent('UOMS', result);
+					return result;
+				} else {
+					throw result.message;
+				}
+			}, function (error_message) {
+				throw error_message;
+			});
+		}
+
+		/**
+     * Get unit of measure from the server.
+     *
+     * @param {istsos.UnitOfMeasure} uom istsos.UnitOfMeasure instance
+     * @return {Promise}
+     * @fires istsos.Service#UOM
+     */
+
+	}, {
+		key: 'getUom',
+		value: function getUom(uom) {
+			var _this16 = this;
+
+			var url = this.server.getUrl() + 'wa/istsos/services/' + this.getServiceJSON()["service"] + '/uoms/' + uom.getUomJSON()["name"];
+
+			var config = {};
+			if (this.server.getLoginConfig()) {
+				config['headers'] = this.server.getLoginConfig();
+			}
+
+			return _HttpAPI.HttpAPI.get(url, config).then(function (result) {
+				if (result.success) {
+					_this16.fireEvent('UOM', result);
+					return result;
+				} else {
+					throw result.message;
+				}
+			}, function (error_message) {
+				throw error_message;
+			});
+		}
+
+		/**
+   * Add istsos.DataQuality instance to the dataqualities list
+   * 
+   * @param {istsos.DataQuality} dataQuality
+   */
+
+	}, {
+		key: 'addDataQuality',
+		value: function addDataQuality(dataQuality) {
+			this.getDataQualitiesProperty().push(dataQuality);
+		}
+
+		/**
+     * Register data quality on the server.
+     *
+     * @return {Promise}
+     * @fires istsos.Service#NEW_DATAQUALITY
+     */
+
+	}, {
+		key: 'registerDataQuality',
+		value: function registerDataQuality(dataQuality) {
+			var _this17 = this;
+
+			var url = this.server.getUrl() + 'wa/istsos/services/' + this.getServiceJSON()["service"] + '/dataqualities';
+			this.executeRequest(url, istsos.events.EventType.NEW_DATAQUALITY, "POST", JSON.stringify(dataQuality.getDataQualityJSON()));
+
+			var config = {};
+			if (this.server.getLoginConfig()) {
+				config['headers'] = this.server.getLoginConfig();
+			}
+			config['data'] = JSON.stringify(property.getDataQualityJSON());
+
+			return _HttpAPI.HttpAPI.post(url, config).then(function (result) {
+				if (result.success) {
+					_this17.fireEvent('NEW_DATAQUALITY', result);
+					return result;
+				} else {
+					throw result.message;
+				}
+			}, function (error_message) {
+				throw error_message;
+			});
+		}
+
+		/**
+     * Get data qualities from the server.
+     *
+     * @return {Promise}
+     * @fires istsos.Service#DATAQUALITIES
+     */
+
+	}, {
+		key: 'getDataQualities',
+		value: function getDataQualities() {
+			var _this18 = this;
+
+			var url = this.server.getUrl() + 'wa/istsos/services/' + this.getServiceJSON()["service"] + '/dataqualities';
+
+			var config = {};
+			if (this.server.getLoginConfig()) {
+				config['headers'] = this.server.getLoginConfig();
+			}
+
+			return _HttpAPI.HttpAPI.get(url, config).then(function (result) {
+				if (result.success) {
+					_this18.fireEvent('DATAQUALITIES', result);
+					return result;
+				} else {
+					throw result.message;
+				}
+			}, function (error_message) {
+				throw error_message;
+			});
+		}
+
+		/**
+     * Get data quality from the server.
+     *
+     * @param {istsos.DataQuality} dataQuality istsos.DataQuality instance
+     * @return {Promise}
+     * @fires istsos.Service#DATAQUALITY
+     */
+
+	}, {
+		key: 'getDataQuality',
+		value: function getDataQuality(dataQuality) {
+			var _this19 = this;
+
+			var url = this.server.getUrl() + 'wa/istsos/services/' + this.getServiceJSON()["service"] + '/dataqualities/' + dataQuality.getDataQualityJSON()["code"];
+
+			var config = {};
+			if (this.server.getLoginConfig()) {
+				config['headers'] = this.server.getLoginConfig();
+			}
+
+			return _HttpAPI.HttpAPI.get(url, config).then(function (result) {
+				if (result.success) {
+					_this19.fireEvent('DATAQUALITY', result);
+					return result;
+				} else {
+					throw result.message;
+				}
+			}, function (error_message) {
+				throw error_message;
+			});
+		}
+
+		/**
+     * Get system types from the server
+     *
+     * @return {Promise}
+     * @fires istsos.Service#DATAQUALITIES
+     */
+
+	}, {
+		key: 'getSystemTypes',
+		value: function getSystemTypes() {
+			var _this20 = this;
+
+			var url = this.server.getUrl() + 'wa/istsos/services/' + this.getServiceJSON()["service"] + '/systemtypes';
+
+			var config = {};
+			if (this.server.getLoginConfig()) {
+				config['headers'] = this.server.getLoginConfig();
+			}
+
+			return _HttpAPI.HttpAPI.get(url, config).then(function (result) {
+				if (result.success) {
+					_this20.fireEvent('SYSTEM_TYPES', result);
+					return result;
+				} else {
+					throw result.message;
+				}
+			}, function (error_message) {
+				throw error_message;
+			});
+		}
+
+		/**
+   *	Returns istsos.Database instance
+   * 
+   * @return {istsos.Database}
+   */
+
+	}, {
+		key: 'getDatabaseProperty',
+		value: function getDatabaseProperty() {
+			return this.db;
+		}
+
+		/**
+     * Get service database
+     *
+     * @return {Promise}
+     * @fires istsos.Database#DATABASE
+     */
+
+	}, {
+		key: 'getDatabase',
+		value: function getDatabase() {
+			return this.db.getDb(this.getServiceJSON()["service"], this.server);
+		}
+
+		/**
+     * Get observations from the server.
+     *
+     * @param {Object} options Set of key-value pairs
+     * @return {Promise}
+     * @fires istsos.Service#GETOBSERVATIONS
+     */
+
+	}, {
+		key: 'getObservations',
+		value: function getObservations(options) {
+			var _this21 = this;
+
+			var urlConfig = (0, _IstsosHelper.prepareForGetObservations)(options);
+			var url = this.server.getUrl() + 'wa/istsos/services/' + this.name + '/operations/getobservation/offerings/' + urlConfig.offering + '/procedures/' + urlConfig.procedureNames + '/observedproperties/' + urlConfig.observedPropertyUrns + '/eventtime/' + begin + '/' + end;
+
+			var config = {};
+			if (this.server.getLoginConfig()) {
+				config['headers'] = this.server.getLoginConfig();
+			}
+
+			return _HttpAPI.HttpAPI.get(url, config).then(function (result) {
+				if (result.success) {
+					_this21.fireEvent('GETOBSERVATIONS', result);
+					return result;
+				} else {
+					throw result.message;
+				}
+			}, function (error_message) {
+				throw error_message;
+			});
+		}
+
+		/**
+     * Get observations with data aggregation from the server.
+     *
+     * @param {Object} options Set of key-value pairs
+     * @param {Object} aggregationConfig Set of key-value pairs
+     * @return {Promise}
+     * @fires istsos.Service#GETOBSERVATIONS_AGG
+     */
+
+	}, {
+		key: 'getObservationsWithAggregation',
+		value: function getObservationsWithAggregation(options, aggregationConfig) {
+			var _this22 = this;
+
+			var urlConfig = (0, _IstsosHelper.prepareForGetObservations)(options, aggregationConfig);
+			var url = this.server.getUrl() + 'wa/istsos/services/' + this.name + '/operations/getobservation/offerings/' + urlConfig.offering + '/procedures/' + urlConfig.procedureNames + '/observedproperties/' + urlConfig.observedPropertyUrns + '/eventtime/' + begin + '/' + end + '/' + urlConfig.aggregationUrl;
+
+			var config = {};
+			if (this.server.getLoginConfig()) {
+				config['headers'] = this.server.getLoginConfig();
+			}
+
+			return _HttpAPI.HttpAPI.get(url, config).then(function (result) {
+				if (result.success) {
+					_this22.fireEvent('GETOBSERVATIONS_AGG', result);
+					return result;
+				} else {
+					throw result.message;
+				}
+			}, function (error_message) {
+				throw error_message;
+			});
+		}
+
+		/**
+     * Get observations from the server, with simplified response
+     *
+     * @param {Object} options Set of key-value pairs
+     * @return {Promise}
+     * @fires istsos.Service#GETOBSERVATIONS_SIMPLIFIED
+     */
+
+	}, {
+		key: 'getObservationsSimplified',
+		value: function getObservationsSimplified(options) {
+			var _this23 = this;
+
+			var urlConfig = (0, _IstsosHelper.prepareForGetObservations)(options);
+			var url = this.server.getUrl() + 'wa/istsos/services/' + this.name + '/operations/getobservation/offerings/' + urlConfig.offering + '/procedures/' + urlConfig.procedureNames + '/observedproperties/' + urlConfig.observedPropertyUrns + '/eventtime/' + begin + '/' + end;
+
+			var config = {};
+			if (this.server.getLoginConfig()) {
+				config['headers'] = this.server.getLoginConfig();
+			}
+
+			return _HttpAPI.HttpAPI.get(url, config).then(function (result) {
+				if (result.success) {
+					var transformed = (0, _IstsosHelper.transformGetObservationResponse)('simple', result);
+					_this23.fireEvent('GETOBSERVATIONS_SIMPLIFIED', transformed);
+					return result;
+				} else {
+					throw result.message;
+				}
+			}, function (error_message) {
+				throw error_message;
+			});
+		}
+
+		/**
+     * Get observations from the server filtered by QI constraint.
+     *
+     * @param {Object} options Set of key-value pairs
+     * @param {Object} aggregationConfig Set of key-value pairs
+     * @return {Promise}
+     * @fires istsos.Service#GETOBSERVATIONS_BY_QUALITY
+     */
+
+	}, {
+		key: 'getObservationsByQualityIndexConstraint',
+		value: function getObservationsByQualityIndexConstraint(options, constraintConfig) {
+			var _this24 = this;
+
+			var urlConfig = (0, _IstsosHelper.prepareForGetObservations)(options);
+			var url = this.server.getUrl() + 'wa/istsos/services/' + this.name + '/operations/getobservation/offerings/' + urlConfig.offering + '/procedures/' + urlConfig.procedureNames + '/observedproperties/' + urlConfig.observedPropertyUrns + '/eventtime/' + begin + '/' + end;
+
+			var config = {};
+			if (this.server.getLoginConfig()) {
+				config['headers'] = this.server.getLoginConfig();
+			}
+
+			return _HttpAPI.HttpAPI.get(url, config).then(function (result) {
+				if (result.success) {
+					var transformed = (0, _IstsosHelper.transformGetObservationResponse)('constraint', result, constraintConfig);
+					_this24.fireEvent('GETOBSERVATIONS_BY_QUALITY', transformed);
+					return result;
+				} else {
+					throw result.message;
+				}
+			}, function (error_message) {
+				throw error_message;
+			});
+		}
+
+		/**
+     * Get feature collection from the server.
+     *
+     * @param {Object} opt_options Set of key-value pairs
+     * @return {Promise}
+     * @fires istsos.Service#GEOJSON
+     */
+
+	}, {
+		key: 'getFeatureCollection',
+		value: function getFeatureCollection(opt_options) {
+			var _this25 = this;
+
+			var url = this.server.getUrl() + 'wa/istsos/services/' + this.nane + '/procedures/operations/geojson';
+			if (opt_options.opt_epsg) {
+				url += "?epsg=" + opt_options.opt_epsg.toString();
+				if (opt_options.opt_offering || opt_options.opt_procedure) {
+					if (opt_options.opt_offering) {
+						url += "&offering=" + opt_options.opt_offering.getOfferingJSON()["name"];
+					}
+					if (opt_options.opt_procedure && opt_options.opt_procedure instanceof istsos.Procedure) {
+						url += "&procedure=" + opt_options.opt_procedure.getProcedureJSON()["system"];
+					} else if (opt_options.opt_procedure && opt_options.opt_procedure instanceof istsos.VirtualProcedure) {
+						url += "&procedure=" + opt_options.opt_procedure.getVirtualProcedureJSON()["system"];
+					}
+				}
+			}
+
+			var config = {};
+			if (this.server.getLoginConfig()) {
+				config['headers'] = this.server.getLoginConfig();
+			}
+
+			return _HttpAPI.HttpAPI.get(url, config).then(function (result) {
+				if (result.success) {
+					_this25.fireEvent('GEOJSON', result);
+					return result;
+				} else {
+					throw result.message;
+				}
+			}, function (error_message) {
+				throw error_message;
+			});
+		}
+	}]);
+
+	return Service;
 }(_EventEmitter2.EventEmitter);
 
 /***/ }),
