@@ -82,9 +82,10 @@ export var Server = class Server extends EventEmitter {
     * @param {String} password Password
     */
    setLoginConfig(username, password) {
-      let loginStr = `${username}:${password}`
+      let loginStr = `${username}:${password}`;
+      let base64 = new Buffer(loginStr).toString('base64')
       this.loginConfig = {
-         Authorization: `Basic ${btoa(loginStr)}`
+         Authorization: `Basic ${base64}`
       }
    }
 
