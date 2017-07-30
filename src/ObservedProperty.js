@@ -2,18 +2,19 @@ import {HttpAPI } from 'HttpAPI';
 import {EventEmitter } from 'EventEmitter';
 import {validateConstraintInput, ConstraintInputs} from 'IstsosHelper';
 
-/** istsos.ObservedProperty class */
 /**
- * @param {istsos.Service} service
- * @param {String} observedName
- * @param {String} definitionUrn
- * @param {String} observedDescr
- * @param {String} opt_constraintType (allowed_values:"between", "lessThan", "greaterThan", "valueList")
- * @param {Array|int} opt_value (Array or integer, depending on constraint type)
- * @constructor
+ * istsos.ObservedProperty
+ * 
+ * @class
+ * @extends istsos.EventEmitter
  */
-
 export var ObservedProperty = class ObservedProperty extends EventEmitter {
+	/**
+    * constructor - instantiates istsos.ObservedProperty
+    * 
+    * @param  {Object} options Set of key-value pairs
+    * @constructor
+    */
 	constructor(options) {
 		super();
 		this.observedName = options.observedName;
@@ -32,29 +33,59 @@ export var ObservedProperty = class ObservedProperty extends EventEmitter {
 		this.service = options.service;
 		this.proceduresIncluded = [];
 		this.updateProceduresIncluded();
-		service.addObservedProperty(this);
+		options.service.addObservedProperty(this);
 	}
 
+   /**
+    * Fire event with data - event must match one of the supported event types from istsos.EventTypes
+    * 
+    * @param  {String} eventType Type of event from istsos.EventTypes
+    * @param  {Object|*} response  Data to be passed to a handler
+    */
    fireEvent(eventType, response) {
       super.fire(eventType, response)
    }
 
+   /**
+    * Add event listener
+    * 
+    * @param  {String}   event    Event must match one of the supported event types from istsos.EventTypes
+    * @param  {Function} callback Handler function
+    */
    on(event, callback) {
       super.on(event, callback);
    }
 
+   /**
+    * Add event listener, that will listen only once.
+    * 
+    * @param  {String}   event    Event must match one of the supported event types from istsos.EventTypes
+    * @param  {Function} callback Handler function
+    */
    once(event, callback) {
       super.once(event, callback);
    }
 
+   /**
+    * Remove event listener
+    * 
+    * @param  {String}   event    Event must match one of the supported event types from istsos.EventTypes
+    * @param  {Function} callback Handler function
+    */
    off(event, callback) {
       super.off(event, callback);
    }
 
+   /**
+    * Remove all event listeners
+    */
    unlistenAll() {
-      super.unlistenAll(event, callback);
+      super.unlistenAll();
    }
 
+   /**
+    * Refresh the list of procedures that use this observed property
+    */
 	updateProceduresIncluded() {
 		var procedures = this.service.getProceduresProperty();
 		var v_procedures = this.service.getVirtualProceduresProperty();
@@ -72,14 +103,14 @@ export var ObservedProperty = class ObservedProperty extends EventEmitter {
 	}
 
 	/**
-	 * @returns {Array<istsos.Procedure|istsos.VirtualProcedure>}
+	 * @return {Array<istsos.Procedure|istsos.VirtualProcedure>}
 	 */
 	getProceduresIncluded() {
 		return this.proceduresIncluded;
 	}
 
 	/**
-	 * @returns {JSON}
+	 * @returns {Object}
 	 */
 	getObservedPropertyJSON() {
 		var observedJSON = {
@@ -92,13 +123,12 @@ export var ObservedProperty = class ObservedProperty extends EventEmitter {
 	}
 
 	/**
-	 * @fires istsos.ObservedProperty#istsos.events.EventType: UPDATE_OBSERVED_PROPERTY
-	 * @param {String} newPropertyName
-	 * @param {String} newDefinitionUrn
-	 * @param {String} newPropertyDescr
-	 * @param {String} opt_constraintType
-	 * @param {Array<int>|int} opt_value
-	 */
+    * Update observed property on the server
+    *
+    * @param {object} options Set of key-value pairs
+    * @return {Promise} 
+    * @fires  istsos.ObservedProperty#UPDATE_OBSERVED_PROPERTY            
+    */
 	updateObservedProperty(options) {
 		const oldDefinitionUrn = this.definitionUrn;
 		this.observedName = options.newPropertyName || this.observedName;
@@ -134,8 +164,11 @@ export var ObservedProperty = class ObservedProperty extends EventEmitter {
 	}
 
 	/**
-	 * @fires istsos.ObservedProperty#istsos.events.EventType: DELETE_OBSERVED_PROPERTY
-	 */
+    * Delete observed property from the server
+    *
+    * @return {Promise} 
+    * @fires  istsos.ObservedProperty#DELETE_OBSERVED_PROPERTY            
+    */
 	deleteObservedProperty() {
 		var procedures = this.service.getProceduresProperty();
 		var v_procedures = this.service.getVirtualProceduresProperty();
