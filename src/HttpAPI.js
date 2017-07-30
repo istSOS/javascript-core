@@ -1,5 +1,6 @@
 /**
- * url, method, headers, data
+ * Simple promisified HTTP request API
+ * @type {Object}
  */
 export var HttpAPI = {
    _request: (config) => {
