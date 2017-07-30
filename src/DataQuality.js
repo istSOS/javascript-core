@@ -1,15 +1,18 @@
 import {HttpAPI } from 'HttpAPI'; 
 import {EventEmitter } from 'EventEmitter';
-
-/** istsos.DataQuality class */
 /**
- * @param {istsos.Service} service
- * @param {int} codeDQ
- * @param {String} nameDQ
- * @param {String} descrDQ
- * @constructor
+ * istsos.DataQuality 
+ * 
+ * @class
+ * @extends istsos.EventEmitter
  */
 export var DataQuality = class DataQuality extends EventEmitter {
+   /**
+    * constructor - instantiates istsos.DataQuality
+    * 
+    * @param  {Object} options Set of key-value pairs
+    * @constructor
+    */
    constructor(options) {
       super();
       this.code = options.codeDQ;
@@ -19,28 +22,55 @@ export var DataQuality = class DataQuality extends EventEmitter {
       service.addDataQuality(this);
    }
 
+   /**
+    * Fire event with data - event must match one of the supported event types from istsos.EventTypes
+    * 
+    * @param  {String} eventType Type of event from istsos.EventTypes
+    * @param  {Object|*} response  Data to be passed to a handler
+    */
    fireEvent(eventType, response) {
       super.fire(eventType, response)
    }
 
+   /**
+    * Add event listener
+    * 
+    * @param  {String}   event    Event must match one of the supported event types from istsos.EventTypes
+    * @param  {Function} callback Handler function
+    */
    on(event, callback) {
       super.on(event, callback);
    }
 
+   /**
+    * Add event listener, that will listen only once.
+    * 
+    * @param  {String}   event    Event must match one of the supported event types from istsos.EventTypes
+    * @param  {Function} callback Handler function
+    */
    once(event, callback) {
       super.once(event, callback);
    }
 
+   /**
+    * Remove event listener
+    * 
+    * @param  {String}   event    Event must match one of the supported event types from istsos.EventTypes
+    * @param  {Function} callback Handler function
+    */
    off(event, callback) {
       super.off(event, callback);
    }
 
+   /**
+    * Remove all event listeners
+    */
    unlistenAll() {
-      super.unlistenAll(event, callback);
+      super.unlistenAll();
    }
 
    /**
-    * @returns {JSON}
+    * @return {Object}
     */
    getDataQualityJSON() {
       var dqJSON = {
@@ -52,10 +82,11 @@ export var DataQuality = class DataQuality extends EventEmitter {
    }
 
    /**
-    * @fires istsos.DataQuality#istsos.events.EventType: UPDATE_DATAQUALITY
-    * @param {int} newCodeDQ
-    * @param {String} newNameDQ
-    * @param {String} newDescrDQ
+    * Update data quality on the server
+    *
+    * @param {object} options Set of key-value pairs
+    * @return {Promise} 
+    * @fires  istsos.DataQuality#UPDATE_DATAQUALITY            
     */
    updateDataQuality(options) {
       const oldName = this.code;
@@ -85,7 +116,11 @@ export var DataQuality = class DataQuality extends EventEmitter {
    }
 
    /**
-    * @fires istsos.DataQuality#istsos.events.EventType: DELETE_DATAQUALITY
+    * Delete data quality on the server
+    *
+    * @param {object} options Set of key-value pairs
+    * @return {Promise} 
+    * @fires  istsos.DataQuality#DELETE_DATAQUALITY            
     */
    deleteDataQuality() {
       var dataQualities = this.service.getDataQualitiesProperty();
