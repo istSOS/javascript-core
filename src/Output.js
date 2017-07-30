@@ -1,15 +1,17 @@
 import {validateConstraintInput} from 'IstsosHelper';
 
-/** istsos.Output clas */
 /**
- * @param {istsos.ObservedProperty} property
- * @param {istsos.UnitOfMeasure} uom
- * @param {String} description
- * @param {String} opt_constraintType
- * @param {Array|int} opt_constraintValue
- * @constructor
+ * istsos.Output
+ * 
+ * @class
  */
 export var Output = class {
+   /**
+    * constructor - instantiates istsos.Output
+    * 
+    * @param  {Object} options Set of key-value pairs
+    * @constructor
+    */
    constructor(options) {
       this.observedProperty = options.property;
       this.uom = options.uom;
@@ -25,7 +27,7 @@ export var Output = class {
       }
    }
    /**
-    * @returns {JSON}
+    * @return {JSON}
     */
    getOutputJSON() {
       var outputJSON = {
