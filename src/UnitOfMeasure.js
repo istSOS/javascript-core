@@ -1,44 +1,78 @@
 import {HttpAPI } from 'HttpAPI'; 
 import {EventEmitter } from 'EventEmitter';
-
-/** istsos.UnitOfMeasure  class */
 /**
- * @param {istsos.Service} service
- * @param {String} name
- * @param {String} description
- * @constructor
+ * istsos.UnitOfMeasure 
+ * 
+ * @class
+ * @extends istsos.EventEmitter
  */
 export var UnitOfMeasure = class UnitOfMeasure extends EventEmitter {
+   /**
+    * constructor - instantiates istsos.UnitOfMeasure
+    * 
+    * @param  {Object} options Set of key-value pairs
+    * @constructor
+    */
    constructor(options) {
    	super();
       this.name = options.name;
       this.description = options.description || "";
       this.proceduresIncluded = [];
       this.service = options.service;
-      service.addUom(this);
+      options.service.addUom(this);
       this.updateProceduresIncluded();
    }
 
+   /**
+    * Fire event with data - event must match one of the supported event types from istsos.EventTypes
+    * 
+    * @param  {String} eventType Type of event from istsos.EventTypes
+    * @param  {Object|*} response  Data to be passed to a handler
+    */
    fireEvent(eventType, response) {
       super.fire(eventType, response)
    }
 
+   /**
+    * Add event listener
+    * 
+    * @param  {String}   event    Event must match one of the supported event types from istsos.EventTypes
+    * @param  {Function} callback Handler function
+    */
    on(event, callback) {
       super.on(event, callback);
    }
 
+   /**
+    * Add event listener, that will listen only once.
+    * 
+    * @param  {String}   event    Event must match one of the supported event types from istsos.EventTypes
+    * @param  {Function} callback Handler function
+    */
    once(event, callback) {
       super.once(event, callback);
    }
 
+   /**
+    * Remove event listener
+    * 
+    * @param  {String}   event    Event must match one of the supported event types from istsos.EventTypes
+    * @param  {Function} callback Handler function
+    */
    off(event, callback) {
       super.off(event, callback);
    }
 
+   /**
+    * Remove all event listeners
+    */
    unlistenAll() {
-      super.unlistenAll(event, callback);
+      super.unlistenAll();
    }
 
+   /**
+    * Update procedures and virtual procedures included
+    */
    updateProceduresIncluded() {
       var procedures = this.service.getProceduresProperty();
       var v_procedures = this.service.getVirtualProceduresProperty();
@@ -56,7 +90,7 @@ export var UnitOfMeasure = class UnitOfMeasure extends EventEmitter {
    }
 
    /**
-    * @returns {JSON}
+    * @return {Object}
     */
    getUomJSON() {
       var uomJSON = {
@@ -67,9 +101,11 @@ export var UnitOfMeasure = class UnitOfMeasure extends EventEmitter {
    }
 
    /**
-    * @fires istsos.UnitOfMeasure#istsos.events.EventType: UPDATE_UOM
-    * @param {String} newName
-    * @param {String} newDescr
+    * Update unit of measure on the server
+    *
+    * @param {object} options Set of key-value pairs
+    * @return {Promise} 
+    * @fires  istsos.UnitOfMeasure#UPDATE_UOM            
     */
    updateUom(options) {
       const oldName = this.name;
@@ -98,7 +134,11 @@ export var UnitOfMeasure = class UnitOfMeasure extends EventEmitter {
    }
 
    /**
-    * @fires istsos.UnitOfMeasure#istsos.events.EventType: DELETE_UOM
+    * Delete unit of measure on the server
+    *
+    * @param {object} options Set of key-value pairs
+    * @return {Promise} 
+    * @fires  istsos.UnitOfMeasure#DELETE_UOM            
     */
    deleteUom() {
       var procedures = this.service.getProceduresProperty();
