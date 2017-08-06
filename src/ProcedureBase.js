@@ -1,18 +1,17 @@
 import {EventEmitter } from 'EventEmitter';
-/** istsos.ProcedureBase class - ABSTRACT */
 /**
- * @param {String} name
- * @param {String} description
- * @param {String} keywords
- * @param {String} foi_name
- * @param {int} epsg
- * @param {int} x
- * @param {int} y
- * @param {int} z
- * @param {Array<istsos.Output>} outputs
- * @constructor
+ * istsos.ProcedureBase 
+ * 
+ * @class
+ * @extends istsos.EventEmitter
  */
 export var ProcedureBase = class ProcedureBase extends EventEmitter {
+   /**
+    * constructor - instantiates istsos.ProcedureBase
+    * 
+    * @param  {Object} options Set of key-value pairs
+    * @constructor
+    */
    constructor(options) {
       super();
       this.name = options.name;
@@ -24,35 +23,62 @@ export var ProcedureBase = class ProcedureBase extends EventEmitter {
       this.outputs = options.outputs || [];
    }
 
+   /**
+    * Fire event with data - event must match one of the supported event types from istsos.EventTypes
+    * 
+    * @param  {String} eventType Type of event from istsos.EventTypes
+    * @param  {Object|*} response  Data to be passed to a handler
+    */
    fireEvent(eventType, response) {
       super.fire(eventType, response)
    }
 
+   /**
+    * Add event listener
+    * 
+    * @param  {String}   event    Event must match one of the supported event types from istsos.EventTypes
+    * @param  {Function} callback Handler function
+    */
    on(event, callback) {
       super.on(event, callback);
    }
 
+   /**
+    * Add event listener, that will listen only once.
+    * 
+    * @param  {String}   event    Event must match one of the supported event types from istsos.EventTypes
+    * @param  {Function} callback Handler function
+    */
    once(event, callback) {
       super.once(event, callback);
    }
 
+   /**
+    * Remove event listener
+    * 
+    * @param  {String}   event    Event must match one of the supported event types from istsos.EventTypes
+    * @param  {Function} callback Handler function
+    */
    off(event, callback) {
       super.off(event, callback);
    }
 
+   /**
+    * Remove all event listeners
+    */
    unlistenAll() {
-      super.unlistenAll(event, callback);
+      super.unlistenAll();
    }
 
    /**
-    * @returns {Array<istsos.Output>}
+    * @return {Array<istsos.Output>}
     */
    getOutputsProperty() {
       return this.outputs;
    }
 
    /**
-    * @returns {JSON}
+    * @return {Object}
     */
    getProcedureBaseJSON() {
       var procedureBaseJSON = {
@@ -96,17 +122,7 @@ export var ProcedureBase = class ProcedureBase extends EventEmitter {
    }
 
    /**
-    * @param {String} individualName
-    * @param {String} voice
-    * @param {String} fax
-    * @param {String} email
-    * @param {String} web
-    * @param {String} deliveryPoint
-    * @param {String} city
-    * @param {String} administrativeArea
-    * @param {String} postalCode
-    * @param {String} country
-    * @returns {JSON}
+    * @param {Object} options
     */
    createContactForm(options) {
       return {
@@ -124,14 +140,14 @@ export var ProcedureBase = class ProcedureBase extends EventEmitter {
    }
 
    /**
-    * @returns {Array<String>}
+    * @return {Array<String>}
     */
    getCapabilitiesUom() {
       return ["µs", "ms", "s", "min", "h", "d"];
    }
 
    /**
-    * @returns {Array<JSON>}
+    * @return {Array<Object>}
     */
    getCapabilitiesJson() {
       return [{
@@ -148,7 +164,7 @@ export var ProcedureBase = class ProcedureBase extends EventEmitter {
    }
 
    /**
-    * @returns {Array<JSON>}
+    * @return {Array<Object>}
     */
    getIdentificationNames() {
       return [{

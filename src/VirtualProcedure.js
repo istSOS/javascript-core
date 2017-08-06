@@ -1,25 +1,18 @@
 import {ProcedureBase} from 'ProcedureBase';
 import {HttpAPI} from 'HttpAPI';
-
-/** istsos.VirtualProcedure class */
 /**
- * @param {istsos.Service} service
- * @param {String} name
- * @param {String} description
- * @param {String} keywords
- * @param {String} foi_name
- * @param {int} epsg
- * @param {int} x
- * @param {int} y
- * @param {int} z
- * @param {Array<istsos.Output>} outputs
- * @param {String} systemType (virtual)
- * @param {String} sensorType
- * @param {String} code
- * @param {JSON} ratingCurve
- * @constructor
+ * istsos.VirtualProcedure 
+ * 
+ * @class
+ * @extends istsos.EventEmitter
  */
 export var VirtualProcedure = class VirtualProcedure extends ProcedureBase {
+   /**
+    * constructor - instantiates istsos.VirtualProcedure
+    * 
+    * @param  {Object} options Set of key-value pairs
+    * @constructor
+    */
    constructor(options) {
       super({
          name: options.name,
@@ -43,28 +36,55 @@ export var VirtualProcedure = class VirtualProcedure extends ProcedureBase {
       service.getOfferingsProperty()[0].getMemberProceduresProperty().push(this);
    }
 
+   /**
+    * Fire event with data - event must match one of the supported event types from istsos.EventTypes
+    * 
+    * @param  {String} eventType Type of event from istsos.EventTypes
+    * @param  {Object|*} response  Data to be passed to a handler
+    */
    fireEvent(eventType, response) {
       super.fire(eventType, response)
    }
 
+   /**
+    * Add event listener
+    * 
+    * @param  {String}   event    Event must match one of the supported event types from istsos.EventTypes
+    * @param  {Function} callback Handler function
+    */
    on(event, callback) {
       super.on(event, callback);
    }
 
+   /**
+    * Add event listener, that will listen only once.
+    * 
+    * @param  {String}   event    Event must match one of the supported event types from istsos.EventTypes
+    * @param  {Function} callback Handler function
+    */
    once(event, callback) {
       super.once(event, callback);
    }
 
+   /**
+    * Remove event listener
+    * 
+    * @param  {String}   event    Event must match one of the supported event types from istsos.EventTypes
+    * @param  {Function} callback Handler function
+    */
    off(event, callback) {
       super.off(event, callback);
    }
 
+   /**
+    * Remove all event listeners
+    */
    unlistenAll() {
-      super.unlistenAll(event, callback);
+      super.unlistenAll();
    }
 
    /**
-    * @returns {JSON}
+    * @return {Object}
     */
    getVirtualProcedureJSON() {
       var vProcedureJSON = super.getProcedureBaseJSON();
@@ -81,7 +101,10 @@ export var VirtualProcedure = class VirtualProcedure extends ProcedureBase {
    }
 
    /**
-    * @fires istsos.VirtualProcedure#istsos.events.EventType: GET_CODE
+    * Get virtual procedure code
+    *
+    * @return {Promise} 
+    * @fires  istsos.VirtualProcedure#GET_CODE            
     */
    getCode() {
       var url = `${this.service.server.getUrl()}wa/istsos/services/${this.service.getServiceJSON()["service"]}/virtualprocedures/${this.getVirtualProcedureJSON()["system"]}/code`;
@@ -105,7 +128,10 @@ export var VirtualProcedure = class VirtualProcedure extends ProcedureBase {
    }
 
    /**
-    * @fires istsos.VirtualProcedure#istsos.events.EventType: NEW_CODE
+    * Post new virtual procedure code
+    *
+    * @return {Promise} 
+    * @fires  istsos.VirtualProcedure#NEW_CODE            
     */
    registerCode() {
       var url = `${this.service.server.getUrl()}wa/istsos/services/${this.service.getServiceJSON()["service"]}/virtualprocedures/${this.getVirtualProcedureJSON()["system"]}/code`;
@@ -131,8 +157,10 @@ export var VirtualProcedure = class VirtualProcedure extends ProcedureBase {
    }
 
    /**
-    * @fires istsos.VirtualProcedure#istsos.events.EventType: UPDATE_CODE
-    * @param {String} newCode
+    * Update virtual procedure code
+    *
+    * @return {Promise} 
+    * @fires  istsos.VirtualProcedure#UPDATE_CODE            
     */
    updateCode(newCode) {
       this.code = {
@@ -160,7 +188,10 @@ export var VirtualProcedure = class VirtualProcedure extends ProcedureBase {
    }
 
    /**
-    * @fires istsos.VirtualProcedure#istsos.events.EventType: DELETE_CODE
+    * Delete virtual procedure code
+    *
+    * @return {Promise} 
+    * @fires  istsos.VirtualProcedure#DELETE_CODE            
     */
    deleteCode() {
       this.code = "";
@@ -185,14 +216,17 @@ export var VirtualProcedure = class VirtualProcedure extends ProcedureBase {
    }
 
    /**
-    * @returns {JSON}
+    * @return {Object}
     */
    getCodeProperty() {
       return this.code;
    }
 
    /**
-    * @fires istsos.VirtualProcedure#istsos.events.EventType: RATING_CURVE
+    * Get virtual procedure rating curve
+    *
+    * @return {Promise} 
+    * @fires  istsos.VirtualProcedure#RATING_CURVE            
     */
    getRatingCurve() {
       var url = `${this.service.server.getUrl()}wa/istsos/services/${this.service.getServiceJSON()["service"]}/virtualprocedures/${this.getVirtualProcedureJSON()["system"]}/ratingcurve`;
@@ -216,7 +250,10 @@ export var VirtualProcedure = class VirtualProcedure extends ProcedureBase {
    }
 
    /**
-    * @fires istsos.VirtualProcedure#istsos.events.EventType: NEW_RATING_CURVE
+    * Post virtual procedure rating curve
+    *
+    * @return {Promise} 
+    * @fires  istsos.VirtualProcedure#NEW_RATING_CURVE            
     */
    registerRatingCurve() {
       var url = `${this.service.server.getUrl()}wa/istsos/services/${this.service.getServiceJSON()["service"]}/virtualprocedures/${this.getVirtualProcedureJSON()["system"]}/ratingcurve`;
@@ -241,7 +278,10 @@ export var VirtualProcedure = class VirtualProcedure extends ProcedureBase {
    }
 
    /**
-    * @fires istsos.VirtualProcedure#istsos.events.EventType: DELETE_RATING_CURVE
+    * Delete virtual procedure's rating curve
+    *
+    * @return {Promise} 
+    * @fires  istsos.VirtualProcedure#DELETE_RATING_CURVE            
     */
    deleteRatingCurve() {
       this.ratingCurve = {};
@@ -266,7 +306,7 @@ export var VirtualProcedure = class VirtualProcedure extends ProcedureBase {
    }
 
    /**
-    * @returns {JSON}
+    * @return {Object}
     */
    getRatingCurveProperty() {
       return this.ratingCurve;
@@ -274,18 +314,11 @@ export var VirtualProcedure = class VirtualProcedure extends ProcedureBase {
 
 
    /**
-    * @fires istsos.VirtualProcedure#istsos.events.EventType: UPDATE_V_PROCEDURE
-    * @param {String} name
-    * @param {String} description
-    * @param {String} keywords
-    * @param {String} foi_name
-    * @param {int} epsg
-    * @param {int} x
-    * @param {int} y
-    * @param {int} z
-    * @param {Array<istsos.Output>} outputs
-    * @param {String} systemType (virtual)
-    * @param {String} sensorType
+    * Update virtual procedure on the server
+    *
+    * @param {object} options Set of key-value pairs
+    * @return {Promise} 
+    * @fires  istsos.VirtualProcedure#UPDATE_V_PROCEDURE            
     */
    updateVirtualProcedure(options) {
       const oldName = this.name;
@@ -326,6 +359,12 @@ export var VirtualProcedure = class VirtualProcedure extends ProcedureBase {
          });
    }
 
+   /**
+    * Delete virtual procedure on the server
+    *
+    * @return {Promise} 
+    * @fires  istsos.Procedure#DELETE_PROCEDURE            
+    */
    deleteVirtualProcedure() {
       var v_procedures = this.service.getVirtualProceduresProperty();
       var obj = this.getVirtualProcedureJSON();
@@ -356,8 +395,11 @@ export var VirtualProcedure = class VirtualProcedure extends ProcedureBase {
    }
 
    /**
-    * @fires istsos.VirtualProcedure#istsos.events.EventType: ADD_TO_OFFERING
-    * @param {istsos.Offering} offering
+    * Add virtual procedure's membership to offering on the server
+    *
+    * @param {istsos.Offering} offering istsos.Offering class
+    * @return {Promise} 
+    * @fires  istsos.Offering#ADD_TO_OFFERING            
     */
    addMembershipToOffering(offering) {
       offering.getMemberProceduresProperty().push(this);
@@ -388,8 +430,11 @@ export var VirtualProcedure = class VirtualProcedure extends ProcedureBase {
    }
 
    /**
-    * @fires istsos.VirtualProcedure#istsos.events.EventType: REMOVE_FROM_OFFERING
-    * @param offering
+    * Remove virtual procedure's membership from offering on the server
+    *
+    * @param {istsos.Offering} offering istsos.Offering class
+    * @return {Promise} 
+    * @fires  istsos.Offering#REMOVE_FROM_OFFERING            
     */
    removeMembershipFromOffering(offering) {
       var procedures = offering.getMemberProceduresProperty();
@@ -426,7 +471,7 @@ export var VirtualProcedure = class VirtualProcedure extends ProcedureBase {
    }
 
    /**
-    * @returns {Array<istsos.Output>}
+    * @return {Array<istsos.Output>}
     */
    getOutputsProperty() {
       return super.getOutputsProperty();
