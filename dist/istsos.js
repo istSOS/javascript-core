@@ -87,7 +87,8 @@ Object.defineProperty(exports, "__esModule", {
    value: true
 });
 /**
- * url, method, headers, data
+ * Simple promisified HTTP request API
+ * @type {Object}
  */
 var HttpAPI = exports.HttpAPI = {
    _request: function _request(config) {
@@ -1692,17 +1693,21 @@ function _possibleConstructorReturn(self, call) { if (!self) { throw new Referen
 
 function _inherits(subClass, superClass) { if (typeof superClass !== "function" && superClass !== null) { throw new TypeError("Super expression must either be null or a function, not " + typeof superClass); } subClass.prototype = Object.create(superClass && superClass.prototype, { constructor: { value: subClass, enumerable: false, writable: true, configurable: true } }); if (superClass) Object.setPrototypeOf ? Object.setPrototypeOf(subClass, superClass) : subClass.__proto__ = superClass; }
 
-/** istsos.DataQuality class */
 /**
- * @param {istsos.Service} service
- * @param {int} codeDQ
- * @param {String} nameDQ
- * @param {String} descrDQ
- * @constructor
+ * istsos.DataQuality 
+ * 
+ * @class
+ * @extends istsos.EventEmitter
  */
 var DataQuality = exports.DataQuality = function (_EventEmitter) {
    _inherits(DataQuality, _EventEmitter);
 
+   /**
+    * constructor - instantiates istsos.DataQuality
+    * 
+    * @param  {Object} options Set of key-value pairs
+    * @constructor
+    */
    function DataQuality(options) {
       _classCallCheck(this, DataQuality);
 
@@ -1716,34 +1721,71 @@ var DataQuality = exports.DataQuality = function (_EventEmitter) {
       return _this;
    }
 
+   /**
+    * Fire event with data - event must match one of the supported event types from istsos.EventTypes
+    * 
+    * @param  {String} eventType Type of event from istsos.EventTypes
+    * @param  {Object|*} response  Data to be passed to a handler
+    */
+
+
    _createClass(DataQuality, [{
       key: 'fireEvent',
       value: function fireEvent(eventType, response) {
          _get(DataQuality.prototype.__proto__ || Object.getPrototypeOf(DataQuality.prototype), 'fire', this).call(this, eventType, response);
       }
+
+      /**
+       * Add event listener
+       * 
+       * @param  {String}   event    Event must match one of the supported event types from istsos.EventTypes
+       * @param  {Function} callback Handler function
+       */
+
    }, {
       key: 'on',
       value: function on(event, callback) {
          _get(DataQuality.prototype.__proto__ || Object.getPrototypeOf(DataQuality.prototype), 'on', this).call(this, event, callback);
       }
+
+      /**
+       * Add event listener, that will listen only once.
+       * 
+       * @param  {String}   event    Event must match one of the supported event types from istsos.EventTypes
+       * @param  {Function} callback Handler function
+       */
+
    }, {
       key: 'once',
       value: function once(event, callback) {
          _get(DataQuality.prototype.__proto__ || Object.getPrototypeOf(DataQuality.prototype), 'once', this).call(this, event, callback);
       }
+
+      /**
+       * Remove event listener
+       * 
+       * @param  {String}   event    Event must match one of the supported event types from istsos.EventTypes
+       * @param  {Function} callback Handler function
+       */
+
    }, {
       key: 'off',
       value: function off(event, callback) {
          _get(DataQuality.prototype.__proto__ || Object.getPrototypeOf(DataQuality.prototype), 'off', this).call(this, event, callback);
       }
+
+      /**
+       * Remove all event listeners
+       */
+
    }, {
       key: 'unlistenAll',
       value: function unlistenAll() {
-         _get(DataQuality.prototype.__proto__ || Object.getPrototypeOf(DataQuality.prototype), 'unlistenAll', this).call(this, event, callback);
+         _get(DataQuality.prototype.__proto__ || Object.getPrototypeOf(DataQuality.prototype), 'unlistenAll', this).call(this);
       }
 
       /**
-       * @returns {JSON}
+       * @return {Object}
        */
 
    }, {
@@ -1758,10 +1800,11 @@ var DataQuality = exports.DataQuality = function (_EventEmitter) {
       }
 
       /**
-       * @fires istsos.DataQuality#istsos.events.EventType: UPDATE_DATAQUALITY
-       * @param {int} newCodeDQ
-       * @param {String} newNameDQ
-       * @param {String} newDescrDQ
+       * Update data quality on the server
+       *
+       * @param {object} options Set of key-value pairs
+       * @return {Promise} 
+       * @fires  istsos.DataQuality#UPDATE_DATAQUALITY            
        */
 
    }, {
@@ -1795,7 +1838,11 @@ var DataQuality = exports.DataQuality = function (_EventEmitter) {
       }
 
       /**
-       * @fires istsos.DataQuality#istsos.events.EventType: DELETE_DATAQUALITY
+       * Delete data quality on the server
+       *
+       * @param {object} options Set of key-value pairs
+       * @return {Promise} 
+       * @fires  istsos.DataQuality#DELETE_DATAQUALITY            
        */
 
    }, {
@@ -2159,7 +2206,7 @@ var Date = exports.Date = function () {
 
 
 Object.defineProperty(exports, "__esModule", {
-	value: true
+  value: true
 });
 exports.ObservedProperty = undefined;
 
@@ -2179,213 +2226,258 @@ function _possibleConstructorReturn(self, call) { if (!self) { throw new Referen
 
 function _inherits(subClass, superClass) { if (typeof superClass !== "function" && superClass !== null) { throw new TypeError("Super expression must either be null or a function, not " + typeof superClass); } subClass.prototype = Object.create(superClass && superClass.prototype, { constructor: { value: subClass, enumerable: false, writable: true, configurable: true } }); if (superClass) Object.setPrototypeOf ? Object.setPrototypeOf(subClass, superClass) : subClass.__proto__ = superClass; }
 
-/** istsos.ObservedProperty class */
 /**
- * @param {istsos.Service} service
- * @param {String} observedName
- * @param {String} definitionUrn
- * @param {String} observedDescr
- * @param {String} opt_constraintType (allowed_values:"between", "lessThan", "greaterThan", "valueList")
- * @param {Array|int} opt_value (Array or integer, depending on constraint type)
- * @constructor
+ * istsos.ObservedProperty
+ * 
+ * @class
+ * @extends istsos.EventEmitter
  */
-
 var ObservedProperty = exports.ObservedProperty = function (_EventEmitter) {
-	_inherits(ObservedProperty, _EventEmitter);
+  _inherits(ObservedProperty, _EventEmitter);
 
-	function ObservedProperty(options) {
-		_classCallCheck(this, ObservedProperty);
+  /**
+     * constructor - instantiates istsos.ObservedProperty
+     * 
+     * @param  {Object} options Set of key-value pairs
+     * @constructor
+     */
+  function ObservedProperty(options) {
+    _classCallCheck(this, ObservedProperty);
 
-		var _this = _possibleConstructorReturn(this, (ObservedProperty.__proto__ || Object.getPrototypeOf(ObservedProperty)).call(this));
+    var _this = _possibleConstructorReturn(this, (ObservedProperty.__proto__ || Object.getPrototypeOf(ObservedProperty)).call(this));
 
-		_this.observedName = options.observedName;
-		_this.definitionUrn = options.definitionUrn;
-		_this.observedDescr = options.observedDescr || "";
-		_this.constraint = null;
-		var check = (0, _IstsosHelper.validateConstraintInput)(options.constraintType, options.value);
-		if (check === true) {
-			_this.constraint = {};
-			_this.constraint["role"] = "urn:x-ogc:def:classifiers:x-istsos:1.0:qualityIndexCheck:level0";
-			_this.constraint[_IstsosHelper.ConstraintInputs[options.constraintType]] = options.value.constructor === Array ? options.value.toString().split(",") : options.value.toString();
-		} else {
-			console.log('Input constraintType and constraintValue for property <' + _this.observedName.toUpperCase() + '> are INCORRECT or INTENTIONALLY NULL!!! ');
-		}
-		_this.service = options.service;
-		_this.proceduresIncluded = [];
-		_this.updateProceduresIncluded();
-		service.addObservedProperty(_this);
-		return _this;
-	}
+    _this.observedName = options.observedName;
+    _this.definitionUrn = options.definitionUrn;
+    _this.observedDescr = options.observedDescr || "";
+    _this.constraint = null;
+    var check = (0, _IstsosHelper.validateConstraintInput)(options.constraintType, options.value);
+    if (check === true) {
+      _this.constraint = {};
+      _this.constraint["role"] = "urn:x-ogc:def:classifiers:x-istsos:1.0:qualityIndexCheck:level0";
+      _this.constraint[_IstsosHelper.ConstraintInputs[options.constraintType]] = options.value.constructor === Array ? options.value.toString().split(",") : options.value.toString();
+    } else {
+      console.log('Input constraintType and constraintValue for property <' + _this.observedName.toUpperCase() + '> are INCORRECT or INTENTIONALLY NULL!!! ');
+    }
+    _this.service = options.service;
+    _this.proceduresIncluded = [];
+    _this.updateProceduresIncluded();
+    options.service.addObservedProperty(_this);
+    return _this;
+  }
 
-	_createClass(ObservedProperty, [{
-		key: 'fireEvent',
-		value: function fireEvent(eventType, response) {
-			_get(ObservedProperty.prototype.__proto__ || Object.getPrototypeOf(ObservedProperty.prototype), 'fire', this).call(this, eventType, response);
-		}
-	}, {
-		key: 'on',
-		value: function on(event, callback) {
-			_get(ObservedProperty.prototype.__proto__ || Object.getPrototypeOf(ObservedProperty.prototype), 'on', this).call(this, event, callback);
-		}
-	}, {
-		key: 'once',
-		value: function once(event, callback) {
-			_get(ObservedProperty.prototype.__proto__ || Object.getPrototypeOf(ObservedProperty.prototype), 'once', this).call(this, event, callback);
-		}
-	}, {
-		key: 'off',
-		value: function off(event, callback) {
-			_get(ObservedProperty.prototype.__proto__ || Object.getPrototypeOf(ObservedProperty.prototype), 'off', this).call(this, event, callback);
-		}
-	}, {
-		key: 'unlistenAll',
-		value: function unlistenAll() {
-			_get(ObservedProperty.prototype.__proto__ || Object.getPrototypeOf(ObservedProperty.prototype), 'unlistenAll', this).call(this, event, callback);
-		}
-	}, {
-		key: 'updateProceduresIncluded',
-		value: function updateProceduresIncluded() {
-			var procedures = this.service.getProceduresProperty();
-			var v_procedures = this.service.getVirtualProceduresProperty();
-			var all = procedures.concat(v_procedures);
-			var name = this.observedName;
-			if (all.length !== 0) {
-				for (var i = 0; i < all.length; i++) {
-					for (var j = 0; j < all[i].getOutputsProperty().length; j++) {
-						if (name = all[i].getOutputsProperty()[j]["name"]) {
-							this.getProceduresIncluded().push(all[i]);
-						}
-					}
-				}
-			}
-		}
-
-		/**
-   * @returns {Array<istsos.Procedure|istsos.VirtualProcedure>}
+  /**
+   * Fire event with data - event must match one of the supported event types from istsos.EventTypes
+   * 
+   * @param  {String} eventType Type of event from istsos.EventTypes
+   * @param  {Object|*} response  Data to be passed to a handler
    */
 
-	}, {
-		key: 'getProceduresIncluded',
-		value: function getProceduresIncluded() {
-			return this.proceduresIncluded;
-		}
 
-		/**
-   * @returns {JSON}
-   */
+  _createClass(ObservedProperty, [{
+    key: 'fireEvent',
+    value: function fireEvent(eventType, response) {
+      _get(ObservedProperty.prototype.__proto__ || Object.getPrototypeOf(ObservedProperty.prototype), 'fire', this).call(this, eventType, response);
+    }
 
-	}, {
-		key: 'getObservedPropertyJSON',
-		value: function getObservedPropertyJSON() {
-			var observedJSON = {
-				"name": this.observedName,
-				"definition": this.definitionUrn,
-				"description": this.observedDescr,
-				"constraint": this.constraint
-			};
-			return observedJSON;
-		}
+    /**
+     * Add event listener
+     * 
+     * @param  {String}   event    Event must match one of the supported event types from istsos.EventTypes
+     * @param  {Function} callback Handler function
+     */
 
-		/**
-   * @fires istsos.ObservedProperty#istsos.events.EventType: UPDATE_OBSERVED_PROPERTY
-   * @param {String} newPropertyName
-   * @param {String} newDefinitionUrn
-   * @param {String} newPropertyDescr
-   * @param {String} opt_constraintType
-   * @param {Array<int>|int} opt_value
-   */
+  }, {
+    key: 'on',
+    value: function on(event, callback) {
+      _get(ObservedProperty.prototype.__proto__ || Object.getPrototypeOf(ObservedProperty.prototype), 'on', this).call(this, event, callback);
+    }
 
-	}, {
-		key: 'updateObservedProperty',
-		value: function updateObservedProperty(options) {
-			var _this2 = this;
+    /**
+     * Add event listener, that will listen only once.
+     * 
+     * @param  {String}   event    Event must match one of the supported event types from istsos.EventTypes
+     * @param  {Function} callback Handler function
+     */
 
-			var oldDefinitionUrn = this.definitionUrn;
-			this.observedName = options.newPropertyName || this.observedName;
-			this.definitionUrn = options.newDefinitionUrn || this.definitionUrn;
-			this.observedDescr = options.newPropertyName || this.observedDescr;
-			if ((0, _IstsosHelper.validateConstraintInput)(options.constraintType, options.value) === true) {
-				this.constraint = {};
-				this.constraint["role"] = "urn:x-ogc:def:classifiers:x-istsos:1.0:qualityIndexCheck:level0";
-				this.constraint[_IstsosHelper.ConstraintInputs[options.constraintType]] = options.value.constructor === Array ? options.value.toString().split(",") : options.value.toString();
-			} else {
-				console.log('Input constraintType and constraintValue for property <' + this.observedName.toUpperCase() + '> are INCORRECT or INTENTIONALLY NULL!!! ');
-			}
-			var url = this.service.server.getUrl() + 'wa/istsos/services/' + this.service.getServiceJSON()["service"] + '/observedproperties/' + oldDefinitionUrn;
+  }, {
+    key: 'once',
+    value: function once(event, callback) {
+      _get(ObservedProperty.prototype.__proto__ || Object.getPrototypeOf(ObservedProperty.prototype), 'once', this).call(this, event, callback);
+    }
 
-			var config = {};
-			if (this.service.server.getLoginConfig()) {
-				config['headers'] = this.service.server.getLoginConfig();
-			}
-			config['data'] = JSON.stringify(this.getObservedPropertyJSON());
+    /**
+     * Remove event listener
+     * 
+     * @param  {String}   event    Event must match one of the supported event types from istsos.EventTypes
+     * @param  {Function} callback Handler function
+     */
 
-			return _HttpAPI.HttpAPI.put(url, config).then(function (result) {
-				if (result.success) {
-					_this2.fireEvent('UPDATE_OBSERVED_PROPERTY', result);
-					return result;
-				} else {
-					throw result.message;
-				}
-			}, function (error_message) {
-				throw error_message;
-			});
-		}
+  }, {
+    key: 'off',
+    value: function off(event, callback) {
+      _get(ObservedProperty.prototype.__proto__ || Object.getPrototypeOf(ObservedProperty.prototype), 'off', this).call(this, event, callback);
+    }
 
-		/**
-   * @fires istsos.ObservedProperty#istsos.events.EventType: DELETE_OBSERVED_PROPERTY
-   */
+    /**
+     * Remove all event listeners
+     */
 
-	}, {
-		key: 'deleteObservedProperty',
-		value: function deleteObservedProperty() {
-			var _this3 = this;
+  }, {
+    key: 'unlistenAll',
+    value: function unlistenAll() {
+      _get(ObservedProperty.prototype.__proto__ || Object.getPrototypeOf(ObservedProperty.prototype), 'unlistenAll', this).call(this);
+    }
 
-			var procedures = this.service.getProceduresProperty();
-			var v_procedures = this.service.getVirtualProceduresProperty();
-			var properties_service = this.service.getObservedPropertiesProperty();
-			var all = procedures.concat(v_procedures);
-			var outputs = [];
-			all.forEach(function (p) {
-				outputs.concat(p.getOutputsProperty());
-			});
-			var name = this.observedName;
-			var connected = false;
-			for (var i = 0; i < outputs.length; i++) {
-				if (name === outputs[i].getOutputJSON()["name"]) {
-					alert("CONNECTED TO PROCEDURE");
-					connected = true;
-					break;
-				}
-			}
-			if (connected === false) {
-				for (var j = 0; j < properties_service.length; j++) {
-					if (this === properties_service[j]) {
-						properties_service.splice(j, 1);
-					}
-				}
-			}
-			var url = this.service.server.getUrl() + 'wa/istsos/services/' + this.service.getServiceJSON()["service"] + '/observedproperties/' + this.getObservedPropertyJSON()["definition"];
+    /**
+     * Refresh the list of procedures that use this observed property
+     */
 
-			var config = {};
-			if (this.service.server.getLoginConfig()) {
-				config['headers'] = this.service.server.getLoginConfig();
-			}
-			config['data'] = JSON.stringify(this.getObservedPropertyJSON());
+  }, {
+    key: 'updateProceduresIncluded',
+    value: function updateProceduresIncluded() {
+      var procedures = this.service.getProceduresProperty();
+      var v_procedures = this.service.getVirtualProceduresProperty();
+      var all = procedures.concat(v_procedures);
+      var name = this.observedName;
+      if (all.length !== 0) {
+        for (var i = 0; i < all.length; i++) {
+          for (var j = 0; j < all[i].getOutputsProperty().length; j++) {
+            if (name = all[i].getOutputsProperty()[j]["name"]) {
+              this.getProceduresIncluded().push(all[i]);
+            }
+          }
+        }
+      }
+    }
 
-			return _HttpAPI.HttpAPI.delete(url, config).then(function (result) {
-				if (result.success) {
-					_this3.fireEvent('DELETE_OBSERVED_PROPERTY', result);
-					return result;
-				} else {
-					throw result.message;
-				}
-			}, function (error_message) {
-				throw error_message;
-			});
-		}
-	}]);
+    /**
+     * @return {Array<istsos.Procedure|istsos.VirtualProcedure>}
+     */
 
-	return ObservedProperty;
+  }, {
+    key: 'getProceduresIncluded',
+    value: function getProceduresIncluded() {
+      return this.proceduresIncluded;
+    }
+
+    /**
+     * @returns {Object}
+     */
+
+  }, {
+    key: 'getObservedPropertyJSON',
+    value: function getObservedPropertyJSON() {
+      var observedJSON = {
+        "name": this.observedName,
+        "definition": this.definitionUrn,
+        "description": this.observedDescr,
+        "constraint": this.constraint
+      };
+      return observedJSON;
+    }
+
+    /**
+       * Update observed property on the server
+       *
+       * @param {object} options Set of key-value pairs
+       * @return {Promise} 
+       * @fires  istsos.ObservedProperty#UPDATE_OBSERVED_PROPERTY            
+       */
+
+  }, {
+    key: 'updateObservedProperty',
+    value: function updateObservedProperty(options) {
+      var _this2 = this;
+
+      var oldDefinitionUrn = this.definitionUrn;
+      this.observedName = options.newPropertyName || this.observedName;
+      this.definitionUrn = options.newDefinitionUrn || this.definitionUrn;
+      this.observedDescr = options.newPropertyName || this.observedDescr;
+      if ((0, _IstsosHelper.validateConstraintInput)(options.constraintType, options.value) === true) {
+        this.constraint = {};
+        this.constraint["role"] = "urn:x-ogc:def:classifiers:x-istsos:1.0:qualityIndexCheck:level0";
+        this.constraint[_IstsosHelper.ConstraintInputs[options.constraintType]] = options.value.constructor === Array ? options.value.toString().split(",") : options.value.toString();
+      } else {
+        console.log('Input constraintType and constraintValue for property <' + this.observedName.toUpperCase() + '> are INCORRECT or INTENTIONALLY NULL!!! ');
+      }
+      var url = this.service.server.getUrl() + 'wa/istsos/services/' + this.service.getServiceJSON()["service"] + '/observedproperties/' + oldDefinitionUrn;
+
+      var config = {};
+      if (this.service.server.getLoginConfig()) {
+        config['headers'] = this.service.server.getLoginConfig();
+      }
+      config['data'] = JSON.stringify(this.getObservedPropertyJSON());
+
+      return _HttpAPI.HttpAPI.put(url, config).then(function (result) {
+        if (result.success) {
+          _this2.fireEvent('UPDATE_OBSERVED_PROPERTY', result);
+          return result;
+        } else {
+          throw result.message;
+        }
+      }, function (error_message) {
+        throw error_message;
+      });
+    }
+
+    /**
+       * Delete observed property from the server
+       *
+       * @return {Promise} 
+       * @fires  istsos.ObservedProperty#DELETE_OBSERVED_PROPERTY            
+       */
+
+  }, {
+    key: 'deleteObservedProperty',
+    value: function deleteObservedProperty() {
+      var _this3 = this;
+
+      var procedures = this.service.getProceduresProperty();
+      var v_procedures = this.service.getVirtualProceduresProperty();
+      var properties_service = this.service.getObservedPropertiesProperty();
+      var all = procedures.concat(v_procedures);
+      var outputs = [];
+      all.forEach(function (p) {
+        outputs.concat(p.getOutputsProperty());
+      });
+      var name = this.observedName;
+      var connected = false;
+      for (var i = 0; i < outputs.length; i++) {
+        if (name === outputs[i].getOutputJSON()["name"]) {
+          alert("CONNECTED TO PROCEDURE");
+          connected = true;
+          break;
+        }
+      }
+      if (connected === false) {
+        for (var j = 0; j < properties_service.length; j++) {
+          if (this === properties_service[j]) {
+            properties_service.splice(j, 1);
+          }
+        }
+      }
+      var url = this.service.server.getUrl() + 'wa/istsos/services/' + this.service.getServiceJSON()["service"] + '/observedproperties/' + this.getObservedPropertyJSON()["definition"];
+
+      var config = {};
+      if (this.service.server.getLoginConfig()) {
+        config['headers'] = this.service.server.getLoginConfig();
+      }
+      config['data'] = JSON.stringify(this.getObservedPropertyJSON());
+
+      return _HttpAPI.HttpAPI.delete(url, config).then(function (result) {
+        if (result.success) {
+          _this3.fireEvent('DELETE_OBSERVED_PROPERTY', result);
+          return result;
+        } else {
+          throw result.message;
+        }
+      }, function (error_message) {
+        throw error_message;
+      });
+    }
+  }]);
+
+  return ObservedProperty;
 }(_EventEmitter2.EventEmitter);
 
 /***/ }),
@@ -2406,16 +2498,18 @@ var _IstsosHelper = __webpack_require__(2);
 
 function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
 
-/** istsos.Output clas */
 /**
- * @param {istsos.ObservedProperty} property
- * @param {istsos.UnitOfMeasure} uom
- * @param {String} description
- * @param {String} opt_constraintType
- * @param {Array|int} opt_constraintValue
- * @constructor
+ * istsos.Output
+ * 
+ * @class
  */
 var Output = exports.Output = function () {
+   /**
+    * constructor - instantiates istsos.Output
+    * 
+    * @param  {Object} options Set of key-value pairs
+    * @constructor
+    */
    function Output(options) {
       _classCallCheck(this, Output);
 
@@ -2432,7 +2526,7 @@ var Output = exports.Output = function () {
       }
    }
    /**
-    * @returns {JSON}
+    * @return {JSON}
     */
 
 
@@ -3409,7 +3503,7 @@ var Service = exports.Service = function (_EventEmitter) {
 		_this.name = options.name;
 		_this.db = options.opt_db || options.server.getDefaultDbProperty();
 		_this.epsg = options.opt_epsg || null;
-		_this.config = options.opt_config || new istsos.Configuration({
+		_this.config = options.opt_config || new _Configuration.Configuration({
 			serviceName: options.name,
 			server: options.server
 		});
@@ -3430,7 +3524,7 @@ var Service = exports.Service = function (_EventEmitter) {
 			service: _this
 		};
 
-		var temporary_offering = new istsos.Offering(offering_config);
+		var temporary_offering = new _Offering.Offering(offering_config);
 		return _this;
 	}
 
@@ -5315,22 +5409,22 @@ function placeHoldersCount (b64) {
 
 function byteLength (b64) {
   // base64 is 4/3 + up to two characters of the original data
-  return (b64.length * 3 / 4) - placeHoldersCount(b64)
+  return b64.length * 3 / 4 - placeHoldersCount(b64)
 }
 
 function toByteArray (b64) {
-  var i, l, tmp, placeHolders, arr
+  var i, j, l, tmp, placeHolders, arr
   var len = b64.length
   placeHolders = placeHoldersCount(b64)
 
-  arr = new Arr((len * 3 / 4) - placeHolders)
+  arr = new Arr(len * 3 / 4 - placeHolders)
 
   // if there are placeholders, only get up to the last complete 4 chars
   l = placeHolders > 0 ? len - 4 : len
 
   var L = 0
 
-  for (i = 0; i < l; i += 4) {
+  for (i = 0, j = 0; i < l; i += 4, j += 3) {
     tmp = (revLookup[b64.charCodeAt(i)] << 18) | (revLookup[b64.charCodeAt(i + 1)] << 12) | (revLookup[b64.charCodeAt(i + 2)] << 6) | revLookup[b64.charCodeAt(i + 3)]
     arr[L++] = (tmp >> 16) & 0xFF
     arr[L++] = (tmp >> 8) & 0xFF

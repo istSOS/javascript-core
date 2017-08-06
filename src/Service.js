@@ -22,7 +22,7 @@ export var Service = class Service extends EventEmitter {
 		this.name = options.name;
 		this.db = options.opt_db || options.server.getDefaultDbProperty();
 		this.epsg = options.opt_epsg || null;
-		this.config = options.opt_config || new istsos.Configuration({
+		this.config = options.opt_config || new Configuration({
 			serviceName: options.name,
 			server: options.server
 		});
@@ -43,7 +43,7 @@ export var Service = class Service extends EventEmitter {
 			service: this
 		}
 
-		var temporary_offering = new istsos.Offering(offering_config);
+		var temporary_offering = new Offering(offering_config);
 	}
 
    /**
