@@ -19,7 +19,7 @@ export var DataQuality = class DataQuality extends EventEmitter {
       this.name = options.nameDQ;
       this.description = options.descrDQ || "";
       this.service = options.service;
-      service.addDataQuality(this);
+      options.service.addDataQuality(this);
    }
 
    /**
