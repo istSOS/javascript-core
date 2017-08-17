@@ -9,6 +9,643 @@
 		root["istsos"] = factory();
 })(this, function() {
 return /******/ (function(modules) { // webpackBootstrap
+/******/ 	function hotDisposeChunk(chunkId) {
+/******/ 		delete installedChunks[chunkId];
+/******/ 	}
+/******/ 	var parentHotUpdateCallback = this["webpackHotUpdateistsos"];
+/******/ 	this["webpackHotUpdateistsos"] = 
+/******/ 	function webpackHotUpdateCallback(chunkId, moreModules) { // eslint-disable-line no-unused-vars
+/******/ 		hotAddUpdateChunk(chunkId, moreModules);
+/******/ 		if(parentHotUpdateCallback) parentHotUpdateCallback(chunkId, moreModules);
+/******/ 	} ;
+/******/ 	
+/******/ 	function hotDownloadUpdateChunk(chunkId) { // eslint-disable-line no-unused-vars
+/******/ 		var head = document.getElementsByTagName("head")[0];
+/******/ 		var script = document.createElement("script");
+/******/ 		script.type = "text/javascript";
+/******/ 		script.charset = "utf-8";
+/******/ 		script.src = __webpack_require__.p + "" + chunkId + "." + hotCurrentHash + ".hot-update.js";
+/******/ 		head.appendChild(script);
+/******/ 	}
+/******/ 	
+/******/ 	function hotDownloadManifest() { // eslint-disable-line no-unused-vars
+/******/ 		return new Promise(function(resolve, reject) {
+/******/ 			if(typeof XMLHttpRequest === "undefined")
+/******/ 				return reject(new Error("No browser support"));
+/******/ 			try {
+/******/ 				var request = new XMLHttpRequest();
+/******/ 				var requestPath = __webpack_require__.p + "" + hotCurrentHash + ".hot-update.json";
+/******/ 				request.open("GET", requestPath, true);
+/******/ 				request.timeout = 10000;
+/******/ 				request.send(null);
+/******/ 			} catch(err) {
+/******/ 				return reject(err);
+/******/ 			}
+/******/ 			request.onreadystatechange = function() {
+/******/ 				if(request.readyState !== 4) return;
+/******/ 				if(request.status === 0) {
+/******/ 					// timeout
+/******/ 					reject(new Error("Manifest request to " + requestPath + " timed out."));
+/******/ 				} else if(request.status === 404) {
+/******/ 					// no update available
+/******/ 					resolve();
+/******/ 				} else if(request.status !== 200 && request.status !== 304) {
+/******/ 					// other failure
+/******/ 					reject(new Error("Manifest request to " + requestPath + " failed."));
+/******/ 				} else {
+/******/ 					// success
+/******/ 					try {
+/******/ 						var update = JSON.parse(request.responseText);
+/******/ 					} catch(e) {
+/******/ 						reject(e);
+/******/ 						return;
+/******/ 					}
+/******/ 					resolve(update);
+/******/ 				}
+/******/ 			};
+/******/ 		});
+/******/ 	}
+/******/
+/******/ 	
+/******/ 	
+/******/ 	var hotApplyOnUpdate = true;
+/******/ 	var hotCurrentHash = "aecd4b656feb50479f74"; // eslint-disable-line no-unused-vars
+/******/ 	var hotCurrentModuleData = {};
+/******/ 	var hotCurrentChildModule; // eslint-disable-line no-unused-vars
+/******/ 	var hotCurrentParents = []; // eslint-disable-line no-unused-vars
+/******/ 	var hotCurrentParentsTemp = []; // eslint-disable-line no-unused-vars
+/******/ 	
+/******/ 	function hotCreateRequire(moduleId) { // eslint-disable-line no-unused-vars
+/******/ 		var me = installedModules[moduleId];
+/******/ 		if(!me) return __webpack_require__;
+/******/ 		var fn = function(request) {
+/******/ 			if(me.hot.active) {
+/******/ 				if(installedModules[request]) {
+/******/ 					if(installedModules[request].parents.indexOf(moduleId) < 0)
+/******/ 						installedModules[request].parents.push(moduleId);
+/******/ 				} else {
+/******/ 					hotCurrentParents = [moduleId];
+/******/ 					hotCurrentChildModule = request;
+/******/ 				}
+/******/ 				if(me.children.indexOf(request) < 0)
+/******/ 					me.children.push(request);
+/******/ 			} else {
+/******/ 				console.warn("[HMR] unexpected require(" + request + ") from disposed module " + moduleId);
+/******/ 				hotCurrentParents = [];
+/******/ 			}
+/******/ 			return __webpack_require__(request);
+/******/ 		};
+/******/ 		var ObjectFactory = function ObjectFactory(name) {
+/******/ 			return {
+/******/ 				configurable: true,
+/******/ 				enumerable: true,
+/******/ 				get: function() {
+/******/ 					return __webpack_require__[name];
+/******/ 				},
+/******/ 				set: function(value) {
+/******/ 					__webpack_require__[name] = value;
+/******/ 				}
+/******/ 			};
+/******/ 		};
+/******/ 		for(var name in __webpack_require__) {
+/******/ 			if(Object.prototype.hasOwnProperty.call(__webpack_require__, name) && name !== "e") {
+/******/ 				Object.defineProperty(fn, name, ObjectFactory(name));
+/******/ 			}
+/******/ 		}
+/******/ 		fn.e = function(chunkId) {
+/******/ 			if(hotStatus === "ready")
+/******/ 				hotSetStatus("prepare");
+/******/ 			hotChunksLoading++;
+/******/ 			return __webpack_require__.e(chunkId).then(finishChunkLoading, function(err) {
+/******/ 				finishChunkLoading();
+/******/ 				throw err;
+/******/ 			});
+/******/ 	
+/******/ 			function finishChunkLoading() {
+/******/ 				hotChunksLoading--;
+/******/ 				if(hotStatus === "prepare") {
+/******/ 					if(!hotWaitingFilesMap[chunkId]) {
+/******/ 						hotEnsureUpdateChunk(chunkId);
+/******/ 					}
+/******/ 					if(hotChunksLoading === 0 && hotWaitingFiles === 0) {
+/******/ 						hotUpdateDownloaded();
+/******/ 					}
+/******/ 				}
+/******/ 			}
+/******/ 		};
+/******/ 		return fn;
+/******/ 	}
+/******/ 	
+/******/ 	function hotCreateModule(moduleId) { // eslint-disable-line no-unused-vars
+/******/ 		var hot = {
+/******/ 			// private stuff
+/******/ 			_acceptedDependencies: {},
+/******/ 			_declinedDependencies: {},
+/******/ 			_selfAccepted: false,
+/******/ 			_selfDeclined: false,
+/******/ 			_disposeHandlers: [],
+/******/ 			_main: hotCurrentChildModule !== moduleId,
+/******/ 	
+/******/ 			// Module API
+/******/ 			active: true,
+/******/ 			accept: function(dep, callback) {
+/******/ 				if(typeof dep === "undefined")
+/******/ 					hot._selfAccepted = true;
+/******/ 				else if(typeof dep === "function")
+/******/ 					hot._selfAccepted = dep;
+/******/ 				else if(typeof dep === "object")
+/******/ 					for(var i = 0; i < dep.length; i++)
+/******/ 						hot._acceptedDependencies[dep[i]] = callback || function() {};
+/******/ 				else
+/******/ 					hot._acceptedDependencies[dep] = callback || function() {};
+/******/ 			},
+/******/ 			decline: function(dep) {
+/******/ 				if(typeof dep === "undefined")
+/******/ 					hot._selfDeclined = true;
+/******/ 				else if(typeof dep === "object")
+/******/ 					for(var i = 0; i < dep.length; i++)
+/******/ 						hot._declinedDependencies[dep[i]] = true;
+/******/ 				else
+/******/ 					hot._declinedDependencies[dep] = true;
+/******/ 			},
+/******/ 			dispose: function(callback) {
+/******/ 				hot._disposeHandlers.push(callback);
+/******/ 			},
+/******/ 			addDisposeHandler: function(callback) {
+/******/ 				hot._disposeHandlers.push(callback);
+/******/ 			},
+/******/ 			removeDisposeHandler: function(callback) {
+/******/ 				var idx = hot._disposeHandlers.indexOf(callback);
+/******/ 				if(idx >= 0) hot._disposeHandlers.splice(idx, 1);
+/******/ 			},
+/******/ 	
+/******/ 			// Management API
+/******/ 			check: hotCheck,
+/******/ 			apply: hotApply,
+/******/ 			status: function(l) {
+/******/ 				if(!l) return hotStatus;
+/******/ 				hotStatusHandlers.push(l);
+/******/ 			},
+/******/ 			addStatusHandler: function(l) {
+/******/ 				hotStatusHandlers.push(l);
+/******/ 			},
+/******/ 			removeStatusHandler: function(l) {
+/******/ 				var idx = hotStatusHandlers.indexOf(l);
+/******/ 				if(idx >= 0) hotStatusHandlers.splice(idx, 1);
+/******/ 			},
+/******/ 	
+/******/ 			//inherit from previous dispose call
+/******/ 			data: hotCurrentModuleData[moduleId]
+/******/ 		};
+/******/ 		hotCurrentChildModule = undefined;
+/******/ 		return hot;
+/******/ 	}
+/******/ 	
+/******/ 	var hotStatusHandlers = [];
+/******/ 	var hotStatus = "idle";
+/******/ 	
+/******/ 	function hotSetStatus(newStatus) {
+/******/ 		hotStatus = newStatus;
+/******/ 		for(var i = 0; i < hotStatusHandlers.length; i++)
+/******/ 			hotStatusHandlers[i].call(null, newStatus);
+/******/ 	}
+/******/ 	
+/******/ 	// while downloading
+/******/ 	var hotWaitingFiles = 0;
+/******/ 	var hotChunksLoading = 0;
+/******/ 	var hotWaitingFilesMap = {};
+/******/ 	var hotRequestedFilesMap = {};
+/******/ 	var hotAvailableFilesMap = {};
+/******/ 	var hotDeferred;
+/******/ 	
+/******/ 	// The update info
+/******/ 	var hotUpdate, hotUpdateNewHash;
+/******/ 	
+/******/ 	function toModuleId(id) {
+/******/ 		var isNumber = (+id) + "" === id;
+/******/ 		return isNumber ? +id : id;
+/******/ 	}
+/******/ 	
+/******/ 	function hotCheck(apply) {
+/******/ 		if(hotStatus !== "idle") throw new Error("check() is only allowed in idle status");
+/******/ 		hotApplyOnUpdate = apply;
+/******/ 		hotSetStatus("check");
+/******/ 		return hotDownloadManifest().then(function(update) {
+/******/ 			if(!update) {
+/******/ 				hotSetStatus("idle");
+/******/ 				return null;
+/******/ 			}
+/******/ 			hotRequestedFilesMap = {};
+/******/ 			hotWaitingFilesMap = {};
+/******/ 			hotAvailableFilesMap = update.c;
+/******/ 			hotUpdateNewHash = update.h;
+/******/ 	
+/******/ 			hotSetStatus("prepare");
+/******/ 			var promise = new Promise(function(resolve, reject) {
+/******/ 				hotDeferred = {
+/******/ 					resolve: resolve,
+/******/ 					reject: reject
+/******/ 				};
+/******/ 			});
+/******/ 			hotUpdate = {};
+/******/ 			var chunkId = 0;
+/******/ 			{ // eslint-disable-line no-lone-blocks
+/******/ 				/*globals chunkId */
+/******/ 				hotEnsureUpdateChunk(chunkId);
+/******/ 			}
+/******/ 			if(hotStatus === "prepare" && hotChunksLoading === 0 && hotWaitingFiles === 0) {
+/******/ 				hotUpdateDownloaded();
+/******/ 			}
+/******/ 			return promise;
+/******/ 		});
+/******/ 	}
+/******/ 	
+/******/ 	function hotAddUpdateChunk(chunkId, moreModules) { // eslint-disable-line no-unused-vars
+/******/ 		if(!hotAvailableFilesMap[chunkId] || !hotRequestedFilesMap[chunkId])
+/******/ 			return;
+/******/ 		hotRequestedFilesMap[chunkId] = false;
+/******/ 		for(var moduleId in moreModules) {
+/******/ 			if(Object.prototype.hasOwnProperty.call(moreModules, moduleId)) {
+/******/ 				hotUpdate[moduleId] = moreModules[moduleId];
+/******/ 			}
+/******/ 		}
+/******/ 		if(--hotWaitingFiles === 0 && hotChunksLoading === 0) {
+/******/ 			hotUpdateDownloaded();
+/******/ 		}
+/******/ 	}
+/******/ 	
+/******/ 	function hotEnsureUpdateChunk(chunkId) {
+/******/ 		if(!hotAvailableFilesMap[chunkId]) {
+/******/ 			hotWaitingFilesMap[chunkId] = true;
+/******/ 		} else {
+/******/ 			hotRequestedFilesMap[chunkId] = true;
+/******/ 			hotWaitingFiles++;
+/******/ 			hotDownloadUpdateChunk(chunkId);
+/******/ 		}
+/******/ 	}
+/******/ 	
+/******/ 	function hotUpdateDownloaded() {
+/******/ 		hotSetStatus("ready");
+/******/ 		var deferred = hotDeferred;
+/******/ 		hotDeferred = null;
+/******/ 		if(!deferred) return;
+/******/ 		if(hotApplyOnUpdate) {
+/******/ 			hotApply(hotApplyOnUpdate).then(function(result) {
+/******/ 				deferred.resolve(result);
+/******/ 			}, function(err) {
+/******/ 				deferred.reject(err);
+/******/ 			});
+/******/ 		} else {
+/******/ 			var outdatedModules = [];
+/******/ 			for(var id in hotUpdate) {
+/******/ 				if(Object.prototype.hasOwnProperty.call(hotUpdate, id)) {
+/******/ 					outdatedModules.push(toModuleId(id));
+/******/ 				}
+/******/ 			}
+/******/ 			deferred.resolve(outdatedModules);
+/******/ 		}
+/******/ 	}
+/******/ 	
+/******/ 	function hotApply(options) {
+/******/ 		if(hotStatus !== "ready") throw new Error("apply() is only allowed in ready status");
+/******/ 		options = options || {};
+/******/ 	
+/******/ 		var cb;
+/******/ 		var i;
+/******/ 		var j;
+/******/ 		var module;
+/******/ 		var moduleId;
+/******/ 	
+/******/ 		function getAffectedStuff(updateModuleId) {
+/******/ 			var outdatedModules = [updateModuleId];
+/******/ 			var outdatedDependencies = {};
+/******/ 	
+/******/ 			var queue = outdatedModules.slice().map(function(id) {
+/******/ 				return {
+/******/ 					chain: [id],
+/******/ 					id: id
+/******/ 				};
+/******/ 			});
+/******/ 			while(queue.length > 0) {
+/******/ 				var queueItem = queue.pop();
+/******/ 				var moduleId = queueItem.id;
+/******/ 				var chain = queueItem.chain;
+/******/ 				module = installedModules[moduleId];
+/******/ 				if(!module || module.hot._selfAccepted)
+/******/ 					continue;
+/******/ 				if(module.hot._selfDeclined) {
+/******/ 					return {
+/******/ 						type: "self-declined",
+/******/ 						chain: chain,
+/******/ 						moduleId: moduleId
+/******/ 					};
+/******/ 				}
+/******/ 				if(module.hot._main) {
+/******/ 					return {
+/******/ 						type: "unaccepted",
+/******/ 						chain: chain,
+/******/ 						moduleId: moduleId
+/******/ 					};
+/******/ 				}
+/******/ 				for(var i = 0; i < module.parents.length; i++) {
+/******/ 					var parentId = module.parents[i];
+/******/ 					var parent = installedModules[parentId];
+/******/ 					if(!parent) continue;
+/******/ 					if(parent.hot._declinedDependencies[moduleId]) {
+/******/ 						return {
+/******/ 							type: "declined",
+/******/ 							chain: chain.concat([parentId]),
+/******/ 							moduleId: moduleId,
+/******/ 							parentId: parentId
+/******/ 						};
+/******/ 					}
+/******/ 					if(outdatedModules.indexOf(parentId) >= 0) continue;
+/******/ 					if(parent.hot._acceptedDependencies[moduleId]) {
+/******/ 						if(!outdatedDependencies[parentId])
+/******/ 							outdatedDependencies[parentId] = [];
+/******/ 						addAllToSet(outdatedDependencies[parentId], [moduleId]);
+/******/ 						continue;
+/******/ 					}
+/******/ 					delete outdatedDependencies[parentId];
+/******/ 					outdatedModules.push(parentId);
+/******/ 					queue.push({
+/******/ 						chain: chain.concat([parentId]),
+/******/ 						id: parentId
+/******/ 					});
+/******/ 				}
+/******/ 			}
+/******/ 	
+/******/ 			return {
+/******/ 				type: "accepted",
+/******/ 				moduleId: updateModuleId,
+/******/ 				outdatedModules: outdatedModules,
+/******/ 				outdatedDependencies: outdatedDependencies
+/******/ 			};
+/******/ 		}
+/******/ 	
+/******/ 		function addAllToSet(a, b) {
+/******/ 			for(var i = 0; i < b.length; i++) {
+/******/ 				var item = b[i];
+/******/ 				if(a.indexOf(item) < 0)
+/******/ 					a.push(item);
+/******/ 			}
+/******/ 		}
+/******/ 	
+/******/ 		// at begin all updates modules are outdated
+/******/ 		// the "outdated" status can propagate to parents if they don't accept the children
+/******/ 		var outdatedDependencies = {};
+/******/ 		var outdatedModules = [];
+/******/ 		var appliedUpdate = {};
+/******/ 	
+/******/ 		var warnUnexpectedRequire = function warnUnexpectedRequire() {
+/******/ 			console.warn("[HMR] unexpected require(" + result.moduleId + ") to disposed module");
+/******/ 		};
+/******/ 	
+/******/ 		for(var id in hotUpdate) {
+/******/ 			if(Object.prototype.hasOwnProperty.call(hotUpdate, id)) {
+/******/ 				moduleId = toModuleId(id);
+/******/ 				var result;
+/******/ 				if(hotUpdate[id]) {
+/******/ 					result = getAffectedStuff(moduleId);
+/******/ 				} else {
+/******/ 					result = {
+/******/ 						type: "disposed",
+/******/ 						moduleId: id
+/******/ 					};
+/******/ 				}
+/******/ 				var abortError = false;
+/******/ 				var doApply = false;
+/******/ 				var doDispose = false;
+/******/ 				var chainInfo = "";
+/******/ 				if(result.chain) {
+/******/ 					chainInfo = "\nUpdate propagation: " + result.chain.join(" -> ");
+/******/ 				}
+/******/ 				switch(result.type) {
+/******/ 					case "self-declined":
+/******/ 						if(options.onDeclined)
+/******/ 							options.onDeclined(result);
+/******/ 						if(!options.ignoreDeclined)
+/******/ 							abortError = new Error("Aborted because of self decline: " + result.moduleId + chainInfo);
+/******/ 						break;
+/******/ 					case "declined":
+/******/ 						if(options.onDeclined)
+/******/ 							options.onDeclined(result);
+/******/ 						if(!options.ignoreDeclined)
+/******/ 							abortError = new Error("Aborted because of declined dependency: " + result.moduleId + " in " + result.parentId + chainInfo);
+/******/ 						break;
+/******/ 					case "unaccepted":
+/******/ 						if(options.onUnaccepted)
+/******/ 							options.onUnaccepted(result);
+/******/ 						if(!options.ignoreUnaccepted)
+/******/ 							abortError = new Error("Aborted because " + moduleId + " is not accepted" + chainInfo);
+/******/ 						break;
+/******/ 					case "accepted":
+/******/ 						if(options.onAccepted)
+/******/ 							options.onAccepted(result);
+/******/ 						doApply = true;
+/******/ 						break;
+/******/ 					case "disposed":
+/******/ 						if(options.onDisposed)
+/******/ 							options.onDisposed(result);
+/******/ 						doDispose = true;
+/******/ 						break;
+/******/ 					default:
+/******/ 						throw new Error("Unexception type " + result.type);
+/******/ 				}
+/******/ 				if(abortError) {
+/******/ 					hotSetStatus("abort");
+/******/ 					return Promise.reject(abortError);
+/******/ 				}
+/******/ 				if(doApply) {
+/******/ 					appliedUpdate[moduleId] = hotUpdate[moduleId];
+/******/ 					addAllToSet(outdatedModules, result.outdatedModules);
+/******/ 					for(moduleId in result.outdatedDependencies) {
+/******/ 						if(Object.prototype.hasOwnProperty.call(result.outdatedDependencies, moduleId)) {
+/******/ 							if(!outdatedDependencies[moduleId])
+/******/ 								outdatedDependencies[moduleId] = [];
+/******/ 							addAllToSet(outdatedDependencies[moduleId], result.outdatedDependencies[moduleId]);
+/******/ 						}
+/******/ 					}
+/******/ 				}
+/******/ 				if(doDispose) {
+/******/ 					addAllToSet(outdatedModules, [result.moduleId]);
+/******/ 					appliedUpdate[moduleId] = warnUnexpectedRequire;
+/******/ 				}
+/******/ 			}
+/******/ 		}
+/******/ 	
+/******/ 		// Store self accepted outdated modules to require them later by the module system
+/******/ 		var outdatedSelfAcceptedModules = [];
+/******/ 		for(i = 0; i < outdatedModules.length; i++) {
+/******/ 			moduleId = outdatedModules[i];
+/******/ 			if(installedModules[moduleId] && installedModules[moduleId].hot._selfAccepted)
+/******/ 				outdatedSelfAcceptedModules.push({
+/******/ 					module: moduleId,
+/******/ 					errorHandler: installedModules[moduleId].hot._selfAccepted
+/******/ 				});
+/******/ 		}
+/******/ 	
+/******/ 		// Now in "dispose" phase
+/******/ 		hotSetStatus("dispose");
+/******/ 		Object.keys(hotAvailableFilesMap).forEach(function(chunkId) {
+/******/ 			if(hotAvailableFilesMap[chunkId] === false) {
+/******/ 				hotDisposeChunk(chunkId);
+/******/ 			}
+/******/ 		});
+/******/ 	
+/******/ 		var idx;
+/******/ 		var queue = outdatedModules.slice();
+/******/ 		while(queue.length > 0) {
+/******/ 			moduleId = queue.pop();
+/******/ 			module = installedModules[moduleId];
+/******/ 			if(!module) continue;
+/******/ 	
+/******/ 			var data = {};
+/******/ 	
+/******/ 			// Call dispose handlers
+/******/ 			var disposeHandlers = module.hot._disposeHandlers;
+/******/ 			for(j = 0; j < disposeHandlers.length; j++) {
+/******/ 				cb = disposeHandlers[j];
+/******/ 				cb(data);
+/******/ 			}
+/******/ 			hotCurrentModuleData[moduleId] = data;
+/******/ 	
+/******/ 			// disable module (this disables requires from this module)
+/******/ 			module.hot.active = false;
+/******/ 	
+/******/ 			// remove module from cache
+/******/ 			delete installedModules[moduleId];
+/******/ 	
+/******/ 			// remove "parents" references from all children
+/******/ 			for(j = 0; j < module.children.length; j++) {
+/******/ 				var child = installedModules[module.children[j]];
+/******/ 				if(!child) continue;
+/******/ 				idx = child.parents.indexOf(moduleId);
+/******/ 				if(idx >= 0) {
+/******/ 					child.parents.splice(idx, 1);
+/******/ 				}
+/******/ 			}
+/******/ 		}
+/******/ 	
+/******/ 		// remove outdated dependency from module children
+/******/ 		var dependency;
+/******/ 		var moduleOutdatedDependencies;
+/******/ 		for(moduleId in outdatedDependencies) {
+/******/ 			if(Object.prototype.hasOwnProperty.call(outdatedDependencies, moduleId)) {
+/******/ 				module = installedModules[moduleId];
+/******/ 				if(module) {
+/******/ 					moduleOutdatedDependencies = outdatedDependencies[moduleId];
+/******/ 					for(j = 0; j < moduleOutdatedDependencies.length; j++) {
+/******/ 						dependency = moduleOutdatedDependencies[j];
+/******/ 						idx = module.children.indexOf(dependency);
+/******/ 						if(idx >= 0) module.children.splice(idx, 1);
+/******/ 					}
+/******/ 				}
+/******/ 			}
+/******/ 		}
+/******/ 	
+/******/ 		// Not in "apply" phase
+/******/ 		hotSetStatus("apply");
+/******/ 	
+/******/ 		hotCurrentHash = hotUpdateNewHash;
+/******/ 	
+/******/ 		// insert new code
+/******/ 		for(moduleId in appliedUpdate) {
+/******/ 			if(Object.prototype.hasOwnProperty.call(appliedUpdate, moduleId)) {
+/******/ 				modules[moduleId] = appliedUpdate[moduleId];
+/******/ 			}
+/******/ 		}
+/******/ 	
+/******/ 		// call accept handlers
+/******/ 		var error = null;
+/******/ 		for(moduleId in outdatedDependencies) {
+/******/ 			if(Object.prototype.hasOwnProperty.call(outdatedDependencies, moduleId)) {
+/******/ 				module = installedModules[moduleId];
+/******/ 				moduleOutdatedDependencies = outdatedDependencies[moduleId];
+/******/ 				var callbacks = [];
+/******/ 				for(i = 0; i < moduleOutdatedDependencies.length; i++) {
+/******/ 					dependency = moduleOutdatedDependencies[i];
+/******/ 					cb = module.hot._acceptedDependencies[dependency];
+/******/ 					if(callbacks.indexOf(cb) >= 0) continue;
+/******/ 					callbacks.push(cb);
+/******/ 				}
+/******/ 				for(i = 0; i < callbacks.length; i++) {
+/******/ 					cb = callbacks[i];
+/******/ 					try {
+/******/ 						cb(moduleOutdatedDependencies);
+/******/ 					} catch(err) {
+/******/ 						if(options.onErrored) {
+/******/ 							options.onErrored({
+/******/ 								type: "accept-errored",
+/******/ 								moduleId: moduleId,
+/******/ 								dependencyId: moduleOutdatedDependencies[i],
+/******/ 								error: err
+/******/ 							});
+/******/ 						}
+/******/ 						if(!options.ignoreErrored) {
+/******/ 							if(!error)
+/******/ 								error = err;
+/******/ 						}
+/******/ 					}
+/******/ 				}
+/******/ 			}
+/******/ 		}
+/******/ 	
+/******/ 		// Load self accepted modules
+/******/ 		for(i = 0; i < outdatedSelfAcceptedModules.length; i++) {
+/******/ 			var item = outdatedSelfAcceptedModules[i];
+/******/ 			moduleId = item.module;
+/******/ 			hotCurrentParents = [moduleId];
+/******/ 			try {
+/******/ 				__webpack_require__(moduleId);
+/******/ 			} catch(err) {
+/******/ 				if(typeof item.errorHandler === "function") {
+/******/ 					try {
+/******/ 						item.errorHandler(err);
+/******/ 					} catch(err2) {
+/******/ 						if(options.onErrored) {
+/******/ 							options.onErrored({
+/******/ 								type: "self-accept-error-handler-errored",
+/******/ 								moduleId: moduleId,
+/******/ 								error: err2,
+/******/ 								orginalError: err
+/******/ 							});
+/******/ 						}
+/******/ 						if(!options.ignoreErrored) {
+/******/ 							if(!error)
+/******/ 								error = err2;
+/******/ 						}
+/******/ 						if(!error)
+/******/ 							error = err;
+/******/ 					}
+/******/ 				} else {
+/******/ 					if(options.onErrored) {
+/******/ 						options.onErrored({
+/******/ 							type: "self-accept-errored",
+/******/ 							moduleId: moduleId,
+/******/ 							error: err
+/******/ 						});
+/******/ 					}
+/******/ 					if(!options.ignoreErrored) {
+/******/ 						if(!error)
+/******/ 							error = err;
+/******/ 					}
+/******/ 				}
+/******/ 			}
+/******/ 		}
+/******/ 	
+/******/ 		// handle errors in accept handlers and self accepted module load
+/******/ 		if(error) {
+/******/ 			hotSetStatus("fail");
+/******/ 			return Promise.reject(error);
+/******/ 		}
+/******/ 	
+/******/ 		hotSetStatus("idle");
+/******/ 		return new Promise(function(resolve) {
+/******/ 			resolve(outdatedModules);
+/******/ 		});
+/******/ 	}
+/******/
 /******/ 	// The module cache
 /******/ 	var installedModules = {};
 /******/
@@ -23,11 +660,14 @@ return /******/ (function(modules) { // webpackBootstrap
 /******/ 		var module = installedModules[moduleId] = {
 /******/ 			i: moduleId,
 /******/ 			l: false,
-/******/ 			exports: {}
+/******/ 			exports: {},
+/******/ 			hot: hotCreateModule(moduleId),
+/******/ 			parents: (hotCurrentParentsTemp = hotCurrentParents, hotCurrentParents = [], hotCurrentParentsTemp),
+/******/ 			children: []
 /******/ 		};
 /******/
 /******/ 		// Execute the module function
-/******/ 		modules[moduleId].call(module.exports, module, module.exports, __webpack_require__);
+/******/ 		modules[moduleId].call(module.exports, module, module.exports, hotCreateRequire(moduleId));
 /******/
 /******/ 		// Flag the module as loaded
 /******/ 		module.l = true;
@@ -72,8 +712,11 @@ return /******/ (function(modules) { // webpackBootstrap
 /******/ 	// __webpack_public_path__
 /******/ 	__webpack_require__.p = "";
 /******/
+/******/ 	// __webpack_hash__
+/******/ 	__webpack_require__.h = function() { return hotCurrentHash; };
+/******/
 /******/ 	// Load entry module and return exports
-/******/ 	return __webpack_require__(__webpack_require__.s = 18);
+/******/ 	return hotCreateRequire(18)(__webpack_require__.s = 18);
 /******/ })
 /************************************************************************/
 /******/ ([
@@ -334,16 +977,16 @@ var validateConstraintInput = function validateConstraintInput(constraintType, c
  * @param  {Object} opt_config Config object for data aggregation or quality index constraint
  * @return {[type]}            [description]
  */
-var prepareForGetObservations = function prepareForGetObservations(options, opt_config) {
+var prepareForGetObservations = function prepareForGetObservations(options, opt_config, opt_type) {
    var config = {};
-   if (type === 'aggregation') {
+   if (opt_type && opt_type === 'aggregation') {
       config["aggregationURL"] = prepareDataAggregation(opt_config);
    }
    config['offering'] = options.offering.getOfferingJSON()['name'];
    config['procedureNames'] = prepareProcedureNames(options.procedures);
    config['observedPropertyUrns'] = prepareObservedPropertyUrns(options.observedProperties);
-   config['begin'] = options.beginTime instanceof istsos.Date ? options.beginTime.getDateString() : options.beginTime;
-   config['end'] = options.endTime instanceof istsos.Date ? options.endTime.getDateString() : options.endTime;
+   config['begin'] = options.begin instanceof istsos.Date ? options.begin.getDateString() : options.begin;
+   config['end'] = options.end instanceof istsos.Date ? options.end.getDateString() : options.end;
    return config;
 };
 
@@ -382,9 +1025,34 @@ var prepareProcedureNames = function prepareProcedureNames(procedures) {
 var prepareObservedPropertyUrns = function prepareObservedPropertyUrns(observedProperties) {
    var urns = [];
    observedProperties.forEach(function (op) {
-      urns.push(op.getObservedPropertiesJSON()['definition']);
+      urns.push(op.getObservedPropertyJSON()['definition']);
    });
-   return urns.toString;
+   return urns.toString();
+};
+
+var handleMultiplePropertyValues = function handleMultiplePropertyValues(measurements, type) {
+   var list = [];
+   switch (type) {
+      case 'simple':
+
+         for (var i = 0; i < measurements.length; i++) {
+            if (i == 0) {
+               list.push(measurements[i]);
+            }
+
+            if (i != 0 && i % 2) {
+               list.push(measurements[i]);
+            }
+         }
+         return list;
+         break;
+      case 'constraint':
+         // statements_1
+         break;
+      default:
+         // statements_def
+         break;
+   }
 };
 
 var transformGetObservationsResponse = function transformGetObservationsResponse(type, response, constraintFilter) {
@@ -394,10 +1062,14 @@ var transformGetObservationsResponse = function transformGetObservationsResponse
 
          var transformed = [];
          for (var i = 0; i < values.length; i++) {
-            transformed.push({
-               "date": values[i][0],
-               "measurement": values[i][1]
-            });
+            if (values[i].length > 3) {
+               transformed.push(handleMultiplePropertyValues(values[i], 'simple'));
+            } else {
+               transformed.push({
+                  "date": values[i][0],
+                  "measurement": values[i][1]
+               });
+            }
          }
          return transformed;
          break;
@@ -406,7 +1078,10 @@ var transformGetObservationsResponse = function transformGetObservationsResponse
 
          var transformed = [];
          for (var _i = 0; _i < values.length; _i++) {
-            transformed.push(filterByConstraint(values[_i], constraintFilter.type, constraintFilter.quiality));
+            var measurement = filterByConstraint(values[_i], constraintFilter.type, constraintFilter.quality);
+            if (measurement != undefined) {
+               transformed.push(measurement);
+            }
          }
          response.data[0].result.DataArray.values = transformed;
          return response;
@@ -421,33 +1096,33 @@ var filterByConstraint = function filterByConstraint(measurement, type, value) {
 
    switch (type) {
       case "lessThan":
-         if (measurement[2] < value) {
-            return measurement;
+         if (parseInt(measurement[2]) < parseInt(value)) {
+            return [measurement[0], parseFloat(measurement[1]), parseInt(measurement[2])];
          }
          break;
       case "lessThanAndEqual":
-         if (measurement[2] <= value) {
-            return measurement;
+         if (parseInt(measurement[2]) <= parseInt(value)) {
+            return [measurement[0], parseFloat(measurement[1]), parseInt(measurement[2])];
          }
          break;
       case "equal":
-         if (measurement[2] === value) {
-            return measurement;
+         if (parseInt(measurement[2]) === parseInt(value)) {
+            return [measurement[0], parseFloat(measurement[1]), parseInt(measurement[2])];
          }
          break;
       case "greaterThanAndEqual":
-         if (measurement[2] >= value) {
-            return measurement;
+         if (parseInt(measurement[2]) >= parseInt(value)) {
+            return [measurement[0], parseFloat(measurement[1]), parseInt(measurement[2])];
          }
          break;
       case "greaterThan":
-         if (measurement[2] > value) {
-            return measurement;
+         if (parseInt(measurement[2]) > parseInt(value)) {
+            return [measurement[0], parseFloat(measurement[1]), parseInt(measurement[2])];
          }
          break;
       case "between":
-         if (measurement[2] >= value[0] && measurement[2] <= value[1]) {
-            return measurement;
+         if (parseInt(measurement[2]) >= parseInt(value)[0] && parseInt(measurement[2]) <= parseInt(value)[1]) {
+            return [measurement[0], parseFloat(measurement[1]), parseInt(measurement[2])];
          }
          break;
       default:
@@ -1063,22 +1738,21 @@ function _possibleConstructorReturn(self, call) { if (!self) { throw new Referen
 
 function _inherits(subClass, superClass) { if (typeof superClass !== "function" && superClass !== null) { throw new TypeError("Super expression must either be null or a function, not " + typeof superClass); } subClass.prototype = Object.create(superClass && superClass.prototype, { constructor: { value: subClass, enumerable: false, writable: true, configurable: true } }); if (superClass) Object.setPrototypeOf ? Object.setPrototypeOf(subClass, superClass) : subClass.__proto__ = superClass; }
 
-/** istsos.ProcedureBase class - ABSTRACT */
 /**
- * @param {String} name
- * @param {String} description
- * @param {String} keywords
- * @param {String} foi_name
- * @param {int} epsg
- * @param {int} x
- * @param {int} y
- * @param {int} z
- * @param {Array<istsos.Output>} outputs
- * @constructor
+ * istsos.ProcedureBase 
+ * 
+ * @class
+ * @extends istsos.EventEmitter
  */
 var ProcedureBase = exports.ProcedureBase = function (_EventEmitter) {
    _inherits(ProcedureBase, _EventEmitter);
 
+   /**
+    * constructor - instantiates istsos.ProcedureBase
+    * 
+    * @param  {Object} options Set of key-value pairs
+    * @constructor
+    */
    function ProcedureBase(options) {
       _classCallCheck(this, ProcedureBase);
 
@@ -1094,34 +1768,71 @@ var ProcedureBase = exports.ProcedureBase = function (_EventEmitter) {
       return _this;
    }
 
+   /**
+    * Fire event with data - event must match one of the supported event types from istsos.EventTypes
+    * 
+    * @param  {String} eventType Type of event from istsos.EventTypes
+    * @param  {Object|*} response  Data to be passed to a handler
+    */
+
+
    _createClass(ProcedureBase, [{
       key: "fireEvent",
       value: function fireEvent(eventType, response) {
          _get(ProcedureBase.prototype.__proto__ || Object.getPrototypeOf(ProcedureBase.prototype), "fire", this).call(this, eventType, response);
       }
+
+      /**
+       * Add event listener
+       * 
+       * @param  {String}   event    Event must match one of the supported event types from istsos.EventTypes
+       * @param  {Function} callback Handler function
+       */
+
    }, {
       key: "on",
       value: function on(event, callback) {
          _get(ProcedureBase.prototype.__proto__ || Object.getPrototypeOf(ProcedureBase.prototype), "on", this).call(this, event, callback);
       }
+
+      /**
+       * Add event listener, that will listen only once.
+       * 
+       * @param  {String}   event    Event must match one of the supported event types from istsos.EventTypes
+       * @param  {Function} callback Handler function
+       */
+
    }, {
       key: "once",
       value: function once(event, callback) {
          _get(ProcedureBase.prototype.__proto__ || Object.getPrototypeOf(ProcedureBase.prototype), "once", this).call(this, event, callback);
       }
+
+      /**
+       * Remove event listener
+       * 
+       * @param  {String}   event    Event must match one of the supported event types from istsos.EventTypes
+       * @param  {Function} callback Handler function
+       */
+
    }, {
       key: "off",
       value: function off(event, callback) {
          _get(ProcedureBase.prototype.__proto__ || Object.getPrototypeOf(ProcedureBase.prototype), "off", this).call(this, event, callback);
       }
+
+      /**
+       * Remove all event listeners
+       */
+
    }, {
       key: "unlistenAll",
       value: function unlistenAll() {
-         _get(ProcedureBase.prototype.__proto__ || Object.getPrototypeOf(ProcedureBase.prototype), "unlistenAll", this).call(this, event, callback);
+         _get(ProcedureBase.prototype.__proto__ || Object.getPrototypeOf(ProcedureBase.prototype), "unlistenAll", this).call(this);
       }
 
       /**
-       * @returns {Array<istsos.Output>}
+       * @return {Array<istsos.Output>}
        */
 
    }, {
@@ -1131,7 +1842,7 @@ var ProcedureBase = exports.ProcedureBase = function (_EventEmitter) {
       }
 
       /**
-       * @returns {JSON}
+       * @return {Object}
        */
 
    }, {
@@ -1178,17 +1889,7 @@ var ProcedureBase = exports.ProcedureBase = function (_EventEmitter) {
       }
 
       /**
-       * @param {String} individualName
-       * @param {String} voice
-       * @param {String} fax
-       * @param {String} email
-       * @param {String} web
-       * @param {String} deliveryPoint
-       * @param {String} city
-       * @param {String} administrativeArea
-       * @param {String} postalCode
-       * @param {String} country
-       * @returns {JSON}
+       * @param {Object} options
        */
 
    }, {
@@ -1209,7 +1910,7 @@ var ProcedureBase = exports.ProcedureBase = function (_EventEmitter) {
       }
 
       /**
-       * @returns {Array<String>}
+       * @return {Array<String>}
        */
 
    }, {
@@ -1219,7 +1920,7 @@ var ProcedureBase = exports.ProcedureBase = function (_EventEmitter) {
       }
 
       /**
-       * @returns {Array<JSON>}
+       * @return {Array<Object>}
        */
 
    }, {
@@ -1239,7 +1940,7 @@ var ProcedureBase = exports.ProcedureBase = function (_EventEmitter) {
       }
 
       /**
-       * @returns {Array<JSON>}
+       * @return {Array<Object>}
        */
 
    }, {
@@ -1717,7 +2418,7 @@ var DataQuality = exports.DataQuality = function (_EventEmitter) {
       _this.name = options.nameDQ;
       _this.description = options.descrDQ || "";
       _this.service = options.service;
-      service.addDataQuality(_this);
+      options.service.addDataQuality(_this);
       return _this;
    }
 
@@ -2573,26 +3274,21 @@ function _possibleConstructorReturn(self, call) { if (!self) { throw new Referen
 
 function _inherits(subClass, superClass) { if (typeof superClass !== "function" && superClass !== null) { throw new TypeError("Super expression must either be null or a function, not " + typeof superClass); } subClass.prototype = Object.create(superClass && superClass.prototype, { constructor: { value: subClass, enumerable: false, writable: true, configurable: true } }); if (superClass) Object.setPrototypeOf ? Object.setPrototypeOf(subClass, superClass) : subClass.__proto__ = superClass; }
 
-/** istsos.Procedure class */
 /**
- * @param {istsos.Service} service
- * @param {String} name
- * @param {String} description
- * @param {String} keywords
- * @param {String} foi_name
- * @param {int} epsg
- * @param {int} x
- * @param {int} y
- * @param {int} z
- * @param {Array<istsos.Output>} outputs
- * @param {String} systemType (insitu-fixed-point || insitu-mobile-point)
- * @param {String} sensorType
- * @constructor
+ * istsos.Procedure 
+ * 
+ * @class
+ * @extends istsos.EventEmitter
  */
-
 var Procedure = exports.Procedure = function (_ProcedureBase) {
    _inherits(Procedure, _ProcedureBase);
 
+   /**
+    * constructor - instantiates istsos.Procedure
+    * 
+    * @param  {Object} options Set of key-value pairs
+    * @constructor
+    */
    function Procedure(options) {
       _classCallCheck(this, Procedure);
 
@@ -2616,34 +3312,71 @@ var Procedure = exports.Procedure = function (_ProcedureBase) {
       return _this;
    }
 
+   /**
+    * Fire event with data - event must match one of the supported event types from istsos.EventTypes
+    * 
+    * @param  {String} eventType Type of event from istsos.EventTypes
+    * @param  {Object|*} response  Data to be passed to a handler
+    */
+
+
    _createClass(Procedure, [{
       key: 'fireEvent',
       value: function fireEvent(eventType, response) {
          _get(Procedure.prototype.__proto__ || Object.getPrototypeOf(Procedure.prototype), 'fire', this).call(this, eventType, response);
       }
+
+      /**
+       * Add event listener
+       * 
+       * @param  {String}   event    Event must match one of the supported event types from istsos.EventTypes
+       * @param  {Function} callback Handler function
+       */
+
    }, {
       key: 'on',
       value: function on(event, callback) {
          _get(Procedure.prototype.__proto__ || Object.getPrototypeOf(Procedure.prototype), 'on', this).call(this, event, callback);
       }
+
+      /**
+       * Add event listener, that will listen only once.
+       * 
+       * @param  {String}   event    Event must match one of the supported event types from istsos.EventTypes
+       * @param  {Function} callback Handler function
+       */
+
    }, {
       key: 'once',
       value: function once(event, callback) {
          _get(Procedure.prototype.__proto__ || Object.getPrototypeOf(Procedure.prototype), 'once', this).call(this, event, callback);
       }
+
+      /**
+       * Remove event listener
+       * 
+       * @param  {String}   event    Event must match one of the supported event types from istsos.EventTypes
+       * @param  {Function} callback Handler function
+       */
+
    }, {
       key: 'off',
       value: function off(event, callback) {
          _get(Procedure.prototype.__proto__ || Object.getPrototypeOf(Procedure.prototype), 'off', this).call(this, event, callback);
       }
+
+      /**
+       * Remove all event listeners
+       */
+
    }, {
       key: 'unlistenAll',
       value: function unlistenAll() {
-         _get(Procedure.prototype.__proto__ || Object.getPrototypeOf(Procedure.prototype), 'unlistenAll', this).call(this, event, callback);
+         _get(Procedure.prototype.__proto__ || Object.getPrototypeOf(Procedure.prototype), 'unlistenAll', this).call(this);
       }
 
       /**
-       * @returns {JSON}
+       * @return {Object}
        */
 
    }, {
@@ -2663,18 +3396,11 @@ var Procedure = exports.Procedure = function (_ProcedureBase) {
       }
 
       /**
-       * @fires istsos.Procedure#istsos.events.EventType: UPDATE_PROCEDURE
-       * @param {String} name
-       * @param {String} description
-       * @param {String} keywords
-       * @param {String} foi_name
-       * @param {int} epsg
-       * @param {int} x
-       * @param {int} y
-       * @param {int} z
-       * @param {Array<istsos.Output>} outputs
-       * @param {String} systemType (insitu-fixed-point || insitu-mobile-point)
-       * @param {String} sensorType
+       * Update procedure on the server
+       *
+       * @param {object} options Set of key-value pairs
+       * @return {Promise} 
+       * @fires  istsos.Procedure#UPDATE_PROCEDURE            
        */
 
    }, {
@@ -2720,7 +3446,10 @@ var Procedure = exports.Procedure = function (_ProcedureBase) {
       }
 
       /**
-       * @fires istsos.Procedure#istsos.events.EventType: DELETE_PROCEDURE
+       * Delete procedure on the server
+       *
+       * @return {Promise} 
+       * @fires  istsos.Procedure#DELETE_PROCEDURE            
        */
 
    }, {
@@ -2756,8 +3485,11 @@ var Procedure = exports.Procedure = function (_ProcedureBase) {
       }
 
       /**
-       * @fires istsos.Procedure#istsos.events.EventType: ADD_TO_OFFERING
-       * @param {istsos.Offering} offering
+       * Add procedure's membership to offering on the server
+       *
+       * @param {istsos.Offering} offering istsos.Offering class
+       * @return {Promise} 
+       * @fires  istsos.Offering#ADD_TO_OFFERING            
        */
 
    }, {
@@ -2792,8 +3524,11 @@ var Procedure = exports.Procedure = function (_ProcedureBase) {
       }
 
       /**
-       * @fires istsos.Procedure#istsos.events.EventType: REMOVE_FROM_OFFERING
-       * @param {istsos.Offering} offering
+       * Remove procedure's membership from offering on the server
+       *
+       * @param {istsos.Offering} offering istsos.Offering class
+       * @return {Promise} 
+       * @fires  istsos.Offering#REMOVE_FROM_OFFERING            
        */
 
    }, {
@@ -2835,7 +3570,7 @@ var Procedure = exports.Procedure = function (_ProcedureBase) {
       }
 
       /**
-       * @returns {Array<istsos.Output>}
+       * @return {Array<istsos.Output>}
        */
 
    }, {
@@ -4403,7 +5138,7 @@ var Service = exports.Service = function (_EventEmitter) {
 			var _this21 = this;
 
 			var urlConfig = (0, _IstsosHelper.prepareForGetObservations)(options);
-			var url = this.server.getUrl() + 'wa/istsos/services/' + this.name + '/operations/getobservation/offerings/' + urlConfig.offering + '/procedures/' + urlConfig.procedureNames + '/observedproperties/' + urlConfig.observedPropertyUrns + '/eventtime/' + begin + '/' + end;
+			var url = this.server.getUrl() + 'wa/istsos/services/' + this.name + '/operations/getobservation/offerings/' + urlConfig.offering + '/procedures/' + urlConfig.procedureNames + '/observedproperties/' + urlConfig.observedPropertyUrns + '/eventtime/' + urlConfig.begin + '/' + urlConfig.end;
 
 			var config = {};
 			if (this.server.getLoginConfig()) {
@@ -4436,8 +5171,8 @@ var Service = exports.Service = function (_EventEmitter) {
 		value: function getObservationsWithAggregation(options, aggregationConfig) {
 			var _this22 = this;
 
-			var urlConfig = (0, _IstsosHelper.prepareForGetObservations)(options, aggregationConfig);
-			var url = this.server.getUrl() + 'wa/istsos/services/' + this.name + '/operations/getobservation/offerings/' + urlConfig.offering + '/procedures/' + urlConfig.procedureNames + '/observedproperties/' + urlConfig.observedPropertyUrns + '/eventtime/' + begin + '/' + end + '/' + urlConfig.aggregationUrl;
+			var urlConfig = (0, _IstsosHelper.prepareForGetObservations)(options, aggregationConfig, 'aggregation');
+			var url = this.server.getUrl() + 'wa/istsos/services/' + this.name + '/operations/getobservation/offerings/' + urlConfig.offering + '/procedures/' + urlConfig.procedureNames + '/observedproperties/' + urlConfig.observedPropertyUrns + '/eventtime/' + urlConfig.begin + '/' + urlConfig.end + '/' + urlConfig.aggregationURL;
 
 			var config = {};
 			if (this.server.getLoginConfig()) {
@@ -4470,7 +5205,7 @@ var Service = exports.Service = function (_EventEmitter) {
 			var _this23 = this;
 
 			var urlConfig = (0, _IstsosHelper.prepareForGetObservations)(options);
-			var url = this.server.getUrl() + 'wa/istsos/services/' + this.name + '/operations/getobservation/offerings/' + urlConfig.offering + '/procedures/' + urlConfig.procedureNames + '/observedproperties/' + urlConfig.observedPropertyUrns + '/eventtime/' + begin + '/' + end;
+			var url = this.server.getUrl() + 'wa/istsos/services/' + this.name + '/operations/getobservation/offerings/' + urlConfig.offering + '/procedures/' + urlConfig.procedureNames + '/observedproperties/' + urlConfig.observedPropertyUrns + '/eventtime/' + urlConfig.begin + '/' + urlConfig.end;
 
 			var config = {};
 			if (this.server.getLoginConfig()) {
@@ -4479,9 +5214,9 @@ var Service = exports.Service = function (_EventEmitter) {
 
 			return _HttpAPI.HttpAPI.get(url, config).then(function (result) {
 				if (result.success) {
-					var transformed = (0, _IstsosHelper.transformGetObservationResponse)('simple', result);
+					var transformed = (0, _IstsosHelper.transformGetObservationsResponse)('simple', result);
 					_this23.fireEvent('GETOBSERVATIONS_SIMPLIFIED', transformed);
-					return result;
+					return transformed;
 				} else {
 					throw result.message;
 				}
@@ -4505,7 +5240,7 @@ var Service = exports.Service = function (_EventEmitter) {
 			var _this24 = this;
 
 			var urlConfig = (0, _IstsosHelper.prepareForGetObservations)(options);
-			var url = this.server.getUrl() + 'wa/istsos/services/' + this.name + '/operations/getobservation/offerings/' + urlConfig.offering + '/procedures/' + urlConfig.procedureNames + '/observedproperties/' + urlConfig.observedPropertyUrns + '/eventtime/' + begin + '/' + end;
+			var url = this.server.getUrl() + 'wa/istsos/services/' + this.name + '/operations/getobservation/offerings/' + urlConfig.offering + '/procedures/' + urlConfig.procedureNames + '/observedproperties/' + urlConfig.observedPropertyUrns + '/eventtime/' + urlConfig.begin + '/' + urlConfig.end;
 
 			var config = {};
 			if (this.server.getLoginConfig()) {
@@ -4514,7 +5249,7 @@ var Service = exports.Service = function (_EventEmitter) {
 
 			return _HttpAPI.HttpAPI.get(url, config).then(function (result) {
 				if (result.success) {
-					var transformed = (0, _IstsosHelper.transformGetObservationResponse)('constraint', result, constraintConfig);
+					var transformed = (0, _IstsosHelper.transformGetObservationsResponse)('constraint', result, constraintConfig);
 					_this24.fireEvent('GETOBSERVATIONS_BY_QUALITY', transformed);
 					return result;
 				} else {
@@ -4600,16 +5335,21 @@ function _possibleConstructorReturn(self, call) { if (!self) { throw new Referen
 
 function _inherits(subClass, superClass) { if (typeof superClass !== "function" && superClass !== null) { throw new TypeError("Super expression must either be null or a function, not " + typeof superClass); } subClass.prototype = Object.create(superClass && superClass.prototype, { constructor: { value: subClass, enumerable: false, writable: true, configurable: true } }); if (superClass) Object.setPrototypeOf ? Object.setPrototypeOf(subClass, superClass) : subClass.__proto__ = superClass; }
 
-/** istsos.UnitOfMeasure  class */
 /**
- * @param {istsos.Service} service
- * @param {String} name
- * @param {String} description
- * @constructor
+ * istsos.UnitOfMeasure 
+ * 
+ * @class
+ * @extends istsos.EventEmitter
  */
 var UnitOfMeasure = exports.UnitOfMeasure = function (_EventEmitter) {
    _inherits(UnitOfMeasure, _EventEmitter);
 
+   /**
+    * constructor - instantiates istsos.UnitOfMeasure
+    * 
+    * @param  {Object} options Set of key-value pairs
+    * @constructor
+    */
    function UnitOfMeasure(options) {
       _classCallCheck(this, UnitOfMeasure);
 
@@ -4619,36 +5359,78 @@ var UnitOfMeasure = exports.UnitOfMeasure = function (_EventEmitter) {
       _this.description = options.description || "";
       _this.proceduresIncluded = [];
       _this.service = options.service;
-      service.addUom(_this);
+      options.service.addUom(_this);
       _this.updateProceduresIncluded();
       return _this;
    }
+
+   /**
+    * Fire event with data - event must match one of the supported event types from istsos.EventTypes
+    * 
+    * @param  {String} eventType Type of event from istsos.EventTypes
+    * @param  {Object|*} response  Data to be passed to a handler
+    */
+
 
    _createClass(UnitOfMeasure, [{
       key: 'fireEvent',
       value: function fireEvent(eventType, response) {
          _get(UnitOfMeasure.prototype.__proto__ || Object.getPrototypeOf(UnitOfMeasure.prototype), 'fire', this).call(this, eventType, response);
       }
+
+      /**
+       * Add event listener
+       * 
+       * @param  {String}   event    Event must match one of the supported event types from istsos.EventTypes
+       * @param  {Function} callback Handler function
+       */
+
    }, {
       key: 'on',
       value: function on(event, callback) {
          _get(UnitOfMeasure.prototype.__proto__ || Object.getPrototypeOf(UnitOfMeasure.prototype), 'on', this).call(this, event, callback);
       }
+
+      /**
+       * Add event listener, that will listen only once.
+       * 
+       * @param  {String}   event    Event must match one of the supported event types from istsos.EventTypes
+       * @param  {Function} callback Handler function
+       */
+
    }, {
       key: 'once',
       value: function once(event, callback) {
          _get(UnitOfMeasure.prototype.__proto__ || Object.getPrototypeOf(UnitOfMeasure.prototype), 'once', this).call(this, event, callback);
       }
+
+      /**
+       * Remove event listener
+       * 
+       * @param  {String}   event    Event must match one of the supported event types from istsos.EventTypes
+       * @param  {Function} callback Handler function
+       */
+
    }, {
       key: 'off',
       value: function off(event, callback) {
          _get(UnitOfMeasure.prototype.__proto__ || Object.getPrototypeOf(UnitOfMeasure.prototype), 'off', this).call(this, event, callback);
       }
+
+      /**
+       * Remove all event listeners
+       */
+
    }, {
       key: 'unlistenAll',
       value: function unlistenAll() {
-         _get(UnitOfMeasure.prototype.__proto__ || Object.getPrototypeOf(UnitOfMeasure.prototype), 'unlistenAll', this).call(this, event, callback);
+         _get(UnitOfMeasure.prototype.__proto__ || Object.getPrototypeOf(UnitOfMeasure.prototype), 'unlistenAll', this).call(this);
       }
+
+      /**
+       * Update procedures and virtual procedures included
+       */
+
    }, {
       key: 'updateProceduresIncluded',
       value: function updateProceduresIncluded() {
@@ -4668,7 +5450,7 @@ var UnitOfMeasure = exports.UnitOfMeasure = function (_EventEmitter) {
       }
 
       /**
-       * @returns {JSON}
+       * @return {Object}
        */
 
    }, {
@@ -4682,9 +5464,11 @@ var UnitOfMeasure = exports.UnitOfMeasure = function (_EventEmitter) {
       }
 
       /**
-       * @fires istsos.UnitOfMeasure#istsos.events.EventType: UPDATE_UOM
-       * @param {String} newName
-       * @param {String} newDescr
+       * Update unit of measure on the server
+       *
+       * @param {object} options Set of key-value pairs
+       * @return {Promise} 
+       * @fires  istsos.UnitOfMeasure#UPDATE_UOM            
        */
 
    }, {
@@ -4717,7 +5501,11 @@ var UnitOfMeasure = exports.UnitOfMeasure = function (_EventEmitter) {
       }
 
       /**
-       * @fires istsos.UnitOfMeasure#istsos.events.EventType: DELETE_UOM
+       * Delete unit of measure on the server
+       *
+       * @param {object} options Set of key-value pairs
+       * @return {Promise} 
+       * @fires  istsos.UnitOfMeasure#DELETE_UOM            
        */
 
    }, {
@@ -4800,27 +5588,21 @@ function _possibleConstructorReturn(self, call) { if (!self) { throw new Referen
 
 function _inherits(subClass, superClass) { if (typeof superClass !== "function" && superClass !== null) { throw new TypeError("Super expression must either be null or a function, not " + typeof superClass); } subClass.prototype = Object.create(superClass && superClass.prototype, { constructor: { value: subClass, enumerable: false, writable: true, configurable: true } }); if (superClass) Object.setPrototypeOf ? Object.setPrototypeOf(subClass, superClass) : subClass.__proto__ = superClass; }
 
-/** istsos.VirtualProcedure class */
 /**
- * @param {istsos.Service} service
- * @param {String} name
- * @param {String} description
- * @param {String} keywords
- * @param {String} foi_name
- * @param {int} epsg
- * @param {int} x
- * @param {int} y
- * @param {int} z
- * @param {Array<istsos.Output>} outputs
- * @param {String} systemType (virtual)
- * @param {String} sensorType
- * @param {String} code
- * @param {JSON} ratingCurve
- * @constructor
+ * istsos.VirtualProcedure 
+ * 
+ * @class
+ * @extends istsos.EventEmitter
  */
 var VirtualProcedure = exports.VirtualProcedure = function (_ProcedureBase) {
    _inherits(VirtualProcedure, _ProcedureBase);
 
+   /**
+    * constructor - instantiates istsos.VirtualProcedure
+    * 
+    * @param  {Object} options Set of key-value pairs
+    * @constructor
+    */
    function VirtualProcedure(options) {
       _classCallCheck(this, VirtualProcedure);
 
@@ -4848,34 +5630,71 @@ var VirtualProcedure = exports.VirtualProcedure = function (_ProcedureBase) {
       return _this;
    }
 
+   /**
+    * Fire event with data - event must match one of the supported event types from istsos.EventTypes
+    * 
+    * @param  {String} eventType Type of event from istsos.EventTypes
+    * @param  {Object|*} response  Data to be passed to a handler
+    */
+
+
    _createClass(VirtualProcedure, [{
       key: 'fireEvent',
       value: function fireEvent(eventType, response) {
          _get(VirtualProcedure.prototype.__proto__ || Object.getPrototypeOf(VirtualProcedure.prototype), 'fire', this).call(this, eventType, response);
       }
+
+      /**
+       * Add event listener
+       * 
+       * @param  {String}   event    Event must match one of the supported event types from istsos.EventTypes
+       * @param  {Function} callback Handler function
+       */
+
    }, {
       key: 'on',
       value: function on(event, callback) {
          _get(VirtualProcedure.prototype.__proto__ || Object.getPrototypeOf(VirtualProcedure.prototype), 'on', this).call(this, event, callback);
       }
+
+      /**
+       * Add event listener, that will listen only once.
+       * 
+       * @param  {String}   event    Event must match one of the supported event types from istsos.EventTypes
+       * @param  {Function} callback Handler function
+       */
+
    }, {
       key: 'once',
       value: function once(event, callback) {
          _get(VirtualProcedure.prototype.__proto__ || Object.getPrototypeOf(VirtualProcedure.prototype), 'once', this).call(this, event, callback);
       }
+
+      /**
+       * Remove event listener
+       * 
+       * @param  {String}   event    Event must match one of the supported event types from istsos.EventTypes
+       * @param  {Function} callback Handler function
+       */
+
    }, {
       key: 'off',
       value: function off(event, callback) {
          _get(VirtualProcedure.prototype.__proto__ || Object.getPrototypeOf(VirtualProcedure.prototype), 'off', this).call(this, event, callback);
       }
+
+      /**
+       * Remove all event listeners
+       */
+
    }, {
       key: 'unlistenAll',
       value: function unlistenAll() {
-         _get(VirtualProcedure.prototype.__proto__ || Object.getPrototypeOf(VirtualProcedure.prototype), 'unlistenAll', this).call(this, event, callback);
+         _get(VirtualProcedure.prototype.__proto__ || Object.getPrototypeOf(VirtualProcedure.prototype), 'unlistenAll', this).call(this);
       }
 
       /**
-       * @returns {JSON}
+       * @return {Object}
        */
 
    }, {
@@ -4895,7 +5714,10 @@ var VirtualProcedure = exports.VirtualProcedure = function (_ProcedureBase) {
       }
 
       /**
-       * @fires istsos.VirtualProcedure#istsos.events.EventType: GET_CODE
+       * Get virtual procedure code
+       *
+       * @return {Promise} 
+       * @fires  istsos.VirtualProcedure#GET_CODE            
        */
 
    }, {
@@ -4923,7 +5745,10 @@ var VirtualProcedure = exports.VirtualProcedure = function (_ProcedureBase) {
       }
 
       /**
-       * @fires istsos.VirtualProcedure#istsos.events.EventType: NEW_CODE
+       * Post new virtual procedure code
+       *
+       * @return {Promise} 
+       * @fires  istsos.VirtualProcedure#NEW_CODE            
        */
 
    }, {
@@ -4953,8 +5778,10 @@ var VirtualProcedure = exports.VirtualProcedure = function (_ProcedureBase) {
       }
 
       /**
-       * @fires istsos.VirtualProcedure#istsos.events.EventType: UPDATE_CODE
-       * @param {String} newCode
+       * Update virtual procedure code
+       *
+       * @return {Promise} 
+       * @fires  istsos.VirtualProcedure#UPDATE_CODE            
        */
 
    }, {
@@ -4986,7 +5813,10 @@ var VirtualProcedure = exports.VirtualProcedure = function (_ProcedureBase) {
       }
 
       /**
-       * @fires istsos.VirtualProcedure#istsos.events.EventType: DELETE_CODE
+       * Delete virtual procedure code
+       *
+       * @return {Promise} 
+       * @fires  istsos.VirtualProcedure#DELETE_CODE            
        */
 
    }, {
@@ -5015,7 +5845,7 @@ var VirtualProcedure = exports.VirtualProcedure = function (_ProcedureBase) {
       }
 
       /**
-       * @returns {JSON}
+       * @return {Object}
        */
 
    }, {
@@ -5025,7 +5855,10 @@ var VirtualProcedure = exports.VirtualProcedure = function (_ProcedureBase) {
       }
 
       /**
-       * @fires istsos.VirtualProcedure#istsos.events.EventType: RATING_CURVE
+       * Get virtual procedure rating curve
+       *
+       * @return {Promise} 
+       * @fires  istsos.VirtualProcedure#RATING_CURVE            
        */
 
    }, {
@@ -5053,7 +5886,10 @@ var VirtualProcedure = exports.VirtualProcedure = function (_ProcedureBase) {
       }
 
       /**
-       * @fires istsos.VirtualProcedure#istsos.events.EventType: NEW_RATING_CURVE
+       * Post virtual procedure rating curve
+       *
+       * @return {Promise} 
+       * @fires  istsos.VirtualProcedure#NEW_RATING_CURVE            
        */
 
    }, {
@@ -5082,7 +5918,10 @@ var VirtualProcedure = exports.VirtualProcedure = function (_ProcedureBase) {
       }
 
       /**
-       * @fires istsos.VirtualProcedure#istsos.events.EventType: DELETE_RATING_CURVE
+       * Delete virtual procedure's rating curve
+       *
+       * @return {Promise} 
+       * @fires  istsos.VirtualProcedure#DELETE_RATING_CURVE            
        */
 
    }, {
@@ -5111,7 +5950,7 @@ var VirtualProcedure = exports.VirtualProcedure = function (_ProcedureBase) {
       }
 
       /**
-       * @returns {JSON}
+       * @return {Object}
        */
 
    }, {
@@ -5121,18 +5960,11 @@ var VirtualProcedure = exports.VirtualProcedure = function (_ProcedureBase) {
       }
 
       /**
-       * @fires istsos.VirtualProcedure#istsos.events.EventType: UPDATE_V_PROCEDURE
-       * @param {String} name
-       * @param {String} description
-       * @param {String} keywords
-       * @param {String} foi_name
-       * @param {int} epsg
-       * @param {int} x
-       * @param {int} y
-       * @param {int} z
-       * @param {Array<istsos.Output>} outputs
-       * @param {String} systemType (virtual)
-       * @param {String} sensorType
+       * Update virtual procedure on the server
+       *
+       * @param {object} options Set of key-value pairs
+       * @return {Promise} 
+       * @fires  istsos.VirtualProcedure#UPDATE_V_PROCEDURE            
        */
 
    }, {
@@ -5176,6 +6008,14 @@ var VirtualProcedure = exports.VirtualProcedure = function (_ProcedureBase) {
             throw error_message;
          });
       }
+
+      /**
+       * Delete virtual procedure on the server
+       *
+       * @return {Promise} 
+       * @fires  istsos.Procedure#DELETE_PROCEDURE            
+       */
+
    }, {
       key: 'deleteVirtualProcedure',
       value: function deleteVirtualProcedure() {
@@ -5209,8 +6049,11 @@ var VirtualProcedure = exports.VirtualProcedure = function (_ProcedureBase) {
       }
 
       /**
-       * @fires istsos.VirtualProcedure#istsos.events.EventType: ADD_TO_OFFERING
-       * @param {istsos.Offering} offering
+       * Add virtual procedure's membership to offering on the server
+       *
+       * @param {istsos.Offering} offering istsos.Offering class
+       * @return {Promise} 
+       * @fires  istsos.Offering#ADD_TO_OFFERING            
        */
 
    }, {
@@ -5245,8 +6088,11 @@ var VirtualProcedure = exports.VirtualProcedure = function (_ProcedureBase) {
       }
 
       /**
-       * @fires istsos.VirtualProcedure#istsos.events.EventType: REMOVE_FROM_OFFERING
-       * @param offering
+       * Remove virtual procedure's membership from offering on the server
+       *
+       * @param {istsos.Offering} offering istsos.Offering class
+       * @return {Promise} 
+       * @fires  istsos.Offering#REMOVE_FROM_OFFERING            
        */
 
    }, {
@@ -5287,7 +6133,7 @@ var VirtualProcedure = exports.VirtualProcedure = function (_ProcedureBase) {
       }
 
       /**
-       * @returns {Array<istsos.Output>}
+       * @return {Array<istsos.Output>}
        */
 
    }, {
@@ -5409,22 +6255,22 @@ function placeHoldersCount (b64) {
 
 function byteLength (b64) {
   // base64 is 4/3 + up to two characters of the original data
-  return b64.length * 3 / 4 - placeHoldersCount(b64)
+  return (b64.length * 3 / 4) - placeHoldersCount(b64)
 }
 
 function toByteArray (b64) {
-  var i, j, l, tmp, placeHolders, arr
+  var i, l, tmp, placeHolders, arr
   var len = b64.length
   placeHolders = placeHoldersCount(b64)
 
-  arr = new Arr(len * 3 / 4 - placeHolders)
+  arr = new Arr((len * 3 / 4) - placeHolders)
 
   // if there are placeholders, only get up to the last complete 4 chars
   l = placeHolders > 0 ? len - 4 : len
 
   var L = 0
 
-  for (i = 0, j = 0; i < l; i += 4, j += 3) {
+  for (i = 0; i < l; i += 4) {
     tmp = (revLookup[b64.charCodeAt(i)] << 18) | (revLookup[b64.charCodeAt(i + 1)] << 12) | (revLookup[b64.charCodeAt(i + 2)] << 6) | revLookup[b64.charCodeAt(i + 3)]
     arr[L++] = (tmp >> 16) & 0xFF
     arr[L++] = (tmp >> 8) & 0xFF
