@@ -57,16 +57,16 @@ var validateConstraintInput = (constraintType, constraintValue) => {
  * @param  {Object} opt_config Config object for data aggregation or quality index constraint
  * @return {[type]}            [description]
  */
-var prepareForGetObservations = (options, opt_config) => {
+var prepareForGetObservations = (options, opt_config, opt_type) => {
    var config = {}
-   if (type === 'aggregation') {
+   if (opt_type && opt_type === 'aggregation') {
       config["aggregationURL"] = prepareDataAggregation(opt_config);
    }
    config['offering'] = options.offering.getOfferingJSON()['name'];
    config['procedureNames'] = prepareProcedureNames(options.procedures);
    config['observedPropertyUrns'] = prepareObservedPropertyUrns(options.observedProperties);
-   config['begin'] = (options.beginTime instanceof istsos.Date) ? options.beginTime.getDateString() : options.beginTime;
-   config['end'] = (options.endTime instanceof istsos.Date) ? options.endTime.getDateString() : options.endTime;
+   config['begin'] = (options.begin instanceof istsos.Date) ? options.begin.getDateString() : options.begin;
+   config['end'] = (options.end instanceof istsos.Date) ? options.end.getDateString() : options.end;
    return config;
 }
 
@@ -105,9 +105,34 @@ var prepareProcedureNames = (procedures) => {
 var prepareObservedPropertyUrns = (observedProperties) => {
    let urns = [];
    observedProperties.forEach((op) => {
-      urns.push(op.getObservedPropertiesJSON()['definition']);
+      urns.push(op.getObservedPropertyJSON()['definition']);
    })
-   return urns.toString;
+   return urns.toString();
+}
+
+var handleMultiplePropertyValues = (measurements, type) => {
+   let list = [];
+   switch (type) {
+      case 'simple':
+
+         for (let i = 0; i < measurements.length; i++) {
+            if(i == 0) {
+               list.push(measurements[i])
+            }
+
+            if(i != 0 && i % 2) {
+               list.push(measurements[i])
+            }
+         }
+         return list
+         break;
+      case 'constraint':
+         // statements_1
+         break;
+      default:
+         // statements_def
+         break;
+   }
 }
 
 var transformGetObservationsResponse = (type, response, constraintFilter) => {
@@ -117,10 +142,14 @@ var transformGetObservationsResponse = (type, response, constraintFilter) => {
 
          var transformed = [];
          for (let i = 0; i < values.length; i++) {
-            transformed.push({
-               "date": values[i][0],
-               "measurement": values[i][1]
-            })
+            if (values[i].length > 3) {
+               transformed.push(handleMultiplePropertyValues(values[i], 'simple'))
+            } else {
+               transformed.push({
+                  "date": values[i][0],
+                  "measurement": values[i][1]
+               })
+            }
          }
          return transformed;
          break;
@@ -129,7 +158,10 @@ var transformGetObservationsResponse = (type, response, constraintFilter) => {
 
          var transformed = [];
          for (let i = 0; i < values.length; i++) {
-            transformed.push(filterByConstraint(values[i], constraintFilter.type, constraintFilter.quiality));
+            let measurement = filterByConstraint(values[i], constraintFilter.type, constraintFilter.quality);
+            if (measurement != undefined) {
+               transformed.push(measurement);
+            }
          }
          response.data[0].result.DataArray.values = transformed
          return response;
@@ -141,36 +173,36 @@ var transformGetObservationsResponse = (type, response, constraintFilter) => {
 }
 
 var filterByConstraint = (measurement, type, value) => {
-
+   
    switch (type) {
       case "lessThan":
-         if (measurement[2] < value) {
-            return measurement;
+         if (parseInt(measurement[2]) < parseInt(value)) {
+            return [measurement[0], parseFloat(measurement[1]), parseInt(measurement[2])];
          }
          break;
       case "lessThanAndEqual":
-         if (measurement[2] <= value) {
-            return measurement;
+         if (parseInt(measurement[2]) <= parseInt(value)) {
+            return [measurement[0], parseFloat(measurement[1]), parseInt(measurement[2])];
          }
          break;
       case "equal":
-         if (measurement[2] === value) {
-            return measurement;
+         if (parseInt(measurement[2]) === parseInt(value)) {
+            return [measurement[0], parseFloat(measurement[1]), parseInt(measurement[2])];
          }
          break;
       case "greaterThanAndEqual":
-         if (measurement[2] >= value) {
-            return measurement;
+         if (parseInt(measurement[2]) >= parseInt(value)) {
+            return [measurement[0], parseFloat(measurement[1]), parseInt(measurement[2])];
          }
          break;
       case "greaterThan":
-         if (measurement[2] > value) {
-            return measurement;
+         if (parseInt(measurement[2]) > parseInt(value)) {
+            return [measurement[0], parseFloat(measurement[1]), parseInt(measurement[2])];
          }
          break;
       case "between":
-         if (measurement[2] >= value[0] && measurement[2] <= value[1]) {
-            return measurement;
+         if (parseInt(measurement[2]) >= parseInt(value)[0] && parseInt(measurement[2]) <= parseInt(value)[1]) {
+            return [measurement[0], parseFloat(measurement[1]), parseInt(measurement[2])];
          }
          break;
       default:
