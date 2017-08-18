@@ -2,7 +2,7 @@ import {EventEmitter} from 'EventEmitter';
 import {HttpAPI} from 'HttpAPI';
 import {Configuration} from 'Configuration';
 import {Offering} from 'Offering';
-import {prepareForGetObservations, transformGetObservationResponse} from 'IstsosHelper';
+import {prepareForGetObservations, transformGetObservationsResponse} from 'IstsosHelper';
 
 /**
  * istsos.Service
@@ -785,7 +785,7 @@ export var Service = class Service extends EventEmitter {
     */
 	getObservations(options) {
 		var urlConfig = prepareForGetObservations(options);
-		var url = `${this.server.getUrl()}wa/istsos/services/${this.name}/operations/getobservation/offerings/${urlConfig.offering}/procedures/${urlConfig.procedureNames}/observedproperties/${urlConfig.observedPropertyUrns}/eventtime/${begin}/${end}`;
+		var url = `${this.server.getUrl()}wa/istsos/services/${this.name}/operations/getobservation/offerings/${urlConfig.offering}/procedures/${urlConfig.procedureNames}/observedproperties/${urlConfig.observedPropertyUrns}/eventtime/${urlConfig.begin}/${urlConfig.end}`;
 
 		let config = {};
 		if (this.server.getLoginConfig()) {
@@ -815,8 +815,8 @@ export var Service = class Service extends EventEmitter {
     * @fires istsos.Service#GETOBSERVATIONS_AGG
     */
 	getObservationsWithAggregation(options, aggregationConfig) {
-		var urlConfig = prepareForGetObservations(options, aggregationConfig);
-		var url = `${this.server.getUrl()}wa/istsos/services/${this.name}/operations/getobservation/offerings/${urlConfig.offering}/procedures/${urlConfig.procedureNames}/observedproperties/${urlConfig.observedPropertyUrns}/eventtime/${begin}/${end}/${urlConfig.aggregationUrl}`;
+		var urlConfig = prepareForGetObservations(options, aggregationConfig, 'aggregation');
+		var url = `${this.server.getUrl()}wa/istsos/services/${this.name}/operations/getobservation/offerings/${urlConfig.offering}/procedures/${urlConfig.procedureNames}/observedproperties/${urlConfig.observedPropertyUrns}/eventtime/${urlConfig.begin}/${urlConfig.end}/${urlConfig.aggregationURL}`;
 
 		let config = {};
 		if (this.server.getLoginConfig()) {
@@ -846,7 +846,7 @@ export var Service = class Service extends EventEmitter {
     */
 	getObservationsSimplified(options) {
 		var urlConfig = prepareForGetObservations(options);
-		var url = `${this.server.getUrl()}wa/istsos/services/${this.name}/operations/getobservation/offerings/${urlConfig.offering}/procedures/${urlConfig.procedureNames}/observedproperties/${urlConfig.observedPropertyUrns}/eventtime/${begin}/${end}`;
+		var url = `${this.server.getUrl()}wa/istsos/services/${this.name}/operations/getobservation/offerings/${urlConfig.offering}/procedures/${urlConfig.procedureNames}/observedproperties/${urlConfig.observedPropertyUrns}/eventtime/${urlConfig.begin}/${urlConfig.end}`;
 
 		let config = {};
 		if (this.server.getLoginConfig()) {
@@ -856,9 +856,9 @@ export var Service = class Service extends EventEmitter {
 		return HttpAPI.get(url, config)
 			.then((result) => {
 				if (result.success) {
-					let transformed = transformGetObservationResponse('simple', result);
+					let transformed = transformGetObservationsResponse('simple', result);
 					this.fireEvent('GETOBSERVATIONS_SIMPLIFIED', transformed);
-					return result;
+					return transformed;
 				} else {
 					throw result.message
 				}
@@ -877,7 +877,7 @@ export var Service = class Service extends EventEmitter {
     */
 	getObservationsByQualityIndexConstraint(options, constraintConfig) {
 		var urlConfig = prepareForGetObservations(options);
-		var url = `${this.server.getUrl()}wa/istsos/services/${this.name}/operations/getobservation/offerings/${urlConfig.offering}/procedures/${urlConfig.procedureNames}/observedproperties/${urlConfig.observedPropertyUrns}/eventtime/${begin}/${end}`;
+		var url = `${this.server.getUrl()}wa/istsos/services/${this.name}/operations/getobservation/offerings/${urlConfig.offering}/procedures/${urlConfig.procedureNames}/observedproperties/${urlConfig.observedPropertyUrns}/eventtime/${urlConfig.begin}/${urlConfig.end}`;
 
 		let config = {};
 		if (this.server.getLoginConfig()) {
@@ -887,7 +887,7 @@ export var Service = class Service extends EventEmitter {
 		return HttpAPI.get(url, config)
 			.then((result) => {
 				if (result.success) {
-					let transformed = transformGetObservationResponse('constraint', result, constraintConfig);
+					let transformed = transformGetObservationsResponse('constraint', result, constraintConfig);
 					this.fireEvent('GETOBSERVATIONS_BY_QUALITY', transformed);
 					return result;
 				} else {

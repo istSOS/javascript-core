@@ -45,5 +45,15 @@ module.exports = {
          }],
       }],
 
+   },
+   plugins: [
+      new webpack.HotModuleReplacementPlugin() // Enable HMR
+   ],
+   devServer: {
+      historyApiFallback: true,
+      contentBase: './',
+      port: 9005,
+      inline: true,
+      hot: true
    }
 };

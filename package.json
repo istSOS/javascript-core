@@ -4,6 +4,7 @@
   "description": "IstSOS JavaScript Core Library for communication with IstSOS WA REST API",
   "main": "./dist/istsos.min.js",
   "scripts": {
+    "start": "webpack-dev-server --inline --hot --output-public-path=/dist/",
     "dev": "rimraf dist/istsos.js && webpack -w --config ./webpack.config.js ",
     "build": "rimraf dist && webpack --config ./webpack.config.js && webpack -p --config ./webpack.production.config.js",
     "test": ""
@@ -24,6 +25,7 @@
     "babel-preset-es2015": "^6.24.1",
     "rimraf": "^2.6.1",
     "webpack": "^2.6.1",
-    "webpack-closure-compiler": "^2.1.4"
+    "webpack-closure-compiler": "^2.1.4",
+    "webpack-dev-server": "^2.7.1"
   }
 }
