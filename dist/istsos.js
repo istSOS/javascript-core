@@ -69,7 +69,7 @@ return /******/ (function(modules) { // webpackBootstrap
 /******/ 	
 /******/ 	
 /******/ 	var hotApplyOnUpdate = true;
-/******/ 	var hotCurrentHash = "56d2c84b51728f96971c"; // eslint-disable-line no-unused-vars
+/******/ 	var hotCurrentHash = "d26df22d6835773801a0"; // eslint-disable-line no-unused-vars
 /******/ 	var hotCurrentModuleData = {};
 /******/ 	var hotCurrentChildModule; // eslint-disable-line no-unused-vars
 /******/ 	var hotCurrentParents = []; // eslint-disable-line no-unused-vars
@@ -989,8 +989,8 @@ var prepareForGetObservations = function prepareForGetObservations(options, opt_
    config['offering'] = options.offering.getOfferingJSON()['name'];
    config['procedureNames'] = prepareProcedureNames(options.procedures);
    config['observedPropertyUrns'] = prepareObservedPropertyUrns(options.observedProperties);
-   config['begin'] = options.begin instanceof _Date.Date ? options.begin.getDateString() : options.begin;
-   config['end'] = options.end instanceof _Date.Date ? options.end.getDateString() : options.end;
+   config['begin'] = options.begin.constructor === _Date.Date ? options.begin.getDateString() : options.begin;
+   config['end'] = options.end.constructor === _Date.Date ? options.end.getDateString() : options.end;
    return config;
 };
 
