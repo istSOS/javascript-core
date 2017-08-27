@@ -1,3 +1,5 @@
+import {Date} from 'Date';
+
 /**
  * Constraint inputs map for observed property
  * @type {Object}
@@ -65,8 +67,8 @@ var prepareForGetObservations = (options, opt_config, opt_type) => {
    config['offering'] = options.offering.getOfferingJSON()['name'];
    config['procedureNames'] = prepareProcedureNames(options.procedures);
    config['observedPropertyUrns'] = prepareObservedPropertyUrns(options.observedProperties);
-   config['begin'] = (options.begin instanceof istsos.Date) ? options.begin.getDateString() : options.begin;
-   config['end'] = (options.end instanceof istsos.Date) ? options.end.getDateString() : options.end;
+   config['begin'] = (options.begin instanceof Date) ? options.begin.getDateString() : options.begin;
+   config['end'] = (options.end instanceof Date) ? options.end.getDateString() : options.end;
    return config;
 }
 

@@ -69,7 +69,7 @@ return /******/ (function(modules) { // webpackBootstrap
 /******/ 	
 /******/ 	
 /******/ 	var hotApplyOnUpdate = true;
-/******/ 	var hotCurrentHash = "a2fc0d496bff4b3ceeb4"; // eslint-disable-line no-unused-vars
+/******/ 	var hotCurrentHash = "56d2c84b51728f96971c"; // eslint-disable-line no-unused-vars
 /******/ 	var hotCurrentModuleData = {};
 /******/ 	var hotCurrentChildModule; // eslint-disable-line no-unused-vars
 /******/ 	var hotCurrentParents = []; // eslint-disable-line no-unused-vars
@@ -818,7 +818,7 @@ exports.EventEmitter = undefined;
 
 var _createClass = function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; }();
 
-var _EventTypes = __webpack_require__(5);
+var _EventTypes = __webpack_require__(6);
 
 function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
 
@@ -919,6 +919,10 @@ var EventEmitter = exports.EventEmitter = function () {
 Object.defineProperty(exports, "__esModule", {
    value: true
 });
+exports.transformGetObservationsResponse = exports.prepareForGetObservations = exports.ConstraintInputs = exports.validateConstraintInput = undefined;
+
+var _Date = __webpack_require__(5);
+
 /**
  * Constraint inputs map for observed property
  * @type {Object}
@@ -985,8 +989,8 @@ var prepareForGetObservations = function prepareForGetObservations(options, opt_
    config['offering'] = options.offering.getOfferingJSON()['name'];
    config['procedureNames'] = prepareProcedureNames(options.procedures);
    config['observedPropertyUrns'] = prepareObservedPropertyUrns(options.observedProperties);
-   config['begin'] = options.begin instanceof istsos.Date ? options.begin.getDateString() : options.begin;
-   config['end'] = options.end instanceof istsos.Date ? options.end.getDateString() : options.end;
+   config['begin'] = options.begin instanceof _Date.Date ? options.begin.getDateString() : options.begin;
+   config['end'] = options.end instanceof _Date.Date ? options.end.getDateString() : options.end;
    return config;
 };
 
@@ -1979,6 +1983,76 @@ var ProcedureBase = exports.ProcedureBase = function (_EventEmitter) {
 
 
 Object.defineProperty(exports, "__esModule", {
+  value: true
+});
+
+var _createClass = function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; }();
+
+function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
+
+/**
+ * istsos.ServerContainer
+ * 
+ * @class
+ */
+var Date = exports.Date = function () {
+
+  /**
+   * constructor - Instantiates istsos.Date
+   *
+   * @param {Object} options Set of key-value pairs
+   * @constructor
+   */
+  function Date(options) {
+    _classCallCheck(this, Date);
+
+    this.year = options.year.toString();
+    this.month = options.month > 9 ? options.month.toString() : "0" + options.month.toString();
+    this.day = options.day > 9 ? options.day.toString() : "0" + options.day.toString();
+    this.hours = options.hours > 9 ? options.hours.toString() : "0" + options.hours.toString();
+    this.minutes = options.minutes > 9 ? options.minutes.toString() : "0" + options.minutes.toString();
+    this.seconds = options.seconds > 9 ? options.seconds.toString() : "0" + options.seconds.toString();
+    this.gmt = options.gmt > 9 ? options.gmt.toString() : "0" + options.gmt.toString();
+    this.description = options.opt_description || "Class for converting date&time to proper istSOS format";
+  }
+
+  /**
+   * getDateString - Get date in ISO 8601 format
+   *
+   * @return {String}  ISO 8601 date
+   */
+
+
+  _createClass(Date, [{
+    key: "getDateString",
+    value: function getDateString() {
+      return this.year + "-" + this.month + "-" + this.day + "T" + this.hours + ":" + this.minutes + ":" + this.seconds + "+" + this.gmt + ":00";
+    }
+
+    /**
+     * getDescription - Get description
+     *
+     * @return {String}  Description   
+     */
+
+  }, {
+    key: "getDescription",
+    value: function getDescription() {
+      return this.description;
+    }
+  }]);
+
+  return Date;
+}();
+
+/***/ }),
+/* 6 */
+/***/ (function(module, exports, __webpack_require__) {
+
+"use strict";
+
+
+Object.defineProperty(exports, "__esModule", {
    value: true
 });
 
@@ -2061,7 +2135,7 @@ var EventTypes = exports.EventTypes = {
 };
 
 /***/ }),
-/* 6 */
+/* 7 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -2369,7 +2443,7 @@ var Offering = exports.Offering = function (_EventEmitter) {
 }(_EventEmitter2.EventEmitter);
 
 /***/ }),
-/* 7 */
+/* 8 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -2583,7 +2657,7 @@ var DataQuality = exports.DataQuality = function (_EventEmitter) {
 }(_EventEmitter2.EventEmitter);
 
 /***/ }),
-/* 8 */
+/* 9 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -2828,76 +2902,6 @@ var Database = exports.Database = function (_EventEmitter) {
 
    return Database;
 }(_EventEmitter2.EventEmitter);
-
-/***/ }),
-/* 9 */
-/***/ (function(module, exports, __webpack_require__) {
-
-"use strict";
-
-
-Object.defineProperty(exports, "__esModule", {
-  value: true
-});
-
-var _createClass = function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; }();
-
-function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
-
-/**
- * istsos.ServerContainer
- * 
- * @class
- */
-var Date = exports.Date = function () {
-
-  /**
-   * constructor - Instantiates istsos.Date
-   *
-   * @param {Object} options Set of key-value pairs
-   * @constructor
-   */
-  function Date(options) {
-    _classCallCheck(this, Date);
-
-    this.year = options.year.toString();
-    this.month = options.month > 9 ? options.month.toString() : "0" + options.month.toString();
-    this.day = options.day > 9 ? options.day.toString() : "0" + options.day.toString();
-    this.hours = options.hours > 9 ? options.hours.toString() : "0" + options.hours.toString();
-    this.minutes = options.minutes > 9 ? options.minutes.toString() : "0" + options.minutes.toString();
-    this.seconds = options.seconds > 9 ? options.seconds.toString() : "0" + options.seconds.toString();
-    this.gmt = options.gmt > 9 ? options.gmt.toString() : "0" + options.gmt.toString();
-    this.description = options.opt_description || "Class for converting date&time to proper istSOS format";
-  }
-
-  /**
-   * getDateString - Get date in ISO 8601 format
-   *
-   * @return {String}  ISO 8601 date
-   */
-
-
-  _createClass(Date, [{
-    key: "getDateString",
-    value: function getDateString() {
-      return this.year + "-" + this.month + "-" + this.day + "T" + this.hours + ":" + this.minutes + ":" + this.seconds + "+" + this.gmt + ":00";
-    }
-
-    /**
-     * getDescription - Get description
-     *
-     * @return {String}  Description   
-     */
-
-  }, {
-    key: "getDescription",
-    value: function getDescription() {
-      return this.description;
-    }
-  }]);
-
-  return Date;
-}();
 
 /***/ }),
 /* 10 */
@@ -4205,7 +4209,7 @@ var _HttpAPI = __webpack_require__(0);
 
 var _Configuration = __webpack_require__(3);
 
-var _Offering = __webpack_require__(6);
+var _Offering = __webpack_require__(7);
 
 var _IstsosHelper = __webpack_require__(2);
 
@@ -6155,9 +6159,9 @@ var VirtualProcedure = exports.VirtualProcedure = function (_ProcedureBase) {
 
 var _ServerContainer = __webpack_require__(14);
 
-var _Date = __webpack_require__(9);
+var _Date = __webpack_require__(5);
 
-var _Database = __webpack_require__(8);
+var _Database = __webpack_require__(9);
 
 var _Configuration = __webpack_require__(3);
 
@@ -6165,11 +6169,11 @@ var _Server = __webpack_require__(13);
 
 var _HttpAPI = __webpack_require__(0);
 
-var _EventTypes = __webpack_require__(5);
+var _EventTypes = __webpack_require__(6);
 
 var _EventEmitter = __webpack_require__(1);
 
-var _DataQuality = __webpack_require__(7);
+var _DataQuality = __webpack_require__(8);
 
 var _UnitOfMeasure = __webpack_require__(16);
 
@@ -6185,7 +6189,7 @@ var _Procedure = __webpack_require__(12);
 
 var _VirtualProcedure = __webpack_require__(17);
 
-var _Offering = __webpack_require__(6);
+var _Offering = __webpack_require__(7);
 
 var _IstsosHelper = __webpack_require__(2);
 
