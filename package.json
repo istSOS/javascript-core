@@ -1,6 +1,6 @@
 {
   "name": "istsos-javascript-core",
-  "version": "0.10.0",
+  "version": "0.9.7",
   "description": "IstSOS JavaScript Core Library for communication with IstSOS WA REST API",
   "main": "./dist/istsos.min.js",
   "scripts": {
