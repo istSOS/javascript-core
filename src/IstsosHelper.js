@@ -104,9 +104,9 @@ var prepareProcedureNames = (procedures) => {
 
 var prepareObservedPropertyUrns = (observedProperties) => {
    let urns = [];
-   observedProperties.forEach((op) => {
-      urns.push(op.getObservedPropertyJSON()['definition']);
-   })
+   for (let op = 0; op < observedProperties.length; op++) {
+      urns.push(observedProperties[op].definitionUrn);
+   }
    return urns.toString();
 }
 
