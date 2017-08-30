@@ -1,220 +1,475 @@
-goog.require('goog.events');
-goog.require('goog.events.Event');
-goog.require('goog.events.EventTarget');
-goog.require('goog.net.XhrIo');
-/** istsos.Configuration class */
-/**
- * @param {String} serviceName
- * @param {istsos.Server} server
- * @constructor
- */
-istsos.Configuration = function (serviceName, server) {
-    this.sname = (serviceName) ? serviceName : "default";
-    this.serverUrl = server.getUrl();
-};
+import {HttpAPI } from 'HttpAPI'; 
+import {EventEmitter } from 'EventEmitter';
 
-istsos.Configuration.prototype = {
-    /**
-     * @param {String} url
-     * @param {istsos.events.EventType} eventType
-     * @param {String} method
-     * @param {JSON} opt_data
-     * @param {function} opt_callback
-     */
-    executeRequest: function (url, eventType, method, opt_data, opt_callback) {
-        goog.net.XhrIo.send(url, function (e) {
-            var obj = e.target.getResponseJson();
-            console.log(obj);
-            istsos.fire(eventType, e.target);
-        }, method, opt_data);
-    },
-    /**
-     * @fires istsos.Configuration#istsos.events.EventType: CONFIGSECTIONS
-     */
-    getConf: function () {
-        var url = this.serverUrl + "wa/istsos/services/" + this.sname + "/configsections";
-        this.executeRequest(url, istsos.events.EventType.CONFIGSECTIONS, "GET");
-    },
-    /**
-     * @fires istsos.Configuration#istsos.events.EventType: PROVIDER
-     */
-    getProvider: function () {
-        var url = this.serverUrl + "wa/istsos/services/" + this.sname + "/configsections/provider";
-        this.executeRequest(url, istsos.events.EventType.PROVIDER, "GET");
-    },
-    /**
-     * @fires istsos.Configuration#istsos.events.EventType: UPDATE_PROVIDER
-     * @param {String} providerName
-     * @param {String} providerSite
-     * @param {String} contactName
-     * @param {String} contactPosition
-     * @param {String} contactVoice
-     * @param {String} contactFax
-     * @param {String} contactEmail
-     * @param {String} contactDeliveryPoint
-     * @param {String} contactPostalCode
-     * @param {String} contactCity
-     * @param {String} contactAdminArea
-     * @param {String} contactCountry
-     */
-    updateProvider: function (providerName, providerSite, contactName, contactPosition, contactVoice, contactFax,
-                              contactEmail, contactDeliveryPoint, contactPostalCode,
-                              contactCity, contactAdminArea, contactCountry) {
-        var data = {
-            "providername": providerName || "",
-            "providersite": providerSite || "",
-            "contactname": contactName || "",
-            "contactposition": contactPosition || "",
-            "contactvoice": contactVoice || "",
-            "contactfax": contactFax || "",
-            "contactemail": contactEmail || "",
-            "contactdeliverypoint": contactDeliveryPoint || "",
-            "contactpostalcode": contactPostalCode || "",
-            "contactcity": contactCity || "",
-            "contactadminarea": contactAdminArea || "",
-            "contactcountry": contactCountry || ""
-        };
-        var url = this.serverUrl + "wa/istsos/services/" + this.sname + "/configsections/provider";
-        this.executeRequest(url, istsos.events.EventType.UPDATE_PROVIDER, "PUT", JSON.stringify(data));
-    },
-    /**
-     * @fires istsos.Configuration#istsos.events.EventType: IDENTIFICATION
-     */
-    getIdentification: function () {
-        var url = this.serverUrl + "wa/istsos/services/" + this.sname + "/configsections/identification";
-        this.executeRequest(url, istsos.events.EventType.IDENTIFICATION, "GET");
-    },
-    /**
-     * @fires istsos.Configuration#istsos.events.EventType: UPDATE_IDENTIFICATION
-     * @param {String} title
-     * @param {String} abstract
-     * @param {String} urnVersion
-     * @param {String} authority
-     * @param {String} fees
-     * @param {String} keywords
-     * @param {String} accessConstrains
-     */
-    updateIdentification: function (title, abstract, urnVersion, authority, fees, keywords, accessConstrains) {
-        var data = {
-            "title": title || "",
-            "abstract": abstract || "",
-            "urnversion": urnVersion || "",
-            "authority": authority || "",
-            "fees": fees || "",
-            "keywords": keywords || "",
-            "accessconstrains": accessConstrains || ""
-        };
-        var url = this.serverUrl + "wa/istsos/services/" + this.sname + "/configsections/identification";
-        console.log(url);
-        console.log(JSON.stringify(data));
-        this.executeRequest(url, istsos.events.EventType.UPDATE_IDENTIFICATION, "PUT", JSON.stringify(data));
-    },
-    /**
-     * @fires istsos.Configuration#istsos.events.EventType: MQTT
-     */
-    getMqtt: function () {
-        var url = this.serverUrl + "wa/istsos/services/" + this.sname + "/configsections/mqtt";
-        this.executeRequest(url, istsos.events.EventType.MQTT, "GET");
-    },
-    /**
-     * @fires istsos.Configuration#istsos.events.EventType: UPDATE_MQTT
-     * @param {String} brokerPassword
-     * @param {String} brokerUser
-     * @param {String} brokerTopic
-     * @param {String} brokerUrl
-     * @param {String} brokerPort
-     */
-    updateMqtt: function (brokerPassword, brokerUser, brokerTopic, brokerUrl, brokerPort) {
-        var data = {
-            "broker_password": brokerPassword || "",
-            "broker_user": brokerUser || "",
-            "broker_topic": brokerTopic || "",
-            "broker_url": brokerUrl || "",
-            "broker_port": brokerPort || ""
-        };
-        var url = this.serverUrl + "wa/istsos/services/" + this.sname + "/configsections/mqtt";
-        this.executeRequest(url, istsos.events.EventType.UPDATE_MQTT, "PUT", JSON.stringify(data));
-    },
-    /**
-     * @fires istsos.Configuration#istsos.events.EventType: CRS
-     */
-    getCrs: function () {
-        var url = this.serverUrl + "wa/istsos/services/" + this.sname + "/configsections/geo";
-        this.executeRequest(url, istsos.events.EventType.CRS, "GET");
-    },
-    /**
-     * @fires istsos.Configuration#istsos.events.EventType: UPDATE_CRS
-     * @param {String} z_axis_name
-     * @param {String} x_axis_name
-     * @param {String} y_axis_name
-     * @param {int} allowedEpsg
-     * @param {int} istsosEpsg
-     */
-    updateCrs: function (z_axis_name, x_axis_name, y_axis_name, allowedEpsg, istsosEpsg) {
-        var data = {
-            "zaxisname": z_axis_name || "",
-            "xaxisname": x_axis_name || "",
-            "yaxisname": y_axis_name || "",
-            "allowedepsg": allowedEpsg.toString() || "",
-            "istsosepsg": istsosEpsg.toString() || ""
-        };
-        var url = this.serverUrl + "wa/istsos/services/" + this.sname + "/configsections/geo";
-        this.executeRequest(url, istsos.events.EventType.UPDATE_CRS, "PUT", JSON.stringify(data));
-    },
-    /**
-     * @fires istsos.Configuration#istsos.events.EventType: OBSERVATION_CONF
-     */
-    getObservationConf: function () {
-        var url = this.serverUrl + "wa/istsos/services/" + this.sname + "/configsections/getobservation";
-        this.executeRequest(url, istsos.events.EventType.OBSERVATION_CONF, "GET");
-    },
-    /**
-     * @fires istsos.Configuration#istsos.events.EventType: UPDATE_OBSERVATION_CONF
-     * @param {String} correctQi
-     * @param {String} statQi
-     * @param {String} defaultQi
-     * @param {String} aggregateNoDataQi
-     * @param {String} maxGoPeriod
-     * @param {String} transactionalLog
-     * @param {String} aggregateNoData
-     */
-    updateObservationConf: function (correctQi, statQi, defaultQi, aggregateNoDataQi,
-                                     maxGoPeriod, transactionalLog, aggregateNoData) {
-        var data = {
-            "correct_qi": correctQi || "",
-            "stat_qi": statQi || "",
-            "defaultqi": defaultQi || "",
-            "aggregatenodataqi": aggregateNoDataQi || "",
-            "maxgoperiod": maxGoPeriod || "",
-            "transactional_log": transactionalLog || "",
-            "aggregatenodata": aggregateNoData || ""
-        };
-        var url = this.serverUrl + "wa/istsos/services/" + this.sname + "/configsections/getobservation";
-        this.executeRequest(url, istsos.events.EventType.UPDATE_OBSERVATION_CONF, "PUT", JSON.stringify(data));
-    },
-    /**
-     * @fires istsos.Configuration#istsos.events.EventType: PROXY
-     */
-    getProxy: function () {
-        var url = this.serverUrl + "wa/istsos/services/" + this.sname + "/configsections/serviceurl";
-        this.executeRequest(url, istsos.events.EventType.PROXY, "GET");
-    },
-    /**
-     * @fires istsos.Configuration#istsos.events.EventType: UPDATE_PROXY
-     * @param {String} newUrl
-     */
-    updateProxy: function (newUrl) {
-        var data = {
-            "url": newUrl || ""
-        };
-        var url = this.serverUrl + "wa/istsos/services/" + this.sname + "/configsections/serviceurl";
-        this.executeRequest(url, istsos.events.EventType.UPDATE_PROXY, "PUT", JSON.stringify(data));
-    },
-    /**
-     * @fires istsos.Configuration#istsos.events.EventType: EPSG_CODES
-     */
-    getEpsgCodes: function () {
-        var url = this.serverUrl + "wa/istsos/services/" + this.sname + "/epsgs";
-        this.executeRequest(url, istsos.events.EventType.EPSG_CODES, "GET");
-    }
-};
+/**
+ * istsos.Configuration
+ * 
+ * @class
+ * @extends istsos.EventEmitter
+ */
+export var Configuration = class Configuration extends EventEmitter {
+   /**
+    * constructor - instantiates istsos.Configuration
+    * 
+    * @param  {Object} options Set of key-value pairs
+    * @constructor
+    */
+   constructor(options) {
+      super();
+      this.serviceName = (options.serviceName) ? options.serviceName : "default";
+      this.server = options.server;
+   }
+
+   /**
+    * Fire event with data - event must match one of the supported event types from istsos.EventTypes
+    * 
+    * @param  {String} eventType Type of event from istsos.EventTypes
+    * @param  {Object|*} response  Data to be passed to a handler
+    */
+   fireEvent(eventType, response) {
+      super.fire(eventType, response)
+   }
+
+   /**
+    * Add event listener
+    * 
+    * @param  {String}   event    Event must match one of the supported event types from istsos.EventTypes
+    * @param  {Function} callback Handler function
+    */
+   on(event, callback) {
+      super.on(event, callback);
+   }
+
+   /**
+    * Add event listener, that will listen only once.
+    * 
+    * @param  {String}   event    Event must match one of the supported event types from istsos.EventTypes
+    * @param  {Function} callback Handler function
+    */
+   once(event, callback) {
+      super.once(event, callback);
+   }
+
+   /**
+    * Remove event listener
+    * 
+    * @param  {String}   event    Event must match one of the supported event types from istsos.EventTypes
+    * @param  {Function} callback Handler function
+    */
+   off(event, callback) {
+      super.off(event, callback);
+   }
+
+   /**
+    * Remove all event listeners
+    */
+   unlistenAll() {
+      super.unlistenAll();
+   }
+
+   /**
+    * Get configuration information from the server
+    * 
+    * @return {Promise} 
+    * @fires  istsos.Configuration#CONFIGSECTIONS            
+    */
+   getConf() {
+      var url = `${this.server.getUrl()}wa/istsos/services/${this.serviceName}/configsections`;
+      
+      let config = {}
+      if(this.server.getLoginConfig()) {
+         config['headers'] = this.server.getLoginConfig();
+      }
+
+      return HttpAPI.get(url, config)
+         .then((result) => {
+            if (result.success) {
+               this.fireEvent('CONFIGSECTIONS', result);
+               return result;
+            } else {
+               throw result.message
+            }
+         }, (error_message) => {
+            throw error_message;
+         });
+   }
+
+   /**
+    * Get provider information from the server
+    * 
+    * @return {Promise} 
+    * @fires  istsos.Configuration#PROVIDER            
+    */
+   getProvider() {
+      var url = `${this.server.getUrl()}wa/istsos/services/${this.serviceName}/configsections/provider`;
+       
+      let config = {}
+      if(this.server.getLoginConfig()) {
+         config['headers'] = this.server.getLoginConfig();
+      }
+
+      return HttpAPI.get(url, config)
+         .then((result) => {
+            if (result.success) {
+               this.fireEvent('PROVIDER', result);
+               return result;
+            } else {
+               throw result.message
+            }
+
+         }, (error_message) => {
+            throw error_message;
+         });
+   }
+
+   /**
+    * Update provider information on the server
+    *
+    * @param {object} options Set of key-value pairs
+    * @return {Promise} 
+    * @fires  istsos.Configuration#UPDATE_PROVIDER            
+    */
+   updateProvider(options = {}) {
+      var url = `${this.server.getUrl()}wa/istsos/services/${this.serviceName}/configsections/provider`;
+      
+      let config = {}
+      if(this.server.getLoginConfig()) {
+         config['headers'] = this.server.getLoginConfig();
+      }
+      config['data'] = JSON.stringify(options);
+
+      return HttpAPI.put(url, config)
+         .then((result) => {
+            if (result.success) {
+               this.fireEvent('UPDATE_PROVIDER', result);
+               return result;
+            } else {
+               throw result.message
+            }
+
+         }, (error_message) => {
+            throw error_message;
+         });
+   }
+
+   /**
+    * Get identification information from the server
+    * 
+    * @return {Promise} 
+    * @fires  istsos.Configuration#IDENTIFICATION            
+    */
+   getIdentification() {
+      var url = `${this.server.getUrl()}wa/istsos/services/${this.serviceName}/configsections/identification`;
+
+      let config = {}
+      if(this.server.getLoginConfig()) {
+         config['headers'] = this.server.getLoginConfig();
+      }
+
+      return HttpAPI.get(url, config)
+         .then((result) => {
+            if (result.success) {
+               this.fireEvent('IDENTIFICATION', result);
+               return result;
+            } else {
+               throw result.message
+            }
+
+         }, (error_message) => {
+            throw error_message;
+         });
+   }
+
+   /**
+    * Update identification information on the server
+    *
+    * @param {object} options Set of key-value pairs
+    * @return {Promise} 
+    * @fires  istsos.Configuration#UPDATE_IDENTIFICATION            
+    */
+   updateIdentification(options = {}) {
+      var url = `${this.server.getUrl()}wa/istsos/services/${this.serviceName}/configsections/identification`;
+
+      let config = {}
+      if(this.server.getLoginConfig()) {
+         config['headers'] = this.server.getLoginConfig();
+      }
+      config['data'] = JSON.stringify(options);
+
+      return HttpAPI.put(url, config)
+         .then((result) => {
+            if (result.success) {
+               this.fireEvent('UPDATE_IDENTIFICATION', result);
+               return result;
+            } else {
+               throw result.message
+            }
+
+         }, (error_message) => {
+            throw error_message;
+         });
+   }
+
+   /**
+    * Get MQTT information from the server
+    * 
+    * @return {Promise} 
+    * @fires  istsos.Configuration#MQTT            
+    */
+   getMqtt() {
+      var url = `${this.server.getUrl()}wa/istsos/services/${this.serviceName}/configsections/mqtt`;
+       
+      let config = {}
+      if(this.server.getLoginConfig()) {
+         config['headers'] = this.server.getLoginConfig();
+      }
+
+      return HttpAPI.get(url, config)
+         .then((result) => {
+            if (result.success) {
+               this.fireEvent('MQTT', result);
+               return result;
+            } else {
+               throw result.message
+            }
+
+         }, (error_message) => {
+            throw error_message;
+         });
+   }
+
+   /**
+    * Update MQTT information on the server
+    *
+    * @param {object} options Set of key-value pairs
+    * @return {Promise} 
+    * @fires  istsos.Configuration#UPDATE_MQTT            
+    */
+   updateMqtt(options = {}) {
+      var url = `${this.server.getUrl()}wa/istsos/services/${this.serviceName}/configsections/mqtt`;
+     
+      let config = {}
+      if(this.server.getLoginConfig()) {
+         config['headers'] = this.server.getLoginConfig();
+      }
+      config['data'] = JSON.stringify(options);
+
+      return HttpAPI.put(url, config)
+         .then((result) => {
+            if (result.success) {
+               this.fireEvent('UPDATE_MQTT', result);
+               return result;
+            } else {
+               throw result.message
+            }
+
+         }, (error_message) => {
+            throw error_message;
+         });
+   }
+
+   /**
+    * Get coordinate reference system information from the server
+    * 
+    * @return {Promise} 
+    * @fires  istsos.Configuration#CRS            
+    */
+   getCrs() {
+      var url = `${this.server.getUrl()}wa/istsos/services/${this.serviceName}/configsections/geo`;
+ 
+      let config = {}
+      if(this.server.getLoginConfig()) {
+         config['headers'] = this.server.getLoginConfig();
+      }
+
+      return HttpAPI.get(url, config)
+         .then((result) => {
+            if (result.success) {
+               this.fireEvent('CRS', result);
+               return result;
+            } else {
+               throw result.message
+            }
+
+         }, (error_message) => {
+            throw error_message;
+         });
+   }
+
+   /**
+    * Update CRS information on the server
+    *
+    * @param {object} options Set of key-value pairs
+    * @return {Promise} 
+    * @fires  istsos.Configuration#UPDATE_CRS            
+    */
+   updateCrs(options = {}) {
+      var url = `${this.server.getUrl()}wa/istsos/services/${this.serviceName}/configsections/geo`;
+      
+      let config = {}
+      if(this.server.getLoginConfig()) {
+         config['headers'] = this.server.getLoginConfig();
+      }
+      config['data'] = JSON.stringify(options);
+
+      return HttpAPI.put(url, config)
+         .then((result) => {
+            if (result.success) {
+               this.fireEvent('UPDATE_CRS', result);
+               return result;
+            } else {
+               throw result.message
+            }
+
+         }, (error_message) => {
+            throw error_message;
+         });
+   }
+
+   /**
+    * Get observation configuration information from the server
+    * 
+    * @return {Promise} 
+    * @fires  istsos.Configuration#OBSERVATION_CONF            
+    */
+   getObservationConf() {
+      var url = `${this.server.getUrl()}wa/istsos/services/${this.serviceName}/configsections/getobservation`;
+
+      let config = {}
+      if(this.server.getLoginConfig()) {
+         config['headers'] = this.server.getLoginConfig();
+      }
+
+      return HttpAPI.get(url, config)
+         .then((result) => {
+            if (result.success) {
+               this.fireEvent('OBSERVATION_CONF', result);
+               return result;
+            } else {
+               throw result.message
+            }
+
+         }, (error_message) => {
+            throw error_message;
+         });
+   }
+
+   /**
+    * Update observation configuration information on the server
+    *
+    * @param {object} options Set of key-value pairs
+    * @return {Promise} 
+    * @fires  istsos.Configuration#UPDATE_OBSERVATION_CONF            
+    */
+   updateObservationConf(options = {}) {
+      var url = `${this.server.getUrl()}wa/istsos/services/${this.serviceName}/configsections/getobservation`;
+      
+      let config = {}
+      if(this.server.getLoginConfig()) {
+         config['headers'] = this.server.getLoginConfig();
+      }
+      config['data'] = JSON.stringify(options);
+
+      return HttpAPI.put(url, config)
+         .then((result) => {
+            if (result.success) {
+               this.fireEvent('UPDATE_OBSERVATION_CONF', result);
+               return result;
+            } else {
+               throw result.message
+            }
+
+         }, (error_message) => {
+            throw error_message;
+         });
+   }
+
+   /**
+    * Get proxy information from the server
+    * 
+    * @return {Promise} 
+    * @fires  istsos.Configuration#PROXY            
+    */
+   getProxy() {
+      var url = `${this.server.getUrl()}wa/istsos/services/${this.serviceName}/configsections/serviceurl`;
+
+      let config = {}
+      if(this.server.getLoginConfig()) {
+         config['headers'] = this.server.getLoginConfig();
+      }
+
+      return HttpAPI.get(url, config)
+         .then((result) => {
+            if (result.success) {
+               this.fireEvent('PROXY', result);
+               return result;
+            } else {
+               throw result.message
+            }
+
+         }, (error_message) => {
+            throw error_message;
+         });
+   }
+
+   /**
+    * Update proxy information on the server
+    *
+    * @param {string} newUrl New proxy URL
+    * @return {Promise} 
+    * @fires  istsos.Configuration#UPDATE_PROXY            
+    */
+   updateProxy(newUrl = "") {
+      var data = {
+         "url": newUrl || ""
+      }
+      var url = `${this.server.getUrl()}wa/istsos/services/${this.serviceName}/configsections/serviceurl`;
+      
+      let config = {}
+      if(this.server.getLoginConfig()) {
+         config['headers'] = this.server.getLoginConfig();
+      }
+      config['data'] = JSON.stringify(data);
+
+      return HttpAPI.put(url, config)
+         .then((result) => {
+            if (result.success) {
+               this.fireEvent('UPDATE_PROXY', result);
+               return result;
+            } else {
+               throw result.message
+            }
+
+         }, (error_message) => {
+            throw error_message;
+         });
+   }
+
+   /**
+    * Get EPSG codes from the server
+    * 
+    * @return {Promise} 
+    * @fires  istsos.Configuration#EPSG_CODES            
+    */
+   getEpsgCodes() {
+      var url = `${this.server.getUrl()}wa/istsos/services/${this.serviceName}/epsgs`;
+       
+      let config = {}
+      if(this.server.getLoginConfig()) {
+         config['headers'] = this.server.getLoginConfig();
+      }
+
+      return HttpAPI.get(url, config)
+         .then((result) => {
+            if (result.success) {
+               this.fireEvent('EPSG_CODES', result);
+               return result;
+            } else {
+               throw result.message
+            }
+
+         }, (error_message) => {
+            throw error_message;
+         });
+   }
+}
