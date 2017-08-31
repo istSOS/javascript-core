@@ -29,11 +29,11 @@ export var VirtualProcedure = class VirtualProcedure extends ProcedureBase {
       this.sensorType = options.sensorType || "";
       this.service = options.service;
       this.code = {
-         "code": code
+         "code":options.code
       } || {};
-      this.ratingCurve = ratingCurve || {};
-      service.addVirtualProcedure(this);
-      service.getOfferingsProperty()[0].getMemberProceduresProperty().push(this);
+      this.ratingCurve = options.ratingCurve || {};
+      options.service.addVirtualProcedure(this);
+      options.service.getOfferingsProperty()[0].getMemberProceduresProperty().push(this);
    }
 
    /**
