@@ -906,7 +906,7 @@ export var Service = class Service extends EventEmitter {
     * @fires istsos.Service#GEOJSON
     */
 	getFeatureCollection(opt_options) {
-		var url = `${this.server.getUrl()}wa/istsos/services/${this.nane}/procedures/operations/geojson`;
+		var url = `${this.server.getUrl()}wa/istsos/services/${this.name}/procedures/operations/geojson`;
 		if (opt_options.opt_epsg) {
 			url += "?epsg=" + opt_options.opt_epsg.toString();
 			if (opt_options.opt_offering || opt_options.opt_procedure) {
