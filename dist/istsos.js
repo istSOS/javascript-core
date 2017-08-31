@@ -69,7 +69,7 @@ return /******/ (function(modules) { // webpackBootstrap
 /******/ 	
 /******/ 	
 /******/ 	var hotApplyOnUpdate = true;
-/******/ 	var hotCurrentHash = "5846db25b6abcdb749ac"; // eslint-disable-line no-unused-vars
+/******/ 	var hotCurrentHash = "9a24441d6bda8b194b69"; // eslint-disable-line no-unused-vars
 /******/ 	var hotCurrentModuleData = {};
 /******/ 	var hotCurrentChildModule; // eslint-disable-line no-unused-vars
 /******/ 	var hotCurrentParents = []; // eslint-disable-line no-unused-vars
@@ -747,8 +747,9 @@ var HttpAPI = exports.HttpAPI = {
          }
          xhr.onload = function () {
             if (xhr.status >= 200 && xhr.status < 300) {
-
-               if (JSON.parse(xhr.response).success) {
+               if (config.exception) {
+                  resolve(JSON.parse(xhr.response));
+               } else if (JSON.parse(xhr.response).success) {
                   resolve(JSON.parse(xhr.response));
                } else {
                   reject(JSON.parse(xhr.response).message);
@@ -5296,7 +5297,7 @@ var Service = exports.Service = function (_EventEmitter) {
 			if (this.server.getLoginConfig()) {
 				config['headers'] = this.server.getLoginConfig();
 			}
-
+			config['exception'] = true;
 			return _HttpAPI.HttpAPI.get(url, config).then(function (result) {
 				_this25.fireEvent('GEOJSON', result);
 				return result;

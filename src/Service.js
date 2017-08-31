@@ -925,7 +925,7 @@ export var Service = class Service extends EventEmitter {
 		if (this.server.getLoginConfig()) {
 			config['headers'] = this.server.getLoginConfig();
 		}
-
+		config['exception'] = true;
 		return HttpAPI.get(url, config)
 	      .then((result) => {
 	         this.fireEvent('GEOJSON', result);

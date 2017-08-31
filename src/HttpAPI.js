@@ -16,14 +16,14 @@ export var HttpAPI = {
          }
          xhr.onload = () => {
             if (xhr.status >= 200 && xhr.status < 300) {
-               
-               if(JSON.parse(xhr.response).success) {
+               if(config.exception) {
+                  resolve(JSON.parse(xhr.response))
+               } else if(JSON.parse(xhr.response).success) {
                   resolve(JSON.parse(xhr.response));
                } else {
                   reject(JSON.parse(xhr.response).message)
                }
                
-
             } else {
                reject(xhr.statusText);
             }
