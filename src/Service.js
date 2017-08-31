@@ -927,15 +927,11 @@ export var Service = class Service extends EventEmitter {
 		}
 
 		return HttpAPI.get(url, config)
-			.then((result) => {
-				if (result.success) {
-					this.fireEvent('GEOJSON', result);
-					return result;
-				} else {
-					throw result.message
-				}
-			}, (error_message) => {
-				throw error_message;
-			});
+	      .then((result) => {
+	         this.fireEvent('GEOJSON', result);
+	         return result;
+	      }, (error_message) => {
+	         throw error_message;
+	      });
 	}
 }
