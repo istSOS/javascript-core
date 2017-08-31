@@ -69,7 +69,7 @@ return /******/ (function(modules) { // webpackBootstrap
 /******/ 	
 /******/ 	
 /******/ 	var hotApplyOnUpdate = true;
-/******/ 	var hotCurrentHash = "66f64b4abc8eaab4fecf"; // eslint-disable-line no-unused-vars
+/******/ 	var hotCurrentHash = "5846db25b6abcdb749ac"; // eslint-disable-line no-unused-vars
 /******/ 	var hotCurrentModuleData = {};
 /******/ 	var hotCurrentChildModule; // eslint-disable-line no-unused-vars
 /******/ 	var hotCurrentParents = []; // eslint-disable-line no-unused-vars
@@ -5298,12 +5298,8 @@ var Service = exports.Service = function (_EventEmitter) {
 			}
 
 			return _HttpAPI.HttpAPI.get(url, config).then(function (result) {
-				if (result.success) {
-					_this25.fireEvent('GEOJSON', result);
-					return result;
-				} else {
-					throw result.message;
-				}
+				_this25.fireEvent('GEOJSON', result);
+				return result;
 			}, function (error_message) {
 				throw error_message;
 			});
