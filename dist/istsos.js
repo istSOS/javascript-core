@@ -69,7 +69,7 @@ return /******/ (function(modules) { // webpackBootstrap
 /******/ 	
 /******/ 	
 /******/ 	var hotApplyOnUpdate = true;
-/******/ 	var hotCurrentHash = "d26df22d6835773801a0"; // eslint-disable-line no-unused-vars
+/******/ 	var hotCurrentHash = "9a24441d6bda8b194b69"; // eslint-disable-line no-unused-vars
 /******/ 	var hotCurrentModuleData = {};
 /******/ 	var hotCurrentChildModule; // eslint-disable-line no-unused-vars
 /******/ 	var hotCurrentParents = []; // eslint-disable-line no-unused-vars
@@ -747,8 +747,9 @@ var HttpAPI = exports.HttpAPI = {
          }
          xhr.onload = function () {
             if (xhr.status >= 200 && xhr.status < 300) {
-
-               if (JSON.parse(xhr.response).success) {
+               if (config.exception) {
+                  resolve(JSON.parse(xhr.response));
+               } else if (JSON.parse(xhr.response).success) {
                   resolve(JSON.parse(xhr.response));
                } else {
                   reject(JSON.parse(xhr.response).message);
@@ -5277,7 +5278,7 @@ var Service = exports.Service = function (_EventEmitter) {
 		value: function getFeatureCollection(opt_options) {
 			var _this25 = this;
 
-			var url = this.server.getUrl() + 'wa/istsos/services/' + this.nane + '/procedures/operations/geojson';
+			var url = this.server.getUrl() + 'wa/istsos/services/' + this.name + '/procedures/operations/geojson';
 			if (opt_options.opt_epsg) {
 				url += "?epsg=" + opt_options.opt_epsg.toString();
 				if (opt_options.opt_offering || opt_options.opt_procedure) {
@@ -5296,14 +5297,10 @@ var Service = exports.Service = function (_EventEmitter) {
 			if (this.server.getLoginConfig()) {
 				config['headers'] = this.server.getLoginConfig();
 			}
-
+			config['exception'] = true;
 			return _HttpAPI.HttpAPI.get(url, config).then(function (result) {
-				if (result.success) {
-					_this25.fireEvent('GEOJSON', result);
-					return result;
-				} else {
-					throw result.message;
-				}
+				_this25.fireEvent('GEOJSON', result);
+				return result;
 			}, function (error_message) {
 				throw error_message;
 			});
@@ -5626,11 +5623,11 @@ var VirtualProcedure = exports.VirtualProcedure = function (_ProcedureBase) {
       _this.sensorType = options.sensorType || "";
       _this.service = options.service;
       _this.code = {
-         "code": code
+         "code": options.code
       } || {};
-      _this.ratingCurve = ratingCurve || {};
-      service.addVirtualProcedure(_this);
-      service.getOfferingsProperty()[0].getMemberProceduresProperty().push(_this);
+      _this.ratingCurve = options.ratingCurve || {};
+      options.service.addVirtualProcedure(_this);
+      options.service.getOfferingsProperty()[0].getMemberProceduresProperty().push(_this);
       return _this;
    }
 

@@ -906,7 +906,7 @@ export var Service = class Service extends EventEmitter {
     * @fires istsos.Service#GEOJSON
     */
 	getFeatureCollection(opt_options) {
-		var url = `${this.server.getUrl()}wa/istsos/services/${this.nane}/procedures/operations/geojson`;
+		var url = `${this.server.getUrl()}wa/istsos/services/${this.name}/procedures/operations/geojson`;
 		if (opt_options.opt_epsg) {
 			url += "?epsg=" + opt_options.opt_epsg.toString();
 			if (opt_options.opt_offering || opt_options.opt_procedure) {
@@ -925,17 +925,13 @@ export var Service = class Service extends EventEmitter {
 		if (this.server.getLoginConfig()) {
 			config['headers'] = this.server.getLoginConfig();
 		}
-
+		config['exception'] = true;
 		return HttpAPI.get(url, config)
-			.then((result) => {
-				if (result.success) {
-					this.fireEvent('GEOJSON', result);
-					return result;
-				} else {
-					throw result.message
-				}
-			}, (error_message) => {
-				throw error_message;
-			});
+	      .then((result) => {
+	         this.fireEvent('GEOJSON', result);
+	         return result;
+	      }, (error_message) => {
+	         throw error_message;
+	      });
 	}
 }
